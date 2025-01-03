@@ -1,0 +1,21 @@
+"use strict";
+
+var mongoose = require("mongoose");
+
+var OTPSchema = new mongoose.Schema({
+  email: {
+    type: String,
+    required: true
+  },
+  otp: {
+    type: String,
+    required: true
+  },
+  createdAt: {
+    type: Date,
+    "default": Date.now(),
+    expires: 5 * 60
+  }
+});
+module.exports = mongoose.model("OTP", OTPSchema);
+//# sourceMappingURL=OTP.dev.js.map
