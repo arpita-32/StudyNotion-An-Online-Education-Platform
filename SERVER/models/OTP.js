@@ -21,5 +21,19 @@ createdAt:{
 
 
 });
+async function sendVerificationEmail(email, otp){
+    try{
+            const mailResponse = await mailSender(email,"Verification Email from StudyNotion",otp)
+    }
+    catch(error){
+        console.log("error occured while sending mails:", error);
+        throw error;
+    }
+}
+
+OTPSchema.pre("save", async function(next) {
+    await sendVerificationEmail(this.email, this.otp);
+    next();
+})
 
 module.exports = mongoose.model("OTP", OTPSchema);
