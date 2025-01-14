@@ -1,7 +1,7 @@
 "use strict";
 
-var _require = require("../config/razorpay"),
-    instance = _require.instance;
+var stripe = require("stripe")(process.env.STRIPE_SECRET_KEY); // Use your Stripe secret key
+
 
 var Course = require("../models/Course");
 
@@ -9,11 +9,14 @@ var User = require("../models/User");
 
 var mailSender = require("../utils/mailSender");
 
-var _require2 = require("../mail/courseEnrollmentEmail"),
-    courseEnrollmentEmail = _require2.courseEnrollmentEmail;
+var _require = require("../mail/courseEnrollmentEmail"),
+    courseEnrollmentEmail = _require.courseEnrollmentEmail;
+
+var mongoose = require("mongoose"); // Capture Payment
+
 
 exports.capturePayment = function _callee(req, res) {
-  var course_id, userId, course, uid, amount, currency, options, paymentResponse;
+  var course_id, userId, course, uid, amount, currency, paymentIntent;
   return regeneratorRuntime.async(function _callee$(_context) {
     while (1) {
       switch (_context.prev = _context.next) {
@@ -26,198 +29,192 @@ exports.capturePayment = function _callee(req, res) {
             break;
           }
 
-          return _context.abrupt("return", res.json({
+          return _context.abrupt("return", res.status(400).json({
             success: false,
-            message: 'Please provide valid course otp'
+            message: "Please provide a valid course ID"
           }));
 
         case 4:
-          ;
-          _context.prev = 5;
-          _context.next = 8;
+          _context.prev = 4;
+          _context.next = 7;
           return regeneratorRuntime.awrap(Course.findById(course_id));
 
-        case 8:
+        case 7:
           course = _context.sent;
 
           if (course) {
-            _context.next = 11;
+            _context.next = 10;
             break;
           }
 
-          return _context.abrupt("return", res.json({
+          return _context.abrupt("return", res.status(404).json({
             success: false,
-            message: 'could not find the course'
+            message: "Could not find the course"
           }));
 
-        case 11:
-          ;
+        case 10:
           uid = new mongoose.Types.ObjectId(userId);
 
           if (!course.studentsEnrolled.includes(uid)) {
-            _context.next = 15;
+            _context.next = 13;
             break;
           }
 
-          return _context.abrupt("return", res.status(200).json({
+          return _context.abrupt("return", res.status(400).json({
             success: false,
-            message: 'student is already enrolled'
+            message: "Student is already enrolled"
           }));
 
-        case 15:
-          _context.next = 21;
+        case 13:
+          _context.next = 19;
           break;
 
-        case 17:
-          _context.prev = 17;
-          _context.t0 = _context["catch"](5);
+        case 15:
+          _context.prev = 15;
+          _context.t0 = _context["catch"](4);
           console.error(_context.t0);
           return _context.abrupt("return", res.status(500).json({
             success: false,
-            message: _context.t0.message
+            message: "Error retrieving course details"
           }));
 
-        case 21:
-          amount = course.price;
+        case 19:
+          amount = course.price * 100; // Stripe processes amounts in cents
+
           currency = "INR";
-          options = {
-            amount: amount * 100,
+          _context.prev = 21;
+          _context.next = 24;
+          return regeneratorRuntime.awrap(stripe.paymentIntents.create({
+            amount: amount,
             currency: currency,
-            receipt: Math.random(Date.now()).toString(),
-            notes: {
+            metadata: {
               courseId: course_id,
               userId: userId
             }
-          };
-          _context.prev = 24;
-          _context.next = 27;
-          return regeneratorRuntime.awrap(instance.orders.create(options));
+          }));
 
-        case 27:
-          paymentResponse = _context.sent;
-          console.log(paymentResponse);
+        case 24:
+          paymentIntent = _context.sent;
           return _context.abrupt("return", res.status(200).json({
             success: true,
+            clientSecret: paymentIntent.client_secret,
             courseName: course.courseName,
             courseDescription: course.courseDescription,
             thumbnail: course.thumbnail,
-            orderId: paymentResponse.id,
-            currency: paymentResponse.currency,
-            amount: paymentResponse.amount,
-            message: ''
+            amount: paymentIntent.amount,
+            currency: paymentIntent.currency
+          }));
+
+        case 28:
+          _context.prev = 28;
+          _context.t1 = _context["catch"](21);
+          console.error(_context.t1);
+          return _context.abrupt("return", res.status(500).json({
+            success: false,
+            message: "Could not initiate payment"
           }));
 
         case 32:
-          _context.prev = 32;
-          _context.t1 = _context["catch"](24);
-          console.log(_context.t1);
-          res.json({
-            success: false,
-            message: "could not initiate  order"
-          });
-
-        case 36:
         case "end":
           return _context.stop();
       }
     }
-  }, null, null, [[5, 17], [24, 32]]);
-};
+  }, null, null, [[4, 15], [21, 28]]);
+}; // Handle Payment Completion
 
-exports.verifySignature = function _callee2(req, res) {
-  var webhookSecret, signature, shasum, digest, _req$body$payload$pay, courseId, userId, enrolledCourse, enrolledStudent, emailResponse;
+
+exports.handlePaymentSuccess = function _callee2(req, res) {
+  var _req$body, course_id, user_id, enrolledCourse, enrolledStudent, emailResponse;
 
   return regeneratorRuntime.async(function _callee2$(_context2) {
     while (1) {
       switch (_context2.prev = _context2.next) {
         case 0:
-          webhookSecret = "12345678";
-          signature = req.headers["x-razorpay-signature"];
-          shasum = crypto.createHmac("sha256", webhookSecret);
-          shasum.update(JSON.stringify(req.body));
-          digest = shasum.digest("hex");
+          _req$body = req.body, course_id = _req$body.course_id, user_id = _req$body.user_id;
 
-          if (!(signature === digest)) {
-            _context2.next = 30;
+          if (!(!course_id || !user_id)) {
+            _context2.next = 3;
             break;
           }
 
-          console.log("payment is auhorised");
-          _req$body$payload$pay = req.body.payload.payment.entity.notes, courseId = _req$body$payload$pay.courseId, userId = _req$body$payload$pay.userId;
-          _context2.prev = 8;
-          _context2.next = 11;
-          return regeneratorRuntime.awrap(Course.findOneAndUpdate({
-            _id: courseId
-          }, {
+          return _context2.abrupt("return", res.status(400).json({
+            success: false,
+            message: "Course ID and User ID are required"
+          }));
+
+        case 3:
+          _context2.prev = 3;
+          _context2.next = 6;
+          return regeneratorRuntime.awrap(Course.findByIdAndUpdate(course_id, {
             $push: {
-              studentsEnrolled: userId
+              studentsEnrolled: user_id
+            }
+          }, {
+            "new": true
+          }));
+
+        case 6:
+          enrolledCourse = _context2.sent;
+
+          if (enrolledCourse) {
+            _context2.next = 9;
+            break;
+          }
+
+          return _context2.abrupt("return", res.status(404).json({
+            success: false,
+            message: "Course not found"
+          }));
+
+        case 9:
+          _context2.next = 11;
+          return regeneratorRuntime.awrap(User.findByIdAndUpdate(user_id, {
+            $push: {
+              courses: course_id
             }
           }, {
             "new": true
           }));
 
         case 11:
-          enrolledCourse = _context2.sent;
+          enrolledStudent = _context2.sent;
 
-          if (enrolledCourse) {
+          if (enrolledStudent) {
             _context2.next = 14;
             break;
           }
 
-          return _context2.abrupt("return", res.status(500).json({
+          return _context2.abrupt("return", res.status(404).json({
             success: false,
-            message: 'course not found'
+            message: "User not found"
           }));
 
         case 14:
-          console.log(enrolledCourse);
-          _context2.next = 17;
-          return regeneratorRuntime.awrap(User.findOneAndUpdate({
-            _id: userId
-          }, {
-            $push: {
-              courses: courseId
-            }
-          }, {
-            "new": true
-          }));
+          _context2.next = 16;
+          return regeneratorRuntime.awrap(mailSender(enrolledStudent.email, "Course Enrollment Success", courseEnrollmentEmail(enrolledCourse.courseName)));
 
-        case 17:
-          enrolledStudent = _context2.sent;
-          console.log(enrolledStudent);
-          _context2.next = 21;
-          return regeneratorRuntime.awrap(mailSender(enrolledStudent.email, "Congratulaions"));
-
-        case 21:
+        case 16:
           emailResponse = _context2.sent;
+          console.log("Email sent: ", emailResponse);
           return _context2.abrupt("return", res.status(200).json({
             success: true,
-            message: 'signature verified and course added'
+            message: "Payment successful and course enrollment updated"
+          }));
+
+        case 21:
+          _context2.prev = 21;
+          _context2.t0 = _context2["catch"](3);
+          console.error(_context2.t0);
+          return _context2.abrupt("return", res.status(500).json({
+            success: false,
+            message: "Error processing payment"
           }));
 
         case 25:
-          _context2.prev = 25;
-          _context2.t0 = _context2["catch"](8);
-          return _context2.abrupt("return", res.status(500).json({
-            success: false,
-            message: _context2.t0.message
-          }));
-
-        case 28:
-          _context2.next = 31;
-          break;
-
-        case 30:
-          return _context2.abrupt("return", res.status(400).json({
-            success: false,
-            message: 'Invalid request'
-          }));
-
-        case 31:
         case "end":
           return _context2.stop();
       }
     }
-  }, null, null, [[8, 25]]);
+  }, null, null, [[3, 21]]);
 };
 //# sourceMappingURL=Payment.dev.js.map

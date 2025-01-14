@@ -1,9 +1,4 @@
 "use strict";
 
-var Razorpay = require("razorpay");
-
-exports.instance = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY,
-  key_secret: process.env.RAZORPAY_SECRET
-});
+var stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 //# sourceMappingURL=razorpay.dev.js.map
