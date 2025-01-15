@@ -1,20 +1,14 @@
-// Import the required modules
 const express = require("express");
 const router = express.Router();
 
-// Import payment controllers and middlewares
 const {
     capturePayment,
-    verifyPayment,
-    sendPaymentSuccessEmail,
-} = require("../controllers/Payments");
+    handlePaymentSuccess,
+} = require("../controllers/Payment");
 
-const { auth, isInstructor, isStudent, isAdmin } = require("../middlewares/auth");
+const { auth, isStudent } = require("../middlewares/auth");
 
-// Define routes for payment-related functionalities
-router.post("/capturePayment", auth, isStudent, capturePayment); // Endpoint to capture payment
-router.post("/verifyPayment", auth, isStudent, verifyPayment); // Endpoint to verify payment
-router.post("/sendPaymentSuccessEmail", auth, isStudent, sendPaymentSuccessEmail); // Endpoint to send success email
+router.post("/capturePayment", auth, isStudent, capturePayment);
+router.post("/paymentSuccess", auth, isStudent, handlePaymentSuccess);
 
-// Export the router
 module.exports = router;

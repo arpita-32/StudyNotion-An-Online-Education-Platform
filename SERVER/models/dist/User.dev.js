@@ -2,37 +2,34 @@
 
 var mongoose = require("mongoose");
 
-var _require = require("../controllers/ResetPassword"),
-    resetPasswordToken = _require.resetPasswordToken;
-
 var userSchema = new mongoose.Schema({
   firstName: {
     type: String,
-    require: true,
+    required: true,
     trim: true
   },
   lastName: {
     type: String,
-    require: true,
+    required: true,
     trim: true
   },
   email: {
     type: String,
-    require: true,
+    required: true,
     trim: true
   },
   password: {
     type: String,
-    require: true
+    required: true
   },
   accountType: {
     type: String,
     "enum": ["Admin", "Student", "Instructor"],
-    require: true
+    required: true
   },
   additionalDetails: {
     type: mongoose.Schema.Types.ObjectId,
-    require: true,
+    required: true,
     ref: "Profile"
   },
   courses: [{
@@ -41,7 +38,7 @@ var userSchema = new mongoose.Schema({
   }],
   image: {
     type: String,
-    require: true
+    required: true
   },
   token: {
     type: String
@@ -53,6 +50,8 @@ var userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "CourseProgress"
   }]
+}, {
+  timestamps: true
 });
 module.exports = mongoose.model("User", userSchema);
 //# sourceMappingURL=User.dev.js.map

@@ -10,17 +10,19 @@ exports.uploadImageToCloudinary = function _callee(file, folder, innerHeight, qu
         case 0:
           options = {
             folder: folder
-          };
+          }; // Initialize options with the folder
 
-          if (height) {
-            options.height = height;
+          if (innerHeight) {
+            // Use the correct parameter
+            options.height = innerHeight;
           }
 
           if (quality) {
             options.quality = quality;
           }
 
-          options.resource_type = "auto";
+          options.resource_type = "auto"; // Ensure resource type is set
+
           _context.next = 6;
           return regeneratorRuntime.awrap(cloudinary.uploader.upload(file.tempFilePath, options));
 
