@@ -16,7 +16,7 @@ exports.createSubSection = function _callee(req, res) {
         case 0:
           _context.prev = 0;
           _req$body = req.body, sectionId = _req$body.sectionId, title = _req$body.title, timeDuration = _req$body.timeDuration, description = _req$body.description;
-          video = req.files.videoFile;
+          video = req.files.video; // Changed from videoFile to video
 
           if (!(!sectionId || !title || !timeDuration || !video)) {
             _context.next = 5;
@@ -49,18 +49,18 @@ exports.createSubSection = function _callee(req, res) {
             _id: sectionId
           }, {
             $push: {
-              subSection: SubSectionDetails._id
+              subSection: subSectionDetails._id
             }
           }, {
             "new": true
-          }));
+          }).populate("subSection"));
 
         case 13:
           updatedSection = _context.sent;
           return _context.abrupt("return", res.status(200).json({
             success: true,
-            message: 'sub Section created successfully',
-            updatedSection: updatedSection
+            message: 'Sub Section created successfully',
+            data: updatedSection
           }));
 
         case 17:
@@ -78,8 +78,7 @@ exports.createSubSection = function _callee(req, res) {
       }
     }
   }, null, null, [[0, 17]]);
-}; //update and delete section
-
+};
 
 exports.updateSubSection = function _callee2(req, res) {
   var _req$body2, sectionId, subSectionId, title, description, subSection, video, uploadDetails, updatedSection;
@@ -139,15 +138,14 @@ exports.updateSubSection = function _callee2(req, res) {
 
         case 20:
           updatedSection = _context2.sent;
-          console.log("updated section", updatedSection);
           return _context2.abrupt("return", res.json({
             success: true,
             message: "Section updated successfully",
             data: updatedSection
           }));
 
-        case 25:
-          _context2.prev = 25;
+        case 24:
+          _context2.prev = 24;
           _context2.t0 = _context2["catch"](0);
           console.error(_context2.t0);
           return _context2.abrupt("return", res.status(500).json({
@@ -155,12 +153,12 @@ exports.updateSubSection = function _callee2(req, res) {
             message: "An error occurred while updating the section"
           }));
 
-        case 29:
+        case 28:
         case "end":
           return _context2.stop();
       }
     }
-  }, null, null, [[0, 25]]);
+  }, null, null, [[0, 24]]);
 };
 
 exports.deleteSubSection = function _callee3(req, res) {

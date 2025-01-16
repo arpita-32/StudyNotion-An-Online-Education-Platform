@@ -1,22 +1,26 @@
 "use strict";
 
-var mongoose = require("mongoose"); // Define the Courses schema
-
+var mongoose = require("mongoose");
 
 var coursesSchema = new mongoose.Schema({
   courseName: {
-    type: String
+    type: String,
+    required: true,
+    trim: true
   },
   courseDescription: {
-    type: String
+    type: String,
+    required: true,
+    trim: true
   },
   instructor: {
     type: mongoose.Schema.Types.ObjectId,
     required: true,
-    ref: "user"
+    ref: "User"
   },
   whatYouWillLearn: {
-    type: String
+    type: String,
+    required: true
   },
   courseContent: [{
     type: mongoose.Schema.Types.ObjectId,
@@ -27,10 +31,12 @@ var coursesSchema = new mongoose.Schema({
     ref: "RatingAndReview"
   }],
   price: {
-    type: Number
+    type: Number,
+    required: true
   },
   thumbnail: {
-    type: String
+    type: String,
+    required: true
   },
   tag: {
     type: [String],
@@ -38,26 +44,25 @@ var coursesSchema = new mongoose.Schema({
   },
   category: {
     type: mongoose.Schema.Types.ObjectId,
-    // required: true,
+    required: true,
     ref: "Category"
   },
   studentsEnrolled: [{
     type: mongoose.Schema.Types.ObjectId,
     required: true,
-    ref: "user"
+    ref: "User"
   }],
   instructions: {
-    type: [String]
+    type: [String],
+    required: true
   },
   status: {
     type: String,
-    "enum": ["Draft", "Published"]
-  },
-  createdAt: {
-    type: Date,
-    "default": Date.now
+    "enum": ["Draft", "Published"],
+    "default": "Draft"
   }
-}); // Export the Courses model
-
+}, {
+  timestamps: true
+});
 module.exports = mongoose.model("Course", coursesSchema);
 //# sourceMappingURL=Course.dev.js.map
