@@ -5,8 +5,10 @@ import HighlightText from '../components/core/HomePage/HighlightText';
 import CTAButton from '../components/core/HomePage/Button'
 import Banner from "../assets/Images/banner.mp4"
 import CodeBlocks from '../components/core/HomePage/CodeBlocks';
-import LearningLnguageSection from '../components/core/HomePage/LearningLnguageSection';
+import LearningLanguageSection from '../components/core/HomePage/LearningLanguageSection';
 import TimelineSection from '../components/core/HomePage/TimelineSection';
+import InstructorSection from '../components/core/HomePage/InstructorSection';
+import Footer from '../components/common/Footer';
 const Home = () => {
 return (
     <div>
@@ -176,7 +178,8 @@ return (
                     </CTAButton>
                 </div>
             </div>
-
+            <TimelineSection/>
+            <LearningLanguageSection/>
 
 
 
@@ -184,12 +187,19 @@ return (
 
         </div>
 
-        <TimelineSection/>
-        <LearningLnguageSection/>
+        
+    </div>
+    {/*Section 3 */}
+    <div className='w-11/12 mx-auto max-w-maxContent flex-col items-center justify-between gap-8
+    first-letter bg-richblack-900 text-white'>
+
+        <InstructorSection/>
+        <h2 className='text-center text-4xl font-semibold mt-10 '> review from other Learners</h2>
+
     </div>
 
-
     {/*footer */}
+    <Footer/>
 
     </div>
 )
