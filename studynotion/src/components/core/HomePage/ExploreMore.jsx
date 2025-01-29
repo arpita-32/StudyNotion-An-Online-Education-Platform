@@ -28,7 +28,7 @@ const ExploreMore = () => {
   return (
     <div className="relative w-11/12 max-w-maxContent mx-auto flex flex-col items-center justify-between">
       {/* Explore more section */}
-      <div className="text-4xl font-semibold text-center my-10">
+      <div className="text-4xl font-semibold text-center my-10 text-white">
         Unlock the
         <HighlightText text={"Power of Code"} />
         <p className="text-center text-richblack-300 text-lg font-semibold mt-1">

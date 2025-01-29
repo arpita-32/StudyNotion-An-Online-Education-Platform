@@ -29,7 +29,7 @@ return (
         
         </Link>
 
-        <div className='text-center text-4xl font-semibold mt-7'>
+        <div className='text-center text-4xl font-semibold mt-7 text-white'>
             Empower your Future With 
             <HighlightText  text = {"Coding Skills"}/>
         </div>
@@ -63,7 +63,7 @@ return (
         <CodeBlocks
         position={"lg:flex-row"}
         heading={
-            <div className='text-4xl font-semibold'>
+            <div className='text-center text-4xl font-semibold mt-7 text-white'>
                 Unlock Your
                 <HighlightText text={"coding potential"}/>
                 with our online courses
@@ -98,7 +98,7 @@ return (
         <CodeBlocks
         position={"lg:flex-row-reverse"}
         heading={
-            <div className='text-4xl font-semibold'>
+            <div className='text-center text-4xl font-semibold mt-7 text-white'>
                 Unlock Your
                 <HighlightText text={"coding potential"}/>
                 with our online courses
