@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.apiconnector = exports.axiosInstance = void 0;
+exports.apiConnector = exports.axiosInstance = void 0;
 
 var _axios = _interopRequireDefault(require("axios"));
 
@@ -13,7 +13,7 @@ var axiosInstance = _axios["default"].create({});
 
 exports.axiosInstance = axiosInstance;
 
-var apiconnector = function apiconnector(method, url, bodyData, headers, params) {
+var apiConnector = function apiConnector(method, url, bodyData, headers, params) {
   return axiosInstance({
     method: "".concat(method),
     url: "".concat(url),
@@ -23,5 +23,5 @@ var apiconnector = function apiconnector(method, url, bodyData, headers, params)
   });
 };
 
-exports.apiconnector = apiconnector;
+exports.apiConnector = apiConnector;
 //# sourceMappingURL=apiconnector.dev.js.map
