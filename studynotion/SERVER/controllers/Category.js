@@ -1,4 +1,3 @@
-const { Mongoose } = require("mongoose");
 const Category = require("../models/Category");
 function getRandomInt(max) {
     return Math.floor(Math.random() * max)
