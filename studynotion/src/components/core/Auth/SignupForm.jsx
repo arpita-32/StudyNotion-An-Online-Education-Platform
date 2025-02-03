@@ -99,6 +99,7 @@ function SignupForm() {
               value={firstName}
               onChange={handleOnChange}
               placeholder="Enter first name"
+              autoComplete="given-name"
               style={{
                 boxShadow: "inset 0px -1px 0px rgba(255, 255, 255, 0.18)",
               }}
@@ -116,6 +117,7 @@ function SignupForm() {
               value={lastName}
               onChange={handleOnChange}
               placeholder="Enter last name"
+              autoComplete="family-name"
               style={{
                 boxShadow: "inset 0px -1px 0px rgba(255, 255, 255, 0.18)",
               }}
@@ -129,11 +131,12 @@ function SignupForm() {
           </p>
           <input
             required
-            type="text"
+            type="email"
             name="email"
             value={email}
             onChange={handleOnChange}
             placeholder="Enter email address"
+            autoComplete="email"
             style={{
               boxShadow: "inset 0px -1px 0px rgba(255, 255, 255, 0.18)",
             }}
@@ -152,6 +155,7 @@ function SignupForm() {
               value={password}
               onChange={handleOnChange}
               placeholder="Enter Password"
+              autoComplete="new-password"
               style={{
                 boxShadow: "inset 0px -1px 0px rgba(255, 255, 255, 0.18)",
               }}
@@ -160,6 +164,7 @@ function SignupForm() {
             <span
               onClick={() => setShowPassword((prev) => !prev)}
               className="absolute right-3 top-[38px] z-[10] cursor-pointer"
+              aria-label={showPassword ? "Hide password" : "Show password"}
             >
               {showPassword ? (
                 <AiOutlineEyeInvisible fontSize={24} fill="#AFB2BF" />
@@ -179,6 +184,7 @@ function SignupForm() {
               value={confirmPassword}
               onChange={handleOnChange}
               placeholder="Confirm Password"
+              autoComplete="new-password"
               style={{
                 boxShadow: "inset 0px -1px 0px rgba(255, 255, 255, 0.18)",
               }}
@@ -187,6 +193,7 @@ function SignupForm() {
             <span
               onClick={() => setShowConfirmPassword((prev) => !prev)}
               className="absolute right-3 top-[38px] z-[10] cursor-pointer"
+              aria-label={showConfirmPassword ? "Hide password" : "Show password"}
             >
               {showConfirmPassword ? (
                 <AiOutlineEyeInvisible fontSize={24} fill="#AFB2BF" />
