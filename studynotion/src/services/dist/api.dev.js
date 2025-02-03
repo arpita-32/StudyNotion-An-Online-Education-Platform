@@ -4,7 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.settingsEndpoints = exports.contactusEndpoint = exports.catalogData = exports.categories = exports.ratingsEndpoints = exports.courseEndpoints = exports.studentEndpoints = exports.profileEndpoints = exports.endpoints = void 0;
-var BASE_URL = "https://localhost:4000/api/v1"; // AUTH ENDPOINTS
+var BASE_URL = "http://localhost:4000/api/v1"; // AUTH ENDPOINTS
 
 var endpoints = {
   SENDOTP_API: BASE_URL + "/auth/sendotp",
