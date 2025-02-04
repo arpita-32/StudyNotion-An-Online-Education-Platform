@@ -21,7 +21,21 @@ var apiConnector = function apiConnector(method, url, bodyData, headers, params)
     headers: headers ? headers : null,
     params: params ? params : null
   });
-};
+}; // Example usage with authentication token
+
 
 exports.apiConnector = apiConnector;
+var token = localStorage.getItem('token'); // Assuming you store the token in localStorage
+
+var headers = {
+  'Authorization': "Bearer ".concat(token),
+  'Content-Type': 'application/json'
+};
+apiConnector('POST', 'http://localhost:4000/api/v1/auth/sendotp', {
+  email: 'user@example.com'
+}, headers).then(function (response) {
+  console.log('OTP sent successfully:', response.data);
+})["catch"](function (error) {
+  console.error('Error sending OTP:', error);
+});
 //# sourceMappingURL=apiconnector.dev.js.map
