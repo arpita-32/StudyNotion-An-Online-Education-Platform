@@ -216,7 +216,7 @@ exports.login = function _callee2(req, res) {
           token = jwt.sign({
             email: user.email,
             id: user._id,
-            accountType: user.accountType
+            role: user.role
           }, process.env.JWT_SECRET, {
             expiresIn: "24h"
           }); // Save token to user document in database
