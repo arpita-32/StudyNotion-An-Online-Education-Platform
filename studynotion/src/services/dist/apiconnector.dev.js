@@ -9,33 +9,32 @@ var _axios = _interopRequireDefault(require("axios"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
-var axiosInstance = _axios["default"].create({});
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(source, true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(source).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+var axiosInstance = _axios["default"].create({
+  baseURL: "http://localhost:4000/api/v1",
+  // Set a base URL for all requests
+  headers: {
+    "Content-Type": "application/json" // Default headers
+
+  }
+});
 
 exports.axiosInstance = axiosInstance;
 
 var apiConnector = function apiConnector(method, url, bodyData, headers, params) {
   return axiosInstance({
-    method: "".concat(method),
-    url: "".concat(url),
+    method: method,
+    url: url,
     data: bodyData ? bodyData : null,
-    headers: headers ? headers : null,
+    headers: headers ? _objectSpread({}, axiosInstance.defaults.headers, {}, headers) : axiosInstance.defaults.headers,
     params: params ? params : null
   });
-}; // Example usage with authentication token
-
+};
 
 exports.apiConnector = apiConnector;
-var token = localStorage.getItem('token'); // Assuming you store the token in localStorage
-
-var headers = {
-  'Authorization': "Bearer ".concat(token),
-  'Content-Type': 'application/json'
-};
-apiConnector('POST', 'http://localhost:4000/api/v1/auth/sendotp', {
-  email: 'user@example.com'
-}, headers).then(function (response) {
-  console.log('OTP sent successfully:', response.data);
-})["catch"](function (error) {
-  console.error('Error sending OTP:', error);
-});
 //# sourceMappingURL=apiconnector.dev.js.map
