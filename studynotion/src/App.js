@@ -7,10 +7,12 @@ import Signup from "./pages/Signup";
 import Navbar from './components/common/Navbar';
 import OpenRoute from "./components/core/Auth/OpenRoute";
 import About from "./pages/About";
+import PrivateRoute from "./components/core/Auth/PrivateRoute";
 import ForgotPassword from "./pages/ForgotPassword";
 import UpdatePassword from "./pages/UpdatePassword";
 import VerifyEmail from "./pages/VerifyEmail";
 import Contact from "./pages/Contact";
+import Dashboard from "./pages/Dashboard";
 function App() {
   return (
     <div className='w-screen min-h-screen bg-richblack-900 flex flex-col font-inter'>
@@ -68,7 +70,14 @@ function App() {
           }
         />
             <Route path="/contact" element={<Contact />} />
-
+            <Route 
+      element={
+        <PrivateRoute>
+          <Dashboard />
+        </PrivateRoute>
+      }
+    />
+     
 
 
     </Routes>
