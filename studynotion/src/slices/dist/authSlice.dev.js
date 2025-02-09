@@ -10,20 +10,20 @@ var _toolkit = require("@reduxjs/toolkit");
 var initialState = {
   signupData: null,
   loading: false,
-  token: localStorage.getItem("token") ? JSON.parse(localStorage.getItem("token")) : null
+  token: localStorage.getItem("token") ? JSON.parse(localStorage.getItem("token") || "null") : null
 };
 var authSlice = (0, _toolkit.createSlice)({
   name: "auth",
   initialState: initialState,
   reducers: {
-    setSignupData: function setSignupData(state, value) {
-      state.signupData = value.payload;
+    setSignupData: function setSignupData(state, action) {
+      state.signupData = action.payload;
     },
-    setLoading: function setLoading(state, value) {
-      state.loading = value.payload;
+    setLoading: function setLoading(state, action) {
+      state.loading = action.payload;
     },
-    setToken: function setToken(state, value) {
-      state.token = value.payload;
+    setToken: function setToken(state, action) {
+      state.token = action.payload;
     }
   }
 });

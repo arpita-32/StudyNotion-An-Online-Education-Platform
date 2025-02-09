@@ -8,18 +8,18 @@ exports["default"] = exports.setLoading = exports.setUser = void 0;
 var _toolkit = require("@reduxjs/toolkit");
 
 var initialState = {
-  user: localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null,
+  user: localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user") || "null") : null,
   loading: false
 };
 var profileSlice = (0, _toolkit.createSlice)({
   name: "profile",
   initialState: initialState,
   reducers: {
-    setUser: function setUser(state, value) {
-      state.user = value.payload;
+    setUser: function setUser(state, action) {
+      state.user = action.payload;
     },
-    setLoading: function setLoading(state, value) {
-      state.loading = value.payload;
+    setLoading: function setLoading(state, action) {
+      state.loading = action.payload;
     }
   }
 });

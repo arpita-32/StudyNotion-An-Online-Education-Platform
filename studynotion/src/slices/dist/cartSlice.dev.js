@@ -10,9 +10,9 @@ var _toolkit = require("@reduxjs/toolkit");
 var _reactHotToast = require("react-hot-toast");
 
 var initialState = {
-  cart: localStorage.getItem("cart") ? JSON.parse(localStorage.getItem("cart")) : [],
-  total: localStorage.getItem("total") ? JSON.parse(localStorage.getItem("total")) : 0,
-  totalItems: localStorage.getItem("totalItems") ? JSON.parse(localStorage.getItem("totalItems")) : 0
+  cart: localStorage.getItem("cart") ? JSON.parse(localStorage.getItem("cart") || "[]") : [],
+  total: localStorage.getItem("total") ? JSON.parse(localStorage.getItem("total") || "0") : 0,
+  totalItems: localStorage.getItem("totalItems") ? JSON.parse(localStorage.getItem("totalItems") || "0") : 0
 };
 var cartSlice = (0, _toolkit.createSlice)({
   name: "cart",
@@ -25,21 +25,17 @@ var cartSlice = (0, _toolkit.createSlice)({
       });
 
       if (index >= 0) {
-        // If the course is already in the cart, do not modify the quantity
         _reactHotToast.toast.error("Course already in cart");
 
         return;
-      } // If the course is not in the cart, add it to the cart
+      }
 
-
-      state.cart.push(course); // Update the total quantity and price
-
+      state.cart.push(course);
       state.totalItems++;
-      state.total += course.price; // Update to localstorage
-
+      state.total += course.price;
       localStorage.setItem("cart", JSON.stringify(state.cart));
       localStorage.setItem("total", JSON.stringify(state.total));
-      localStorage.setItem("totalItems", JSON.stringify(state.totalItems)); // show toast
+      localStorage.setItem("totalItems", JSON.stringify(state.totalItems));
 
       _reactHotToast.toast.success("Course added to cart");
     },
@@ -50,14 +46,12 @@ var cartSlice = (0, _toolkit.createSlice)({
       });
 
       if (index >= 0) {
-        // If the course is found in the cart, remove it
         state.totalItems--;
         state.total -= state.cart[index].price;
-        state.cart.splice(index, 1); // Update to localstorage
-
+        state.cart.splice(index, 1);
         localStorage.setItem("cart", JSON.stringify(state.cart));
         localStorage.setItem("total", JSON.stringify(state.total));
-        localStorage.setItem("totalItems", JSON.stringify(state.totalItems)); // show toast
+        localStorage.setItem("totalItems", JSON.stringify(state.totalItems));
 
         _reactHotToast.toast.success("Course removed from cart");
       }
@@ -65,8 +59,7 @@ var cartSlice = (0, _toolkit.createSlice)({
     resetCart: function resetCart(state) {
       state.cart = [];
       state.total = 0;
-      state.totalItems = 0; // Update to localstorage
-
+      state.totalItems = 0;
       localStorage.removeItem("cart");
       localStorage.removeItem("total");
       localStorage.removeItem("totalItems");
