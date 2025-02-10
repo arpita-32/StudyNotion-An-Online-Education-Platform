@@ -4,7 +4,6 @@ import { toast } from "react-hot-toast"
 import { HiOutlineCurrencyRupee } from "react-icons/hi"
 import { MdNavigateNext } from "react-icons/md"
 import { useDispatch, useSelector } from "react-redux"
-
 import {
   addCourseDetails,
   editCourseDetails,
@@ -37,14 +36,12 @@ export default function CourseInformationForm() {
       setLoading(true)
       const categories = await fetchCourseCategories()
       if (categories.length > 0) {
-        // console.log("categories", categories)
         setCourseCategories(categories)
       }
       setLoading(false)
     }
-    // if form is in edit mode
+
     if (editCourse) {
-      // console.log("data populated", editCourse)
       setValue("courseTitle", course.courseName)
       setValue("courseShortDesc", course.courseDescription)
       setValue("coursePrice", course.price)
@@ -55,13 +52,10 @@ export default function CourseInformationForm() {
       setValue("courseImage", course.thumbnail)
     }
     getCategories()
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [editCourse, course, setValue])
 
   const isFormUpdated = () => {
     const currentValues = getValues()
-    // console.log("changes after editing form values:", currentValues)
     if (
       currentValues.courseTitle !== course.courseName ||
       currentValues.courseShortDesc !== course.courseDescription ||
@@ -78,19 +72,11 @@ export default function CourseInformationForm() {
     return false
   }
 
-  //   handle next button click
   const onSubmit = async (data) => {
-    // console.log(data)
-
     if (editCourse) {
-      // const currentValues = getValues()
-      // console.log("changes after editing form values:", currentValues)
-      // console.log("now course:", course)
-      // console.log("Has Form Changed:", isFormUpdated())
       if (isFormUpdated()) {
         const currentValues = getValues()
         const formData = new FormData()
-        // console.log(data)
         formData.append("courseId", course._id)
         if (currentValues.courseTitle !== course.courseName) {
           formData.append("courseName", data.courseTitle)
@@ -122,7 +108,6 @@ export default function CourseInformationForm() {
         if (currentValues.courseImage !== course.thumbnail) {
           formData.append("thumbnailImage", data.courseImage)
         }
-        // console.log("Edit Form data: ", formData)
         setLoading(true)
         const result = await editCourseDetails(formData, token)
         setLoading(false)
