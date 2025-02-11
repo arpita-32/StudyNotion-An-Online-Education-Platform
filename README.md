@@ -22,5 +22,10 @@ tools used.
 7. Future Enhancements: The list of potential future enhancements to the platform,
 explanation of how these enhancements would improve the platform, estimated
 timeline and priority for implementing these enhancements.
+Data Models and Database Schema
+The back-end of StudyNotion uses several data models and database schemas to manage data, including:
 
+Student Schema: Includes fields such as name, email, password, and course details for each student.
+Instructor Schema: Includes fields such as name, email, password, and course details for each instructor.
+Course Schema: Includes fields such as course name, description, instructor details, and media content.
 
