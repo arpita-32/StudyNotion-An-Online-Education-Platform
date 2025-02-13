@@ -1,83 +1,91 @@
 "use strict";
 
-var SubSection = require("../models/SubSection");
-
+// Import necessary modules
 var Section = require("../models/Section");
 
+var SubSection = require("../models/SubSection");
+
 var _require = require("../utils/imageUploader"),
-    uploadImageToCloudinary = _require.uploadImageToCloudinary;
+    uploadImageToCloudinary = _require.uploadImageToCloudinary; // Create a new sub-section for a given section
+
 
 exports.createSubSection = function _callee(req, res) {
-  var _req$body, sectionId, title, timeDuration, description, video, uploadDetails, subSectionDetails, updatedSection;
+  var _req$body, sectionId, title, description, video, uploadDetails, SubSectionDetails, updatedSection;
 
   return regeneratorRuntime.async(function _callee$(_context) {
     while (1) {
       switch (_context.prev = _context.next) {
         case 0:
           _context.prev = 0;
-          _req$body = req.body, sectionId = _req$body.sectionId, title = _req$body.title, timeDuration = _req$body.timeDuration, description = _req$body.description;
-          video = req.files.video; // Changed from videoFile to video
+          // Extract necessary information from the request body
+          _req$body = req.body, sectionId = _req$body.sectionId, title = _req$body.title, description = _req$body.description;
+          video = req.files.video; // Check if all necessary fields are provided
 
-          if (!(!sectionId || !title || !timeDuration || !video)) {
+          if (!(!sectionId || !title || !description || !video)) {
             _context.next = 5;
             break;
           }
 
-          return _context.abrupt("return", res.status(400).json({
+          return _context.abrupt("return", res.status(404).json({
             success: false,
-            message: 'All fields are required'
+            message: "All Fields are Required"
           }));
 
         case 5:
-          _context.next = 7;
+          console.log(video); // Upload the video file to Cloudinary
+
+          _context.next = 8;
           return regeneratorRuntime.awrap(uploadImageToCloudinary(video, process.env.FOLDER_NAME));
 
-        case 7:
+        case 8:
           uploadDetails = _context.sent;
-          _context.next = 10;
+          console.log(uploadDetails); // Create a new sub-section with the necessary information
+
+          _context.next = 12;
           return regeneratorRuntime.awrap(SubSection.create({
             title: title,
-            timeDuration: timeDuration,
+            timeDuration: "".concat(uploadDetails.duration),
             description: description,
             videoUrl: uploadDetails.secure_url
           }));
 
-        case 10:
-          subSectionDetails = _context.sent;
-          _context.next = 13;
+        case 12:
+          SubSectionDetails = _context.sent;
+          _context.next = 15;
           return regeneratorRuntime.awrap(Section.findByIdAndUpdate({
             _id: sectionId
           }, {
             $push: {
-              subSection: subSectionDetails._id
+              subSection: SubSectionDetails._id
             }
           }, {
             "new": true
           }).populate("subSection"));
 
-        case 13:
+        case 15:
           updatedSection = _context.sent;
           return _context.abrupt("return", res.status(200).json({
             success: true,
-            message: 'Sub Section created successfully',
             data: updatedSection
           }));
 
-        case 17:
-          _context.prev = 17;
+        case 19:
+          _context.prev = 19;
           _context.t0 = _context["catch"](0);
+          // Handle any errors that may occur during the process
+          console.error("Error creating new sub-section:", _context.t0);
           return _context.abrupt("return", res.status(500).json({
             success: false,
-            message: 'Internal server error',
+            message: "Internal server error",
             error: _context.t0.message
           }));
 
-        case 20:
+        case 23:
         case "end":
           return _context.stop();
       }
     }
-  }, null, null, [[0, 17]]);
+  }, null, null, [[0, 19]]);
 };
 
 exports.updateSubSection = function _callee2(req, res) {
@@ -138,14 +146,15 @@ exports.updateSubSection = function _callee2(req, res) {
 
         case 20:
           updatedSection = _context2.sent;
+          console.log("updated section", updatedSection);
           return _context2.abrupt("return", res.json({
             success: true,
             message: "Section updated successfully",
             data: updatedSection
           }));
 
-        case 24:
-          _context2.prev = 24;
+        case 25:
+          _context2.prev = 25;
           _context2.t0 = _context2["catch"](0);
           console.error(_context2.t0);
           return _context2.abrupt("return", res.status(500).json({
@@ -153,12 +162,12 @@ exports.updateSubSection = function _callee2(req, res) {
             message: "An error occurred while updating the section"
           }));
 
-        case 28:
+        case 29:
         case "end":
           return _context2.stop();
       }
     }
-  }, null, null, [[0, 24]]);
+  }, null, null, [[0, 25]]);
 };
 
 exports.deleteSubSection = function _callee3(req, res) {
