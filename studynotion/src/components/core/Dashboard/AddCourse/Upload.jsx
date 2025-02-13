@@ -69,8 +69,8 @@ export default function Upload({
       <div
         {...getRootProps()}
         className={`${
-          isDragActive ? "bg-gray-100" : "bg-white"
-        } flex min-h-[250px] cursor-pointer items-center justify-center rounded-md border-2 border-dashed border-gray-300 transition-colors duration-200 hover:border-blue-500`}
+          isDragActive ? "bg-richblack-600" : "bg-richblack-700"
+        } flex min-h-[250px] cursor-pointer items-center justify-center rounded-md border-2 border-dotted border-richblack-500`}
       >
         {previewSource ? (
           <div className="flex w-full flex-col p-6">
@@ -101,15 +101,15 @@ export default function Upload({
         ) : (
           <div className="flex w-full flex-col items-center p-6">
             <input {...getInputProps()} ref={inputRef} />
-            <div className="grid aspect-square w-14 place-items-center rounded-full bg-gray-100">
-              <FiUploadCloud className="text-2xl text-blue-500" />
+            <div className="grid aspect-square w-14 place-items-center rounded-full bg-pure-greys-800">
+              <FiUploadCloud className="text-2xl text-yellow-50" />
             </div>
-            <p className="mt-2 max-w-[200px] text-center text-sm text-gray-600">
+            <p className="mt-2 max-w-[200px] text-center text-sm text-richblack-200">
               Drag and drop an {!video ? "image" : "video"}, or{" "}
               <button
                 type="button"
                 onClick={handleBrowseClick}
-                className="font-semibold text-blue-500 hover:text-blue-600"
+                className="font-semibold text-2xl text-yellow-50"
               >
                 Browse
               </button>{" "}

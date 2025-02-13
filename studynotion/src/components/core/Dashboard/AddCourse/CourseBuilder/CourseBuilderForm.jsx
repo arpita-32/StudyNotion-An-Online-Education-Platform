@@ -33,11 +33,8 @@ export default function CourseBuilderForm() {
 
   // handle form submission
   const onSubmit = async (data) => {
-    // console.log(data)
-    setLoading(true)
-
-    let result
-
+    setLoading(true);
+    let result;
     if (editSectionName) {
       result = await updateSection(
         {
@@ -46,8 +43,7 @@ export default function CourseBuilderForm() {
           courseId: course._id,
         },
         token
-      )
-      // console.log("edit", result)
+      );
     } else {
       result = await createSection(
         {
@@ -55,16 +51,16 @@ export default function CourseBuilderForm() {
           courseId: course._id,
         },
         token
-      )
+      );
     }
+    console.log("API Response:", result); // Add this line
     if (result) {
-      // console.log("section result", result)
-      dispatch(setCourse(result))
-      setEditSectionName(null)
-      setValue("sectionName", "")
+      dispatch(setCourse(result));
+      setEditSectionName(null);
+      setValue("sectionName", "");
     }
-    setLoading(false)
-  }
+    setLoading(false);
+  };
 
   const cancelEdit = () => {
     setEditSectionName(null)
