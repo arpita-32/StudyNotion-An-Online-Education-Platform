@@ -283,65 +283,59 @@ exports.getAllCourses = async (req, res) => {
 // }
 exports.getCourseDetails = async (req, res) => {
   try {
-    const { courseId } = req.body
-    const courseDetails = await Course.findOne({
-      _id: courseId,
-    })
+    const { courseId } = req.body;
+
+    if (!courseId) {
+      return res.status(400).json({
+        success: false,
+        message: "Course ID is required",
+      });
+    }
+
+    const courseDetails = await Course.findOne({ _id: courseId })
       .populate({
         path: "instructor",
-        populate: {
-          path: "additionalDetails",
-        },
+        populate: { path: "additionalDetails" },
       })
       .populate("category")
       .populate("ratingAndReviews")
       .populate({
         path: "courseContent",
-        populate: {
-          path: "subSection",
-          select: "-videoUrl",
-        },
+        populate: { path: "subSection", select: "-videoUrl" },
       })
-      .exec()
+      .exec();
 
     if (!courseDetails) {
-      return res.status(400).json({
+      return res.status(404).json({
         success: false,
-        message: `Could not find course with id: ${courseId}`,
-      })
+        message: `Course not found with ID: ${courseId}`,
+      });
     }
 
-    // if (courseDetails.status === "Draft") {
-    //   return res.status(403).json({
-    //     success: false,
-    //     message: `Accessing a draft course is forbidden`,
-    //   });
-    // }
+    const totalDurationInSeconds = courseDetails.courseContent.reduce(
+      (acc, content) =>
+        acc +
+        content.subSection.reduce(
+          (sum, subSection) => sum + parseInt(subSection.timeDuration),
+          0
+        ),
+      0
+    );
 
-    let totalDurationInSeconds = 0
-    courseDetails.courseContent.forEach((content) => {
-      content.subSection.forEach((subSection) => {
-        const timeDurationInSeconds = parseInt(subSection.timeDuration)
-        totalDurationInSeconds += timeDurationInSeconds
-      })
-    })
-
-    const totalDuration = convertSecondsToDuration(totalDurationInSeconds)
+    const totalDuration = convertSecondsToDuration(totalDurationInSeconds);
 
     return res.status(200).json({
       success: true,
-      data: {
-        courseDetails,
-        totalDuration,
-      },
-    })
+      data: { courseDetails, totalDuration },
+    });
   } catch (error) {
+    console.error("Error fetching course details:", error);
     return res.status(500).json({
       success: false,
-      message: error.message,
-    })
+      message: "Internal server error",
+    });
   }
-}
+};
 exports.getFullCourseDetails = async (req, res) => {
   try {
     const { courseId } = req.body

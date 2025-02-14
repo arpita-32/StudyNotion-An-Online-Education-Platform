@@ -1,14 +1,13 @@
-import React, { useEffect, useState } from 'react'
-import Footer from '../components/common/Footer'
-import { useParams } from 'react-router-dom'
-import { apiConnector } from '../services/apiconnector';
-import { categories } from '../services/api';
-import { getCatalogaPageData } from '../services/operations/pageAndComponentData';
+import React, { useEffect, useState } from 'react';
+import { useSelector } from "react-redux";
+import { useParams } from 'react-router-dom';
+import Footer from '../components/common/Footer';
 import Course_Card from '../components/core/Catalog/Course_Card';
 import CourseSlider from '../components/core/Catalog/CourseSlider';
-import { useSelector } from "react-redux"
-import Error from "./Error"
-
+import { categories } from '../services/api';
+import { apiConnector } from '../services/apiconnector';
+import { getCatalogPageData } from '../services/operations/pageAndComponentData';
+import Error from "./Error";
 const Catalog = () => {
 
     const { loading } = useSelector((state) => state.profile)
@@ -31,7 +30,7 @@ const Catalog = () => {
     useEffect(() => {
         const getCategoryDetails = async() => {
             try{
-                const res = await getCatalogaPageData(categoryId);
+                const res = await getCatalogPageData(categoryId);
                 console.log("PRinting res: ", res);
                 setCatalogPageData(res);
             }

@@ -1,6 +1,12 @@
 "use strict";
 
+var _require = require("mongoose"),
+    Mongoose = _require.Mongoose;
+
 var Category = require("../models/Category");
+
+var User = require("../models/User"); // Import the User model
+
 
 function getRandomInt(max) {
   return Math.floor(Math.random() * max);
