@@ -13,7 +13,8 @@ var coursesSchema = new mongoose.Schema({
   instructor: {
     type: mongoose.Schema.Types.ObjectId,
     required: true,
-    ref: "user"
+    ref: "User" // Changed from "user" to "User"
+
   },
   whatYouWillLearn: {
     type: String
@@ -44,7 +45,8 @@ var coursesSchema = new mongoose.Schema({
   studentsEnrolled: [{
     type: mongoose.Schema.Types.ObjectId,
     required: true,
-    ref: "user"
+    ref: "User" // Changed from "user" to "User"
+
   }],
   instructions: {
     type: [String]

@@ -116,100 +116,105 @@ exports.categoryPageDetails = function _callee3(req, res) {
             match: {
               status: "Published"
             },
-            populate: "ratingAndReviews"
+            populate: [{
+              path: "ratingAndReviews"
+            }, {
+              path: "instructor",
+              select: "firstName lastName" // Only select necessary fields
+
+            }]
           }).exec());
 
         case 5:
           selectedCategory = _context3.sent;
 
           if (selectedCategory) {
-            _context3.next = 9;
+            _context3.next = 8;
             break;
           }
 
-          console.log("Category not found.");
           return _context3.abrupt("return", res.status(404).json({
             success: false,
             message: "Category not found"
           }));
 
-        case 9:
-          if (!(selectedCategory.courses.length === 0)) {
-            _context3.next = 12;
-            break;
-          }
-
-          console.log("No courses found for the selected category.");
-          return _context3.abrupt("return", res.status(404).json({
-            success: false,
-            message: "No courses found for the selected category."
-          }));
-
-        case 12:
-          _context3.next = 14;
+        case 8:
+          _context3.next = 10;
           return regeneratorRuntime.awrap(Category.find({
             _id: {
               $ne: categoryId
             }
           }));
 
-        case 14:
+        case 10:
           categoriesExceptSelected = _context3.sent;
-          _context3.next = 17;
+          differentCategory = null;
+
+          if (!(categoriesExceptSelected.length > 0)) {
+            _context3.next = 16;
+            break;
+          }
+
+          _context3.next = 15;
           return regeneratorRuntime.awrap(Category.findOne(categoriesExceptSelected[getRandomInt(categoriesExceptSelected.length)]._id).populate({
             path: "courses",
             match: {
               status: "Published"
+            },
+            populate: {
+              path: "instructor",
+              select: "firstName lastName"
             }
           }).exec());
 
-        case 17:
+        case 15:
           differentCategory = _context3.sent;
-          _context3.next = 20;
+
+        case 16:
+          _context3.next = 18;
           return regeneratorRuntime.awrap(Category.find().populate({
             path: "courses",
             match: {
               status: "Published"
             },
             populate: {
-              path: "instructor"
+              path: "instructor",
+              select: "firstName lastName"
             }
           }).exec());
 
-        case 20:
+        case 18:
           allCategories = _context3.sent;
           allCourses = allCategories.flatMap(function (category) {
             return category.courses;
           });
           mostSellingCourses = allCourses.sort(function (a, b) {
             return b.sold - a.sold;
-          }).slice(0, 10); // console.log("mostSellingCourses COURSE", mostSellingCourses)
-
-          res.status(200).json({
+          }).slice(0, 10);
+          return _context3.abrupt("return", res.status(200).json({
             success: true,
             data: {
               selectedCategory: selectedCategory,
               differentCategory: differentCategory,
               mostSellingCourses: mostSellingCourses
             }
-          });
-          _context3.next = 29;
-          break;
+          }));
 
-        case 26:
-          _context3.prev = 26;
+        case 24:
+          _context3.prev = 24;
           _context3.t0 = _context3["catch"](0);
+          console.error("Category page details error:", _context3.t0);
           return _context3.abrupt("return", res.status(500).json({
             success: false,
             message: "Internal server error",
             error: _context3.t0.message
           }));
 
-        case 29:
+        case 28:
         case "end":
           return _context3.stop();
       }
     }
-  }, null, null, [[0, 26]]);
+  }, null, null, [[0, 24]]);
 };
 //# sourceMappingURL=Category.dev.js.map
