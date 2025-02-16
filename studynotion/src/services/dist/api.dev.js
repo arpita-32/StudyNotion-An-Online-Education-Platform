@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.settingsEndpoints = exports.contactusEndpoint = exports.catalogData = exports.categories = exports.ratingsEndpoints = exports.courseEndpoints = exports.studentEndpoints = exports.profileEndpoints = exports.endpoints = void 0;
+exports.settingsEndpoints = exports.contactusEndpoint = exports.catalogData = exports.categories = exports.ratingsEndpoints = exports.courseEndpoints = exports.profileEndpoints = exports.endpoints = void 0;
 var BASE_URL = "http://localhost:4000/api/v1"; // AUTH ENDPOINTS
 
 var endpoints = {
@@ -20,15 +20,14 @@ var profileEndpoints = {
   GET_USER_ENROLLED_COURSES_API: BASE_URL + "/profile/getEnrolledCourses",
   GET_INSTRUCTOR_DATA_API: BASE_URL + "/profile/instructorDashboard"
 }; // STUDENTS ENDPOINTS
+// export const studentEndpoints = {
+//   COURSE_PAYMENT_API: BASE_URL + "/payment/capturePayment",
+//   COURSE_VERIFY_API: BASE_URL + "/payment/verifyPayment",
+//   SEND_PAYMENT_SUCCESS_EMAIL_API: BASE_URL + "/payment/sendPaymentSuccessEmail",
+// }
+// COURSE ENDPOINTS
 
 exports.profileEndpoints = profileEndpoints;
-var studentEndpoints = {
-  COURSE_PAYMENT_API: BASE_URL + "/payment/capturePayment",
-  COURSE_VERIFY_API: BASE_URL + "/payment/verifyPayment",
-  SEND_PAYMENT_SUCCESS_EMAIL_API: BASE_URL + "/payment/sendPaymentSuccessEmail"
-}; // COURSE ENDPOINTS
-
-exports.studentEndpoints = studentEndpoints;
 var courseEndpoints = {
   GET_ALL_COURSE_API: BASE_URL + "/course/getAllCourses",
   COURSE_DETAILS_API: BASE_URL + "/course/getCourseDetails",
