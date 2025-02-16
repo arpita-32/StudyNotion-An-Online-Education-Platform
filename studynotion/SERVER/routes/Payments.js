@@ -1,14 +1,20 @@
-const express = require("express");
-const router = express.Router();
+// Import the required modules
+const express = require("express")
+const router = express.Router()
 
-const {
-    capturePayment,
-    handlePaymentSuccess,
-} = require("../controllers/Payment");
+const {  sendPaymentSuccessEmail } = require("../controllers/Payment")
 
 const { auth, isStudent } = require("../middlewares/auth");
 
-router.post("/capturePayment", auth, isStudent, capturePayment);
-router.post("/paymentSuccess", auth, isStudent, handlePaymentSuccess);
+const { startPayment } = require("../controllers/Payment");
+
+// ********************************************************************************************************controllers**********************************
+// router.post("/capturePayment", auth, isStudent, capturePayments);
+// router.post("/verifyPayment",auth, isStudent, verifyPayment)
+
+// router.post("/sendPaymentSuccessEmail", auth, isStudent, sendPaymentSuccessEmail);
+
+router.post('/create-checkout-session', startPayment);
+
 
 module.exports = router;

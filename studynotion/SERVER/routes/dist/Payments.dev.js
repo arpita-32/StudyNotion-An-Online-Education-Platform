@@ -1,18 +1,24 @@
 "use strict";
 
+// Import the required modules
 var express = require("express");
 
 var router = express.Router();
 
 var _require = require("../controllers/Payment"),
-    capturePayment = _require.capturePayment,
-    handlePaymentSuccess = _require.handlePaymentSuccess;
+    sendPaymentSuccessEmail = _require.sendPaymentSuccessEmail;
 
 var _require2 = require("../middlewares/auth"),
     auth = _require2.auth,
     isStudent = _require2.isStudent;
 
-router.post("/capturePayment", auth, isStudent, capturePayment);
-router.post("/paymentSuccess", auth, isStudent, handlePaymentSuccess);
+var _require3 = require("../controllers/Payment"),
+    startPayment = _require3.startPayment; // ********************************************************************************************************controllers**********************************
+// router.post("/capturePayment", auth, isStudent, capturePayments);
+// router.post("/verifyPayment",auth, isStudent, verifyPayment)
+// router.post("/sendPaymentSuccessEmail", auth, isStudent, sendPaymentSuccessEmail);
+
+
+router.post('/create-checkout-session', startPayment);
 module.exports = router;
 //# sourceMappingURL=Payments.dev.js.map

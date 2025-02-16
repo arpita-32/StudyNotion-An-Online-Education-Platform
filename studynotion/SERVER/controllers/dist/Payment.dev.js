@@ -1,220 +1,234 @@
 "use strict";
 
-var stripe = require("stripe")(process.env.STRIPE_SECRET_KEY); // Use your Stripe secret key
+require('dotenv').config();
 
+var stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
-var Course = require("../models/Course");
-
-var User = require("../models/User");
-
-var mailSender = require("../utils/mailSender");
-
-var _require = require("../mail/courseEnrollmentEmail"),
+var _require = require('../mail/courseEnrollmentEmail'),
     courseEnrollmentEmail = _require.courseEnrollmentEmail;
 
-var mongoose = require("mongoose"); // Capture Payment
+var Course = require('../models/Course');
 
+var CourseProgress = require('../models/CourseProgress');
 
-exports.capturePayment = function _callee(req, res) {
-  var course_id, userId, course, uid, amount, currency, paymentIntent;
+var User = require('../models/User');
+
+var _require2 = require('../utils/mailSender'),
+    sendEmail = _require2.sendEmail;
+
+var userID, courses;
+
+exports.startPayment = function _callee(req, resp) {
+  var products, userId, lineItem, session;
   return regeneratorRuntime.async(function _callee$(_context) {
     while (1) {
       switch (_context.prev = _context.next) {
         case 0:
-          course_id = req.body.course_id;
-          userId = req.user.id;
-
-          if (course_id) {
-            _context.next = 4;
-            break;
-          }
-
-          return _context.abrupt("return", res.status(400).json({
-            success: false,
-            message: "Please provide a valid course ID"
+          _context.prev = 0;
+          products = req.body.products;
+          courses = products;
+          userId = req.body.userId;
+          userID = userId;
+          lineItem = products.map(function (product) {
+            return {
+              price_data: {
+                currency: 'inr',
+                product_data: {
+                  name: product.courseName
+                },
+                unit_amount: product.price * 100
+              },
+              quantity: 1
+            };
+          });
+          _context.next = 8;
+          return regeneratorRuntime.awrap(stripe.checkout.sessions.create({
+            mode: 'payment',
+            payment_method_types: ['card'],
+            line_items: lineItem,
+            success_url: 'https://study-notion-frontend-nine-sable.vercel.app/dashboard/enrolled-courses',
+            cancel_url: 'https://study-notion-frontend-nine-sable.vercel.app/dashboard/cart'
           }));
 
-        case 4:
-          _context.prev = 4;
-          _context.next = 7;
-          return regeneratorRuntime.awrap(Course.findById(course_id));
-
-        case 7:
-          course = _context.sent;
-
-          if (course) {
-            _context.next = 10;
-            break;
-          }
-
-          return _context.abrupt("return", res.status(404).json({
-            success: false,
-            message: "Could not find the course"
-          }));
-
-        case 10:
-          uid = new mongoose.Types.ObjectId(userId);
-
-          if (!course.studentsEnrolled.includes(uid)) {
-            _context.next = 13;
-            break;
-          }
-
-          return _context.abrupt("return", res.status(400).json({
-            success: false,
-            message: "Student is already enrolled"
-          }));
-
-        case 13:
-          _context.next = 19;
+        case 8:
+          session = _context.sent;
+          resp.json({
+            id: session.id
+          });
+          _context.next = 17;
           break;
 
-        case 15:
-          _context.prev = 15;
-          _context.t0 = _context["catch"](4);
-          console.error(_context.t0);
-          return _context.abrupt("return", res.status(500).json({
+        case 12:
+          _context.prev = 12;
+          _context.t0 = _context["catch"](0);
+          console.log('error occured  while starting payment:- ', _context.t0.message);
+          console.error(_context.t0.message);
+          return _context.abrupt("return", resp.status(500).json({
             success: false,
-            message: "Error retrieving course details"
+            message: _context.t0.message
           }));
 
-        case 19:
-          amount = course.price * 100; // Stripe processes amounts in cents
-
-          currency = "INR";
-          _context.prev = 21;
-          _context.next = 24;
-          return regeneratorRuntime.awrap(stripe.paymentIntents.create({
-            amount: amount,
-            currency: currency,
-            metadata: {
-              courseId: course_id,
-              userId: userId
-            }
-          }));
-
-        case 24:
-          paymentIntent = _context.sent;
-          return _context.abrupt("return", res.status(200).json({
-            success: true,
-            clientSecret: paymentIntent.client_secret,
-            courseName: course.courseName,
-            courseDescription: course.courseDescription,
-            thumbnail: course.thumbnail,
-            amount: paymentIntent.amount,
-            currency: paymentIntent.currency
-          }));
-
-        case 28:
-          _context.prev = 28;
-          _context.t1 = _context["catch"](21);
-          console.error(_context.t1);
-          return _context.abrupt("return", res.status(500).json({
-            success: false,
-            message: "Could not initiate payment"
-          }));
-
-        case 32:
+        case 17:
         case "end":
           return _context.stop();
       }
     }
-  }, null, null, [[4, 15], [21, 28]]);
-}; // Handle Payment Completion
+  }, null, null, [[0, 12]]);
+};
 
-
-exports.handlePaymentSuccess = function _callee2(req, res) {
-  var _req$body, course_id, user_id, enrolledCourse, enrolledStudent, emailResponse;
-
+exports.verifySignature = function _callee2(req, resp) {
+  var signature, event;
   return regeneratorRuntime.async(function _callee2$(_context2) {
     while (1) {
       switch (_context2.prev = _context2.next) {
         case 0:
-          _req$body = req.body, course_id = _req$body.course_id, user_id = _req$body.user_id;
+          signature = req.headers['stripe-signature'];
+          _context2.prev = 1;
+          event = stripe.webhooks.constructEvent(req.body, signature, process.env.STRIPE_WEBHOOK_SECRET);
+          _context2.next = 10;
+          break;
 
-          if (!(!course_id || !user_id)) {
-            _context2.next = 3;
+        case 5:
+          _context2.prev = 5;
+          _context2.t0 = _context2["catch"](1);
+          console.log('error occured while verifying signature:- ', _context2.t0.message);
+          console.error(_context2.t0.message);
+          return _context2.abrupt("return", resp.status(500).json({
+            success: false,
+            message: _context2.t0.message
+          }));
+
+        case 10:
+          if (!(event.type === 'payment_intent.succeeded')) {
+            _context2.next = 16;
             break;
           }
 
-          return _context2.abrupt("return", res.status(400).json({
-            success: false,
-            message: "Course ID and User ID are required"
-          }));
+          _context2.next = 13;
+          return regeneratorRuntime.awrap(enrollStudent(userID, courses, resp));
 
-        case 3:
-          _context2.prev = 3;
-          _context2.next = 6;
-          return regeneratorRuntime.awrap(Course.findByIdAndUpdate(course_id, {
-            $push: {
-              studentsEnrolled: user_id
-            }
-          }, {
-            "new": true
-          }));
-
-        case 6:
-          enrolledCourse = _context2.sent;
-
-          if (enrolledCourse) {
-            _context2.next = 9;
-            break;
-          }
-
-          return _context2.abrupt("return", res.status(404).json({
-            success: false,
-            message: "Course not found"
-          }));
-
-        case 9:
-          _context2.next = 11;
-          return regeneratorRuntime.awrap(User.findByIdAndUpdate(user_id, {
-            $push: {
-              courses: course_id
-            }
-          }, {
-            "new": true
-          }));
-
-        case 11:
-          enrolledStudent = _context2.sent;
-
-          if (enrolledStudent) {
-            _context2.next = 14;
-            break;
-          }
-
-          return _context2.abrupt("return", res.status(404).json({
-            success: false,
-            message: "User not found"
-          }));
-
-        case 14:
-          _context2.next = 16;
-          return regeneratorRuntime.awrap(mailSender(enrolledStudent.email, "Course Enrollment Success", courseEnrollmentEmail(enrolledCourse.courseName)));
+        case 13:
+          resp.json({
+            recieved: true
+          });
+          _context2.next = 18;
+          break;
 
         case 16:
-          emailResponse = _context2.sent;
-          console.log("Email sent: ", emailResponse);
-          return _context2.abrupt("return", res.status(200).json({
-            success: true,
-            message: "Payment successful and course enrollment updated"
-          }));
-
-        case 21:
-          _context2.prev = 21;
-          _context2.t0 = _context2["catch"](3);
-          console.error(_context2.t0);
-          return _context2.abrupt("return", res.status(500).json({
+          console.log('unhandled event type');
+          return _context2.abrupt("return", resp.status(400).json({
             success: false,
-            message: "Error processing payment"
+            message: 'Unhandled event type'
           }));
 
-        case 25:
+        case 18:
         case "end":
           return _context2.stop();
       }
     }
-  }, null, null, [[3, 21]]);
+  }, null, null, [[1, 5]]);
+};
+
+var enrollStudent = function enrollStudent(userID, courses, resp) {
+  var user;
+  return regeneratorRuntime.async(function enrollStudent$(_context4) {
+    while (1) {
+      switch (_context4.prev = _context4.next) {
+        case 0:
+          console.log('userId is: -', userID);
+          console.log('courses are: -', courses);
+          _context4.prev = 2;
+          _context4.next = 5;
+          return regeneratorRuntime.awrap(User.findById(userID));
+
+        case 5:
+          user = _context4.sent;
+          courses.forEach(function _callee3(course) {
+            var updatedCourse, Progress, updatedUser, mailresponse;
+            return regeneratorRuntime.async(function _callee3$(_context3) {
+              while (1) {
+                switch (_context3.prev = _context3.next) {
+                  case 0:
+                    if (!course.studentsEnrolled.includes(user._id)) {
+                      _context3.next = 5;
+                      break;
+                    }
+
+                    console.log("user is already enrolled in the course having coourseId : - ".concat(course._id));
+                    return _context3.abrupt("return");
+
+                  case 5:
+                    _context3.next = 7;
+                    return regeneratorRuntime.awrap(Course.findByIdAndUpdate(course._id, {
+                      $push: {
+                        studentsEnrolled: userID
+                      }
+                    }, {
+                      "new": true
+                    }));
+
+                  case 7:
+                    updatedCourse = _context3.sent;
+
+                    if (!updatedCourse) {
+                      console.log('course not found');
+                    }
+
+                    console.log('updated course after enrolling looks like:- ', updatedCourse);
+                    _context3.next = 12;
+                    return regeneratorRuntime.awrap(CourseProgress.create({
+                      courseID: updatedCourse._id,
+                      userId: userID,
+                      completedVideos: []
+                    }));
+
+                  case 12:
+                    Progress = _context3.sent;
+                    _context3.next = 15;
+                    return regeneratorRuntime.awrap(User.findByIdAndUpdate(userID, {
+                      $push: {
+                        courses: course._id,
+                        courseProgress: Progress._id
+                      }
+                    }, {
+                      "new": true
+                    }));
+
+                  case 15:
+                    updatedUser = _context3.sent;
+                    console.log("Enrolled student: ", updatedUser); //sending mail to the user
+
+                    _context3.next = 19;
+                    return regeneratorRuntime.awrap(sendEmail(updatedUser.email, 'Course Enrollment Confirmation', courseEnrollmentEmail(course.courseName, updatedUser.firstName)));
+
+                  case 19:
+                    mailresponse = _context3.sent;
+
+                    if (!mailresponse) {
+                      console.log('mail couldnot be sent');
+                    }
+
+                  case 21:
+                  case "end":
+                    return _context3.stop();
+                }
+              }
+            });
+          });
+          _context4.next = 13;
+          break;
+
+        case 9:
+          _context4.prev = 9;
+          _context4.t0 = _context4["catch"](2);
+          console.log('error occured while enrolling student in courses:- ', _context4.t0.message);
+          console.error(_context4.t0.message);
+
+        case 13:
+        case "end":
+          return _context4.stop();
+      }
+    }
+  }, null, null, [[2, 9]]);
 };
 //# sourceMappingURL=Payment.dev.js.map
