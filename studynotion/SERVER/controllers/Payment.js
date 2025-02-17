@@ -8,48 +8,42 @@ const { sendEmail } = require('../utils/mailSender');
 
 let userID,courses;
 
-exports. startPayment = async(req,resp) => {
-    try{
-         
-        const {products} = req.body;
-        courses = products;
-        const {userId} = req.body; 
-        userID = userId;
+exports.startPayment = async (req, resp) => {
+    try {
+        const { products } = req.body;
+        const { userId } = req.body;
 
         const lineItem = products.map((product) => {
             return {
-                price_data:{
-                   currency:'inr',
-                   product_data:{
-                      name:product.courseName
-                   },
-                   unit_amount: product.price*100
+                price_data: {
+                    currency: 'inr',
+                    product_data: {
+                        name: product.courseName,
+                    },
+                    unit_amount: product.price * 100,
                 },
-                quantity:1
-            }
-        })
+                quantity: 1,
+            };
+        });
 
         const session = await stripe.checkout.sessions.create({
-            mode:'payment',
-            payment_method_types:['card'],
-            line_items:lineItem,
-            success_url:'https://study-notion-frontend-nine-sable.vercel.app/dashboard/enrolled-courses',
-            cancel_url:'https://study-notion-frontend-nine-sable.vercel.app/dashboard/cart'
-        })
+            mode: 'payment',
+            payment_method_types: ['card'],
+            line_items: lineItem,
+            success_url: 'https://study-notion-frontend-nine-sable.vercel.app/dashboard/enrolled-courses',
+            cancel_url: 'https://study-notion-frontend-nine-sable.vercel.app/dashboard/cart',
+        });
 
-        resp.json({id:session.id});
-
-    }catch(err){
-        console.log('error occured  while starting payment:- ',err.message);
-        console.error(err.message);
-        return resp.status(500).json({
-            success:false,
-            message:err.message
-        })
+        resp.json({ id: session.id }); // Ensure the session ID is returned
+    } catch (err) {
+        console.error('Error occurred while starting payment:', err.message);
+        resp.status(500).json({
+            success: false,
+            message: err.message,
+        });
     }
-}
-
-exports .  verifySignature = async(req, resp) => {
+};
+exports . verifySignature = async(req, resp) => {
     
         const signature = req.headers['stripe-signature'];
         let event;
