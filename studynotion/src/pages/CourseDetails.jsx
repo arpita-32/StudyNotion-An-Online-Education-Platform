@@ -4,7 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import ConfirmationModal from "../components/common/ConfirmationModal";
 import Footer from '../components/common/Footer';
 import RatingStars from '../components/common/RatingStars';
-import CourseBuyCard from '../components/core/CoursePage/CourseBuyCard';
+import CourseBuyCard from '../components/core/Course/CourseDetailsCard';
 import { fetchCourseDetails } from '../services/operations/courseDetailsAPI'; // Updated import
 import GetAvgRating from '../utils/avgRating';
 

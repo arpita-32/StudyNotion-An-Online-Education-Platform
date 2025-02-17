@@ -1,120 +1,114 @@
-import React from "react"
-import copy from "copy-to-clipboard"
-import { toast } from "react-hot-toast"
-import { BsFillCaretRightFill } from "react-icons/bs"
-import { FaShareSquare } from "react-icons/fa"
-import { useDispatch, useSelector } from "react-redux"
-import { useNavigate } from "react-router-dom"
-
-import { addToCart } from "../../../slices/cartSlice"
-import { ACCOUNT_TYPE } from "../../../utils/constants"
+import { loadStripe } from '@stripe/stripe-js';
+import React from 'react';
+import toast from 'react-hot-toast';
+import { FaShareSquare } from "react-icons/fa";
+import { MdArrowRight } from "react-icons/md";
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { addToCart } from '../../../slices/cartSlice';
 
 
-function CourseDetailsCard({ course, setConfirmationModal, handleBuyCourse }) {
-  const { user } = useSelector((state) => state.profile)
-  const { token } = useSelector((state) => state.auth)
-  const navigate = useNavigate()
-  const dispatch = useDispatch()
+const CourseDetailsCard = ({course,setConfirmationModal}) => {
 
-  const {
-    thumbnail: ThumbnailImage,
-    price: CurrentPrice,
-    _id: courseId,
-  } = course
+
+  const {token} = useSelector((state)=> state.auth);
+  const {user} = useSelector((state)=> state.profile);
+
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+
+  const {cart} = useSelector((state)=>state.cart);
+
+  const handleBuyCourse = async () => {
+    if (token && user.accountType === 'Student') {
+        const stripe = await loadStripe("pk_test_51QgUBjAEDU2aKHD90SHrTkm1VMJWtOzlApsWd9K3PAFOhSSUAyUHX5K09HNcf1GBJG4XH8DUygTVODUR4p0MNGzn00xbXYGQFW");
+
+        const body = {
+            products: [{ ...course }],
+            userId: user._id,
+        };
+
+        const headers = {
+            "Content-Type": "application/json",
+        };
+
+        const response = await fetch(`${process.env.REACT_APP_BASE_URL}/payment/create-checkout-session`, {
+            method: "POST",
+            headers: headers,
+            body: JSON.stringify(body),
+        });
+
+        const session = await response.json();
+
+        if (session.id) {
+            const result = await stripe.redirectToCheckout({
+                sessionId: session.id,
+            });
+
+            if (result.error) {
+                console.log(result.error);
+            }
+        } else {
+            console.error('Failed to retrieve session ID');
+        }
+    } else {
+        setConfirmationModal(true);
+    }
+};
 
   const handleShare = () => {
-    copy(window.location.href)
-    toast.success("Link copied to clipboard")
+    navigator.clipboard.writeText(window.location.href);
+    toast.success('Link copied to your clipboard')
   }
 
-  const handleAddToCart = () => {
-    if (user && user?.accountType === ACCOUNT_TYPE.INSTRUCTOR) {
-      toast.error("You are an Instructor. You can't buy a course.")
-      return
+  const addToCartHandler = () => {
+    if(user && user.accountType === 'Student'){
+        dispatch(addToCart(course))
     }
-    if (token) {
-      dispatch(addToCart(course))
-      return
+    else{
+        toast.error("Only student are allowed to buy courses")
     }
-    setConfirmationModal({
-      text1: "You are not logged in!",
-      text2: "Please login to add To Cart",
-      btn1Text: "Login",
-      btn2Text: "Cancel",
-      btn1Handler: () => navigate("/login"),
-      btn2Handler: () => setConfirmationModal(null),
-    })
   }
-
-  // console.log("Student already enrolled ", course?.studentsEnroled, user?._id)
 
   return (
-    <>
-      <div
-        className={`flex flex-col gap-4 rounded-md bg-richblack-700 p-4 text-richblack-5`}
-      >
-        {/* Course Image */}
-        <img
-          src={ThumbnailImage}
-          alt={course?.courseName}
-          className="max-h-[300px] min-h-[180px] w-[400px] overflow-hidden rounded-2xl object-cover md:max-w-full"
-        />
-
-        <div className="px-4">
-          <div className="space-x-3 pb-4 text-3xl font-semibold">
-            Rs. {CurrentPrice}
-          </div>
-          <div className="flex flex-col gap-4">
-            <button
-              className="yellowButton"
-              onClick={
-                user && course?.studentsEnrolled.includes(user?._id)
-                  ? () => navigate("/dashboard/enrolled-courses")
-                  : handleBuyCourse
-              }
-            >
-              {user && course?.studentsEnrolled.includes(user?._id)
-                ? "Go To Course"
-                : "Buy Now"}
-            </button>
-            {(!user || !course?.studentsEnrolled.includes(user?._id)) && (
-              <button onClick={handleAddToCart} className="blackButton">
-                Add to Cart
-              </button>
-            )}
-          </div>
-          <div>
-            <p className="pb-3 pt-6 text-center text-sm text-richblack-25">
-              30-Day Money-Back Guarantee
-            </p>
-          </div>
-
-          <div className={``}>
-            <p className={`my-2 text-xl font-semibold `}>
-              This Course Includes :
-            </p>
-            <div className="flex flex-col gap-3 text-sm text-caribbeangreen-100">
-              {course?.instructions?.map((item, i) => {
-                return (
-                  <p className={`flex gap-2`} key={i}>
-                    <BsFillCaretRightFill />
-                    <span>{item}</span>
-                  </p>
-                )
-              })}
-            </div>
-          </div>
-          <div className="text-center">
-            <button
-              className="mx-auto flex items-center gap-2 py-6 text-yellow-100 "
-              onClick={handleShare}
-            >
-              <FaShareSquare size={15} /> Share
-            </button>
-          </div>
+    <div className='text-white flex flex-col gap-2'>
+        <div className='flex flex-col gap-2'>
+            <img src={course?.thumbnail} alt='courseImg' className='rounded-lg'/>
+            <h1 className='self-start text-2xl font-bold' >{`Rs. ${course?.price}`}</h1>
         </div>
-      </div>
-    </>
+        <div className='flex flex-col gap-3'>
+            <button  className='bg-yellow-50 w-full text-black  py-2 px-4 rounded-md' 
+            onClick={
+                user && course?.studentsEnrolled?.includes(user?._id) ? () => {navigate('/dashboard/enrolled-courses')}  : handleBuyCourse
+            } >
+                {
+                    user && course?.studentsEnrolled?.includes(user?._id) ? 'Go to Course' : 'Buy Now'
+                }
+            </button>
+               {
+                 user && course?.studentsEnrolled?.includes(user?._id) ? null :
+                 
+                    cart?.find((courseInCart) => courseInCart?._id === course?._id) ? (<button onClick={() => {navigate('/dashboard/cart')}} className='bg-richblack-800 rounded-md w-full px-3 py-2'>View in Cart</button>) : (<button onClick={addToCartHandler} className='bg-richblack-800 rounded-md w-full px-3 py-2'>Add to Cart</button>)
+                 
+               }
+        </div>
+        <p className='self-center text-richblack-300'>30 Days Money Back Guarentee</p>
+        <div>
+            <h2 className='text-lg '>This Course Includes:- </h2>
+            <ul className='text-caribbeangreen-200 flex flex-col gap-2'>
+                <li className='flex gap-1 items-center'><MdArrowRight /><span>8 hours of lectures</span></li>
+                <li className='flex gap-1 items-center'><MdArrowRight /><span>End to end projects</span></li>
+            </ul>
+        </div>
+
+        
+            <button className='mt-3 flex gap-3 items-center text-yellow-100 justify-center ' onClick={handleShare}>
+            <FaShareSquare />
+                <span>Share</span>
+            </button>
+        
+    </div>
   )
 }
 

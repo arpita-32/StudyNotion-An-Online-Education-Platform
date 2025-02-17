@@ -26,9 +26,7 @@ exports.startPayment = function _callee(req, resp) {
         case 0:
           _context.prev = 0;
           products = req.body.products;
-          courses = products;
           userId = req.body.userId;
-          userID = userId;
           lineItem = products.map(function (product) {
             return {
               price_data: {
@@ -41,7 +39,7 @@ exports.startPayment = function _callee(req, resp) {
               quantity: 1
             };
           });
-          _context.next = 8;
+          _context.next = 6;
           return regeneratorRuntime.awrap(stripe.checkout.sessions.create({
             mode: 'payment',
             payment_method_types: ['card'],
@@ -50,30 +48,30 @@ exports.startPayment = function _callee(req, resp) {
             cancel_url: 'https://study-notion-frontend-nine-sable.vercel.app/dashboard/cart'
           }));
 
-        case 8:
+        case 6:
           session = _context.sent;
           resp.json({
             id: session.id
-          });
-          _context.next = 17;
+          }); // Ensure the session ID is returned
+
+          _context.next = 14;
           break;
 
-        case 12:
-          _context.prev = 12;
+        case 10:
+          _context.prev = 10;
           _context.t0 = _context["catch"](0);
-          console.log('error occured  while starting payment:- ', _context.t0.message);
-          console.error(_context.t0.message);
-          return _context.abrupt("return", resp.status(500).json({
+          console.error('Error occurred while starting payment:', _context.t0.message);
+          resp.status(500).json({
             success: false,
             message: _context.t0.message
-          }));
+          });
 
-        case 17:
+        case 14:
         case "end":
           return _context.stop();
       }
     }
-  }, null, null, [[0, 12]]);
+  }, null, null, [[0, 10]]);
 };
 
 exports.verifySignature = function _callee2(req, resp) {
