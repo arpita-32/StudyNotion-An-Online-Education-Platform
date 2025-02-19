@@ -13,10 +13,12 @@ var _require2 = require("../middlewares/auth"),
     isStudent = _require2.isStudent;
 
 var _require3 = require("../controllers/Payment"),
-    startPayment = _require3.startPayment,
-    verifySignature = _require3.verifySignature;
+    startPayment = _require3.startPayment; // ********************************************************************************************************controllers**********************************
+// router.post("/capturePayment", auth, isStudent, capturePayments);
+// router.post("/verifyPayment",auth, isStudent, verifyPayment)
+// router.post("/sendPaymentSuccessEmail", auth, isStudent, sendPaymentSuccessEmail);
 
-router.post("/create-checkout-session", startPayment);
-router.post("/webhook", verifySignature);
+
+router.post('/create-checkout-session', startPayment);
 module.exports = router;
 //# sourceMappingURL=Payments.dev.js.map
