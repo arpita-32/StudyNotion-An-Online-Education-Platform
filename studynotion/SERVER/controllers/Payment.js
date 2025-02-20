@@ -7,7 +7,6 @@ const User = require('../models/User');
 const { sendEmail } = require('../utils/mailSender');
 
 let userID,courses;
-
 exports.startPayment = async (req, res) => {
     try {
         const { products, userId } = req.body;
@@ -18,11 +17,18 @@ exports.startPayment = async (req, res) => {
             return res.status(400).json({ success: false, message: "No products provided for payment." });
         }
 
+        for (const product of products) {
+            if (typeof product.price !== 'number' || isNaN(product.price)) {
+                console.error("❌ Invalid product price:", product);
+                return res.status(400).json({ success: false, message: "Invalid price for product: " + product.courseName });
+            }
+        }
+
         const lineItems = products.map((product) => ({
             price_data: {
                 currency: "inr",
-                product_data: { name: product.courseName },
-                unit_amount: product.price * 100,
+                product_data: { name: product.courseName || "Unknown Course" },
+                unit_amount: Math.round(product.price * 100),
             },
             quantity: 1,
         }));
@@ -38,7 +44,7 @@ exports.startPayment = async (req, res) => {
             metadata: { userID: userId, courses: JSON.stringify(products.map((p) => p.courseId)) },
         });
 
-        console.log("Stripe Checkout Session Created:", session);
+        console.log("✅ Stripe Checkout Session Created:", session);
         res.json({ id: session.id });
     } catch (err) {
         console.error("❌ Error in payment session creation:", err.message);
@@ -46,7 +52,7 @@ exports.startPayment = async (req, res) => {
     }
 };
 
-exports .  verifySignature = async(req, resp) => {
+exports.verifySignature = async(req, resp) => {
     
         const signature = req.headers['stripe-signature'];
         let event;

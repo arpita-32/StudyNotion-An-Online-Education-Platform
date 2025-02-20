@@ -13,11 +13,7 @@ var _require2 = require("../middlewares/auth"),
     isStudent = _require2.isStudent;
 
 var _require3 = require("../controllers/Payment"),
-    startPayment = _require3.startPayment; // ********************************************************************************************************controllers**********************************
-// router.post("/capturePayment", auth, isStudent, capturePayments);
-// router.post("/verifyPayment",auth, isStudent, verifyPayment)
-// router.post("/sendPaymentSuccessEmail", auth, isStudent, sendPaymentSuccessEmail);
-
+    startPayment = _require3.startPayment;
 
 router.post('/create-checkout-session', startPayment);
 module.exports = router;

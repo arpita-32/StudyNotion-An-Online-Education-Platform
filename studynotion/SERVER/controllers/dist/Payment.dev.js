@@ -19,7 +19,7 @@ var _require2 = require('../utils/mailSender'),
 var userID, courses;
 
 exports.startPayment = function _callee(req, res) {
-  var _req$body, products, userId, lineItems, session;
+  var _req$body, products, userId, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, product, lineItems, session;
 
   return regeneratorRuntime.async(function _callee$(_context) {
     while (1) {
@@ -41,20 +41,85 @@ exports.startPayment = function _callee(req, res) {
           }));
 
         case 6:
+          _iteratorNormalCompletion = true;
+          _didIteratorError = false;
+          _iteratorError = undefined;
+          _context.prev = 9;
+          _iterator = products[Symbol.iterator]();
+
+        case 11:
+          if (_iteratorNormalCompletion = (_step = _iterator.next()).done) {
+            _context.next = 19;
+            break;
+          }
+
+          product = _step.value;
+
+          if (!(typeof product.price !== 'number' || isNaN(product.price))) {
+            _context.next = 16;
+            break;
+          }
+
+          console.error("❌ Invalid product price:", product);
+          return _context.abrupt("return", res.status(400).json({
+            success: false,
+            message: "Invalid price for product: " + product.courseName
+          }));
+
+        case 16:
+          _iteratorNormalCompletion = true;
+          _context.next = 11;
+          break;
+
+        case 19:
+          _context.next = 25;
+          break;
+
+        case 21:
+          _context.prev = 21;
+          _context.t0 = _context["catch"](9);
+          _didIteratorError = true;
+          _iteratorError = _context.t0;
+
+        case 25:
+          _context.prev = 25;
+          _context.prev = 26;
+
+          if (!_iteratorNormalCompletion && _iterator["return"] != null) {
+            _iterator["return"]();
+          }
+
+        case 28:
+          _context.prev = 28;
+
+          if (!_didIteratorError) {
+            _context.next = 31;
+            break;
+          }
+
+          throw _iteratorError;
+
+        case 31:
+          return _context.finish(28);
+
+        case 32:
+          return _context.finish(25);
+
+        case 33:
           lineItems = products.map(function (product) {
             return {
               price_data: {
                 currency: "inr",
                 product_data: {
-                  name: product.courseName
+                  name: product.courseName || "Unknown Course"
                 },
-                unit_amount: product.price * 100
+                unit_amount: Math.round(product.price * 100)
               },
               quantity: 1
             };
           });
           console.log("Generated Line Items:", lineItems);
-          _context.next = 10;
+          _context.next = 37;
           return regeneratorRuntime.awrap(stripe.checkout.sessions.create({
             mode: "payment",
             payment_method_types: ["card"],
@@ -69,30 +134,30 @@ exports.startPayment = function _callee(req, res) {
             }
           }));
 
-        case 10:
+        case 37:
           session = _context.sent;
-          console.log("Stripe Checkout Session Created:", session);
+          console.log("✅ Stripe Checkout Session Created:", session);
           res.json({
             id: session.id
           });
-          _context.next = 19;
+          _context.next = 46;
           break;
 
-        case 15:
-          _context.prev = 15;
-          _context.t0 = _context["catch"](0);
-          console.error("❌ Error in payment session creation:", _context.t0.message);
+        case 42:
+          _context.prev = 42;
+          _context.t1 = _context["catch"](0);
+          console.error("❌ Error in payment session creation:", _context.t1.message);
           res.status(500).json({
             success: false,
-            message: _context.t0.message
+            message: _context.t1.message
           });
 
-        case 19:
+        case 46:
         case "end":
           return _context.stop();
       }
     }
-  }, null, null, [[0, 15]]);
+  }, null, null, [[0, 42], [9, 21, 25, 33], [26,, 28, 32]]);
 };
 
 exports.verifySignature = function _callee2(req, resp) {

@@ -8,11 +8,7 @@ const { auth, isStudent } = require("../middlewares/auth");
 
 const { startPayment } = require("../controllers/Payment");
 
-// ********************************************************************************************************controllers**********************************
-// router.post("/capturePayment", auth, isStudent, capturePayments);
-// router.post("/verifyPayment",auth, isStudent, verifyPayment)
 
-// router.post("/sendPaymentSuccessEmail", auth, isStudent, sendPaymentSuccessEmail);
 
 router.post('/create-checkout-session', startPayment);
 
