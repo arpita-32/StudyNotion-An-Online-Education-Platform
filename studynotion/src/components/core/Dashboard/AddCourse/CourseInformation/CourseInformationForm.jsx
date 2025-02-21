@@ -1,294 +1,399 @@
-import React, { useEffect, useState } from 'react';
-import { useForm } from "react-hook-form";
-import toast from 'react-hot-toast';
-import { HiOutlineCurrencyRupee } from "react-icons/hi";
+import React, { useState,useEffect, useRef } from 'react'
+import { useForm } from 'react-hook-form'
+import { useDispatch, useSelector } from 'react-redux'
+import { HiOutlineCurrencyRupee } from "react-icons/hi2";
+import { RxCross2 } from "react-icons/rx";
+import { getAllCategories } from '../../../../../services/operations/courseDetailsAPI';
+import ImageUploader  from './ImageUploader';
+import { setStep } from '../../../../../slices/courseSlice';
+import IconBtn from "../../../../common/IconBtn"
 import { MdNavigateNext } from "react-icons/md";
-import { useDispatch, useSelector } from 'react-redux';
-import { addCourseDetails, editCourseDetails, fetchCourseCategories } from '../../../../../services/operations/courseDetailsAPI';
-import { setCourse, setStep } from "../../../../../slices/courseSlice";
-import { COURSE_STATUS } from "../../../../../utils/constants";
-import IconBtn from "../../../../common/IconBtn";
-import Upload from "../Upload";
-import ChipInput from "./ChipInput";
-import RequirementField from "./RequirementField";
+import toast from 'react-hot-toast';
+import { COURSE_STATUS } from '../../../../../utils/constants';
+import { createCourse } from '../../../../../services/operations/courseDetailsAPI';
+import { setCourse } from '../../../../../slices/courseSlice';
+import { editCourseDetails } from '../../../../../services/operations/courseDetailsAPI';
 
+const CourseInformationForm = () => {
 
-export default function CourseInformationForm() {
-  const {
+  //statevariable for thumnail formdata
+  const [ThumbnailFormData, setThumbnailFormData] = useState(null);
+
+   const {
     register,
     handleSubmit,
     setValue,
     getValues,
-    formState: { errors },
-  } = useForm()
+    formState: {errors}
+   } = useForm();
 
-  const dispatch = useDispatch()
-  const { token } = useSelector((state) => state.auth)
-  const { course, editCourse } = useSelector((state) => state.course)
-  const [loading, setLoading] = useState(false)
-  const [courseCategories, setCourseCategories] = useState([])
+   //acquiring token to send it in header for authentication and authorisation
+   const {token} = useSelector((state)=> state.auth);
+   //acquiring course state from the courseSlice
+   const { course,editCourse } = useSelector((state) => state.course);
+   //state variable for loader
+   const [loading, setloading] = useState(false);
+   //during creating course we have to select a category from our available categories that time so we will fetch categories there and we have to store those in a place so we will do that in a state variable
+   const [courseCategories, setCourseCategories] = useState([]);
 
-  useEffect(() => {
-    const getCategories = async () => {
-      setLoading(true)
-      const categories = await fetchCourseCategories()
-      if (categories.length > 0) {
-        // console.log("categories", categories)
-        setCourseCategories(categories)
+   //so lets bring those categories by making request to the backend through service layer
+
+  const fetchAllCategories = async () => {
+    setloading(true);
+    try {
+      const result = await getAllCategories(token);
+      if(result){
+        setCourseCategories(result);
       }
-      setLoading(false)
+    } catch (error) {
+      console.log("Error in fetching categories", error);
+    } finally {
+      setloading(false);
     }
-    // if form is in edit mode
-    if (editCourse) {
-      // console.log("data populated", editCourse)
-      setValue("courseTitle", course.courseName)
-      setValue("courseShortDesc", course.courseDescription)
-      setValue("coursePrice", course.price)
-      setValue("courseTags", course.tag)
-      setValue("courseBenefits", course.whatYouWillLearn)
-      setValue("courseCategory", course.category)
-      setValue("courseRequirements", course.instructions)
-      setValue("courseImage", course.thumbnail)
-    }
-    getCategories()
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  const isFormUpdated = () => {
-    const currentValues = getValues()
-    // console.log("changes after editing form values:", currentValues)
-    if (
-      currentValues.courseTitle !== course.courseName ||
-      currentValues.courseShortDesc !== course.courseDescription ||
-      currentValues.coursePrice !== course.price ||
-      currentValues.courseTags.toString() !== course.tag.toString() ||
-      currentValues.courseBenefits !== course.whatYouWillLearn ||
-      currentValues.courseCategory._id !== course.category._id ||
-      currentValues.courseRequirements.toString() !==
-        course.instructions.toString() ||
-      currentValues.courseImage !== course.thumbnail
-    ) {
-      return true
-    }
-    return false
   }
 
-  //   handle next button click
-  const onSubmit = async (data) => {
-    // console.log(data)
+  //as i need to get these without any user interaction so i will use useEffect hook
+   useEffect(() => {
+     fetchAllCategories();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+   },[])
 
-    if (editCourse) {
-      // const currentValues = getValues()
-      // console.log("changes after editing form values:", currentValues)
-      // console.log("now course:", course)
-      // console.log("Has Form Changed:", isFormUpdated())
-      if (isFormUpdated()) {
-        const currentValues = getValues()
-        const formData = new FormData()
-        // console.log(data)
-        formData.append("courseId", course._id)
-        if (currentValues.courseTitle !== course.courseName) {
-          formData.append("courseName", data.courseTitle)
-        }
-        if (currentValues.courseShortDesc !== course.courseDescription) {
-          formData.append("courseDescription", data.courseShortDesc)
-        }
-        if (currentValues.coursePrice !== course.price) {
-          formData.append("price", data.coursePrice)
-        }
-        if (currentValues.courseTags.toString() !== course.tag.toString()) {
-          formData.append("tag", JSON.stringify(data.courseTags))
-        }
-        if (currentValues.courseBenefits !== course.whatYouWillLearn) {
-          formData.append("whatYouWillLearn", data.courseBenefits)
-        }
-        if (currentValues.courseCategory._id !== course.category._id) {
-          formData.append("category", data.courseCategory)
-        }
-        if (
-          currentValues.courseRequirements.toString() !==
-          course.instructions.toString()
-        ) {
-          formData.append(
-            "instructions",
-            JSON.stringify(data.courseRequirements)
-          )
-        }
-        if (currentValues.courseImage !== course.thumbnail) {
-          formData.append("thumbnailImage", data.courseImage)
-        }
-        // console.log("Edit Form data: ", formData)
-        setLoading(true)
-        const result = await editCourseDetails(formData, token)
-        setLoading(false)
-        if (result) {
-          dispatch(setStep(2))
-          dispatch(setCourse(result))
-        }
-      } else {
-        toast.error("No changes made to the form")
+
+   //acquiring dispatch instace required for changing state of redux
+   const dispatch = useDispatch();
+
+       // if form is in edit mode
+       //then course me mujhe bohot se values mile honge to ham unko strings se map karwa denge
+
+      //  Function Used: setValue is likely a function from a form handling library like react-hook-form. It is used to set the values of form fields programmatically.
+       if (editCourse) {
+        // console.log("data populated", editCourse)
+        setValue("courseTitle", course.courseName)
+        setValue("courseShortDesc", course.courseDescription)
+        setValue("coursePrice", course.price)
+        setValue("courseTags", course.tag)
+        setValue("courseBenefits", course.whatYouWillLearn)
+        setValue("courseCategory", course.category)
+        setValue("courseRequirements", course.instructions)
+        setValue("courseImage", course.thumbnail)
       }
-      return
-    }
 
-    const formData = new FormData()
-    formData.append("courseName", data.courseTitle)
-    formData.append("courseDescription", data.courseShortDesc)
-    formData.append("price", data.coursePrice)
-    formData.append("tag", JSON.stringify(data.courseTags))
-    formData.append("whatYouWillLearn", data.courseBenefits)
-    formData.append("category", data.courseCategory)
-    formData.append("status", COURSE_STATUS.DRAFT)
-    formData.append("instructions", JSON.stringify(data.courseRequirements))
-    formData.append("thumbnailImage", data.courseImage)
-    setLoading(true)
-    const result = await addCourseDetails(formData, token)
-    if (result) {
-      dispatch(setStep(2))
-      dispatch(setCourse(result))
-    }
-    setLoading(false)
-  }
+      const [TagsArray , setTagsArray]  = useState([]);
+      const [InstructionArray , setInstructionArray]  = useState([]);
+
+      const keyDownHandler = (e) => {
+         if((e.key === 'Enter' || e.key === ',') && e.target.value !== ''){
+          e.preventDefault();
+          setTagsArray([...TagsArray,e.target.value])
+          e.target.value = '' ;
+         }
+      }
+
+      const removeHandler = (type,removeIndex) => {
+        if(type === 'tag'){
+          setTagsArray([...TagsArray.filter((tag,index) => index !== removeIndex)]);
+        }
+        else if(type === 'benefit'){
+          setInstructionArray([...InstructionArray.filter((benefit,index) => index!== removeIndex)]);
+        }
+      }
+
+      //as in the last field i need to add the value written in the input to the benifit array by an external button so i will use "useref()" hook... as it is used when i need to access any dom element,( its value,its properties we can say all things we can get form dom element) from anywhere.. it is like doing document.getElement where in that way we were also accessing dom elements
+      const refObject = useRef({});
+      const AddButtonClickHandler = (e) => {
+            if(refObject.current.value !== ''){
+              setInstructionArray([...InstructionArray,refObject.current.value]);
+              refObject.current.value = '';
+            }
+      }
+
+      const handleEditCourse = async(Data) => {
+        try{
+          const formData = new FormData();
+
+          formData.append('courseId', course._id);
+
+          if(Data.courseTitle !== course.courseName){
+              formData.append('courseName', Data.courseTitle);
+          }
+          if(Data.courseDescription!== course.courseDescription){
+              formData.append('courseDescription', Data.courseDescription);
+          }
+          if(Data.price!== course.price){
+              formData.append('price', Data.coursePrice);
+          }
+          if(Data.whatYouWillLearn!== course.whatYouWillLearn){
+              formData.append('whatYouWillLearn', Data.courseBenefits);
+          }
+          if(Data.courseTags!== course.tag){
+            TagsArray.forEach((tag) => {
+              formData.append('tag', tag);
+            });
+          }
+          if(Data.courseCategory!== course.category){
+              formData.append('category', Data.courseCategory);
+          }
+          if(Data.instructions!== course.instructions){
+            InstructionArray.forEach((instruction) => {
+              formData.append('instructions', instruction);
+            });
+          }
+
+          const response = await editCourseDetails(formData,token);
+          
+          if(response){
+            dispatch(setCourse(response));
+            dispatch(setStep(2));
+          }
+
+        }catch(e){
+          console.log("Error in editing course", e.message);
+          toast.error('Error in editing course');
+        }
+      }
+
+      const isFormUpdated = () => {
+
+        const currentValues = getValues();
+        if(
+          course.courseName !== currentValues.courseTitle ||
+          course.courseDescription!== currentValues.courseShortDesc ||
+          course.price!== currentValues.coursePrice ||
+          course.whatYouWillLearn!== currentValues.courseBenefits ||
+          course.tag.toString()!== currentValues.courseTags.toString() ||
+          course.category!== currentValues.courseCategory ||
+          course.instructions.toString()!== currentValues.courseRequirements.toString()
+
+        ){
+          return true;
+        }
+
+        return false;
+      }
+
+      const submitHandler = async(Data) => {
+
+          //agar form edit mode me hai abhi 
+          if(editCourse){
+            //if there is no change in form then show error message
+            if(!isFormUpdated()){
+              toast.error('No changes made to the form');
+              return;
+            }
+            else{
+               handleEditCourse(Data);
+               return;
+            }
+          }
+
+
+          const toastid = toast.loading('Loading...');
+          const formData = new FormData();
+          formData.append('courseName', Data.courseTitle);
+          formData.append('courseDescription', Data.courseShortDesc);
+          formData.append('price', Data.coursePrice);
+          formData.append('whatYouWillLearn', Data.courseBenefits);
+          formData.append('category', Data.courseCategory);
+          formData.append('thumbnailImage', ThumbnailFormData);
+          formData.append('status', COURSE_STATUS.DRAFT);
+
+          // Append each tag individually....otherwise if we append this as everyone then all tags or instruction will be stored as a single string and as single element in tag and instructions because  [The FormData object converts arrays to a comma-separated string by default.]
+
+          //but we want our each tag or instruction to be separate element of a array so we will traverse through each element of array and append it to the same field for which an array will be created automatically
+
+          TagsArray.forEach((tag) => {
+            formData.append('tag', tag);
+          });
+
+          // Append each instruction/requirement individually
+          InstructionArray.forEach((instruction) => {
+            formData.append('instructions', instruction);
+          });
+          
+  
+          try{
+              const result = await createCourse(token,formData);
+              dispatch(setCourse(result));
+              console.log('new course looks like:- ',result);
+          }catch(err){
+            console.log('error occured while creating course:- ',err.message);
+            console.error(err.message);
+          }finally{
+            toast.dismiss(toastid);
+            dispatch(setStep(2)); // move to next step
+          }
+      }
 
   return (
-    <form
-      onSubmit={handleSubmit(onSubmit)}
-      className="space-y-8 rounded-md border-[1px] border-richblack-700 bg-richblack-800 p-6"
-    >
-      {/* Course Title */}
-      <div className="flex flex-col space-y-2">
-        <label className="text-sm text-richblack-5" htmlFor="courseTitle">
-          Course Title <sup className="text-pink-200">*</sup>
-        </label>
-        <input
-          id="courseTitle"
-          placeholder="Enter Course Title"
-          {...register("courseTitle", { required: true })}
-          className="form-style w-full"
-        />
-        {errors.courseTitle && (
-          <span className="ml-2 text-xs tracking-wide text-pink-200">
-            Course title is required
-          </span>
-        )}
-      </div>
-      {/* Course Short Description */}
-      <div className="flex flex-col space-y-2">
-        <label className="text-sm text-richblack-5" htmlFor="courseShortDesc">
-          Course Short Description <sup className="text-pink-200">*</sup>
-        </label>
-        <textarea
-          id="courseShortDesc"
-          placeholder="Enter Description"
-          {...register("courseShortDesc", { required: true })}
-          className="form-style resize-x-none min-h-[130px] w-full"
-        />
-        {errors.courseShortDesc && (
-          <span className="ml-2 text-xs tracking-wide text-pink-200">
-            Course Description is required
-          </span>
-        )}
-      </div>
-      {/* Course Price */}
-      <div className="flex flex-col space-y-2">
-        <label className="text-sm text-richblack-5" htmlFor="coursePrice">
-          Course Price <sup className="text-pink-200">*</sup>
-        </label>
-        <div className="relative">
-          <input
-            id="coursePrice"
-            placeholder="Enter Course Price"
-            {...register("coursePrice", {
-              required: true,
-              valueAsNumber: true,
-              pattern: {
-                value: /^(0|[1-9]\d*)(\.\d+)?$/,
-              },
-            })}
-            className="form-style w-full !pl-12"
-          />
-          <HiOutlineCurrencyRupee className="absolute left-3 top-1/2 inline-block -translate-y-1/2 text-2xl text-richblack-400" />
-        </div>
-        {errors.coursePrice && (
-          <span className="ml-2 text-xs tracking-wide text-pink-200">
-            Course Price is required
-          </span>
-        )}
-      </div>
-      {/* Course Category */}
-      <div className="flex flex-col space-y-2">
-        <label className="text-sm text-richblack-5" htmlFor="courseCategory">
-          Course Category <sup className="text-pink-200">*</sup>
-        </label>
-        <select
-          {...register("courseCategory", { required: true })}
-          defaultValue=""
-          id="courseCategory"
-          className="form-style w-full"
-        >
-          <option value="" disabled>
-            Choose a Category
-          </option>
-          {!loading &&
-            courseCategories?.map((category, indx) => (
-              <option key={indx} value={category?._id}>
-                {category?.name}
-              </option>
-            ))}
-        </select>
-        {errors.courseCategory && (
-          <span className="ml-2 text-xs tracking-wide text-pink-200">
-            Course Category is required
-          </span>
-        )}
-      </div>
-      {/* Course Tags */}
-      <ChipInput
-        label="Tags"
-        name="courseTags"
-        placeholder="Enter Tags and press Enter"
-        register={register}
-        errors={errors}
-        setValue={setValue}
-        getValues={getValues}
-      />
-      {/* Course Thumbnail Image */}
-      <Upload
-        name="courseImage"
-        label="Course Thumbnail"
-        register={register}
-        setValue={setValue}
-        errors={errors}
-        editData={editCourse ? course?.thumbnail : null}
-      />
-      {/* Benefits of the course */}
-      <div className="flex flex-col space-y-2">
-        <label className="text-sm text-richblack-5" htmlFor="courseBenefits">
-          Benefits of the course <sup className="text-pink-200">*</sup>
-        </label>
-        <textarea
-          id="courseBenefits"
-          placeholder="Enter benefits of the course"
-          {...register("courseBenefits", { required: true })}
-          className="form-style resize-x-none min-h-[130px] w-full"
-        />
-        {errors.courseBenefits && (
-          <span className="ml-2 text-xs tracking-wide text-pink-200">
-            Benefits of the course is required
-          </span>
-        )}
-      </div>
-      {/* Requirements/Instructions */}
-      <RequirementField
-        name="courseRequirements"
-        label="Requirements/Instructions"
-        register={register}
-        setValue={setValue}
-        errors={errors}
-        getValues={getValues}
-      />
-      {/* Next Button */}
+
+
+     <form onSubmit={handleSubmit(submitHandler)} >
+       <div className="flex flex-col gap-4 mt-10 text-white bg-richblack-800 p-6 rounded-lg">
+
+{/* title */}
+
+          <div className="flex flex-col gap-1">
+                    <label htmlFor="courseTitle">Course title<sup className='text-pink-300'>*</sup></label>
+                    <input
+                      type="text"
+                      name="courseTitle"
+                      id="courseTitle"
+                      className=" bg-richblack-700 placeholder:text-richblack-300 p-4 rounded-lg border-b-[3px] border-b-richblack-500 focus:outline-none"
+                      placeholder="Enter Course Title"
+                      {...register("courseTitle", { required: true })}
+                    />
+
+                    {/* errors handling for it */}
+
+                    {errors.courseTitle && <span className='text-[#D70040]'>Field is required</span>}
+                  </div>
+{/* description */}
+                  <div className="flex flex-col gap-1">
+                    <label htmlFor="courseShortDesc">Course Short Description<sup className='text-pink-300'>*</sup></label>
+                    <textarea
+                      rows={7}
+                      name="courseShortDesc"
+                      id="courseShortDesc"
+                      className=" bg-richblack-700 placeholder:text-richblack-300 p-4 rounded-lg border-b-[3px] border-b-richblack-500 focus:outline-none"
+                      placeholder="Enter Description"
+                      {...register("courseShortDesc", { required: true })}
+                    />
+
+                    {/* errors handling for it */}
+
+                    {errors.courseShortDesc && <span className='text-[#D70040]'>Field is required</span>}
+                  </div>
+{/* price */}
+                  <div className="flex flex-col gap-1 relative">
+                    <label htmlFor="coursePrice">Course Price<sup className='text-pink-300'>*</sup></label>
+                    <input
+                      type='text'
+                      name="coursePrice"
+                      id="coursePrice"
+                      className=" bg-richblack-700 placeholder:text-richblack-300 p-4 rounded-lg border-b-[3px] border-b-richblack-500 focus:outline-none  pl-11"
+                      placeholder="Enter Price"
+                      {...register("coursePrice", { required: true })}
+                    />
+
+                     <HiOutlineCurrencyRupee className=' absolute top-10 left-3 text-2xl text-richblack-300 ' />
+
+                    {/* errors handling for it */}
+
+                    {errors.coursePrice && <span className='text-[#D70040]'>Field is required</span>}
+                  </div>
+{/* category */}
+                  <div className="flex flex-col gap-1">
+                    <label htmlFor='courseCategory'>Category</label>
+                    <select 
+                    name="courseCategory"
+                    id="courseCategory"
+                    className=" bg-richblack-700 placeholder:text-richblack-300 p-4 rounded-lg border-b-[3px] border-b-richblack-500 focus:outline-none"
+                    placeholder="Enter Price"
+                    {...register('courseCategory', {required:true})}>
+                      {
+                        courseCategories.map((category, index)=> {
+                          return <option key={index} value={category._id}>{category.name}</option>
+                        })
+                      }
+                    </select>
+                    {
+                      errors.courseCategory && <span className='text-[#D70040]'>Field is required</span>
+                    }
+                  </div>
+{/* tags */}
+                  <div className="flex flex-col gap-1">
+
+                     <div className={` flex-wrap gap-2 h-fit ${TagsArray.length > 0 ? 'flex' : ' hidden' }`}>
+                      {
+                        TagsArray.length > 0 && 
+                        (
+                          TagsArray.map((tag,index) => 
+                            (
+                                <div key={index} className='flex w-fit bg-yellow-25 text-black justify-center items-center gap-2 rounded-2xl px-3 py-1'>
+                                    <span className=''>{tag}</span>
+                                    <RxCross2 className='cursor-pointer' onClick={()=> {removeHandler('tag',index)}}/>
+                                </div>
+                            )
+                          )
+                        )
+                      }
+                     </div>
+
+
+                    <label htmlFor="courseTags">Tags<sup className='text-pink-300'>*</sup></label>
+                    <input
+                      type="text"
+                      name="courseTags"
+                      id="courseTags"
+                      className=" bg-richblack-700 placeholder:text-richblack-300 p-4 rounded-lg border-b-[3px] border-b-richblack-500 focus:outline-none"
+                      placeholder="Choose a Tag"
+                      // {...register("courseTags", { required: true })}
+                      onKeyDown={keyDownHandler}
+                    />
+
+                    {/* errors handling for it */}
+
+                    {errors.courseTitle && <span className='text-[#D70040]'>Field is required</span>}
+                  </div>
+
+                  {/* create a separate component for uploading and showing preview of the thumbnail of the course  */}
+
+                  <ImageUploader setThumbnailFormData={setThumbnailFormData} />
+
+{/* benifits */}
+                  <div className="flex flex-col gap-1">
+                    <label htmlFor="courseShortDesc">Benifits of the Course<sup className='text-pink-300'>*</sup></label>
+                    <textarea
+                      rows={8}
+                      name="courseBenefits"
+                      id="courseBenefits"
+                      className=" bg-richblack-700 placeholder:text-richblack-300 p-4 rounded-lg border-b-[3px] border-b-richblack-500 focus:outline-none"
+                      placeholder="Enter Benifits of the Course"
+                      {...register("courseBenefits", { required: true })}
+                    />
+
+                    {/* errors handling for it */}
+
+                    {errors.courseBenefits && <span className='text-[#D70040]'>Field is required</span>}
+                  </div>
+
+{/* requirements */}
+                    <div className="flex flex-col gap-1">
+
+                    <label htmlFor="courseTags">Requirements/Instructions<sup className='text-pink-300'>*</sup></label>
+                    <input
+                     ref={refObject}
+                      type="text"
+                      name="courseRequirements"
+                      id="courseRequirements"
+                      className=" bg-richblack-700 placeholder:text-richblack-300 p-4 rounded-lg border-b-[3px] border-b-richblack-500 focus:outline-none"
+                      placeholder="Enter Requirements Of The Course"
+                      
+                    />
+                    
+                    <button type='button' className='text-yellow-100 font-semibold text-lg self-start mt-2' onClick={AddButtonClickHandler}>Add</button>
+
+                    <div className={` flex-wrap gap-2 h-fit ${InstructionArray.length > 0 ? 'flex flex-col' : ' hidden' }`}>
+                      {
+                        InstructionArray.length > 0 && 
+                        (
+                          InstructionArray.map((benifit,index) => 
+                            (
+                                <div key={index} className='flex w-fit bg-richblack-700 text-white justify-center items-center gap-2 rounded-2xl px-3 py-1'>
+                                    <RxCross2 className='cursor-pointer' onClick={()=> {removeHandler('benefit',index)}}/>
+                                    <span className=''>{benifit}</span>
+                                    
+                                </div>
+                            )
+                          )
+                        )
+                      }
+                     </div>
+
+                  </div>
+
+{/* buttons div */}
+     {/* Next Button */}
       <div className="flex justify-end gap-x-2">
         {editCourse && (
           <button
@@ -303,9 +408,13 @@ export default function CourseInformationForm() {
           disabled={loading}
           text={!editCourse ? "Next" : "Save Changes"}
         >
-          <MdNavigateNext />
+          <MdNavigateNext size={20}/>
         </IconBtn>
       </div>
-    </form>
+          </div>
+     </form>
+
   )
 }
+
+export default CourseInformationForm

@@ -30,7 +30,7 @@ const CourseBuyCard = ({course,setConfirmationModal}) => {
       //me buy karne kelie tabhi allow karunga jab user ke paas ek valid authentiaction ka chiz ho aur wo chiz kya ho sakta hai ?????? wo ek token ho skata hai.... and wo ek student ho warna buy keliye allow nehi karenge
   
        if(token && user.accountType === 'Student'){
-          const stripe = await loadStripe("pk_test_51Pw5u7EYoCAeJ9s3kwZu41RfWGh4Oa96lRI83c2YxUVOC9C4TviS9x5JuT8TTrr6LppZJDtL2j4Z54sOpDYFF54R002oQw3QG4");
+          const stripe = await loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
   
           const body = {
              products:[{...course}],

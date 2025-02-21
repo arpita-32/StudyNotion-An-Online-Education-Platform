@@ -1,56 +1,53 @@
-import React, { useEffect, useState } from "react";
-import ReactStars from "react-rating-stars-component";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { FaStar } from "react-icons/fa";
+import React, { useEffect, useState } from 'react'
+import {Swiper, SwiperSlide} from "swiper/react"
+import "swiper/css"
+import "swiper/css/free-mode"
+import "swiper/css/pagination"
+import { Autoplay,FreeMode, Pagination}  from 'swiper/modules'
+import ReactStars from 'react-rating-stars-component';
+import { FaStar } from 'react-icons/fa'
+import { getAllReviews } from "../../services/operations/reviewAndrating";
 
-// Import Swiper styles
-import "swiper/css";
-import "swiper/css/free-mode";
-import "swiper/css/pagination";
-import "swiper/css/autoplay";
 
-// Import Swiper modules
-import { FreeMode, Pagination, Autoplay } from "swiper/modules";
+const truncateWords = 15;
 
-import { apiConnector } from "../../services/apiconnector";
-import { ratingsEndpoints } from "../../services/api";
+const ReviewSlider = () => {
 
-function ReviewSlider() {
-  const [reviews, setReviews] = useState([]);
-  const truncateWords = 15;
+ const [reviewArray, setreviewArray] = useState([]);
 
-  useEffect(() => {
-    (async () => {
-      const { data } = await apiConnector(
-        "GET",
-        ratingsEndpoints.REVIEWS_DETAILS_API
-      );
-      if (data?.success) {
-        setReviews(data?.data);
-      }
-    })();
-  }, []);
+ useEffect(() => {
+    ;(async() => {
+       //fetch data from api
+       const result = await getAllReviews();
 
-  // Dynamically adjust slidesPerView and loop based on the number of reviews
-  const slidesPerView = Math.min(reviews.length, 4); // Ensure slidesPerView doesn't exceed the number of reviews
-  const enableLoop = reviews.length > 8; // Enable loop only if there are enough slides
+       if(!result){
+        console.log('No review is fetched');
+       }
+
+       console.log('printing the array of all reviews:- ', result);
+
+       setreviewArray(result);
+
+    })()
+ },[])
 
   return (
-    <div className="text-white">
-      <div className="my-[50px] h-[184px] max-w-maxContentTab lg:max-w-maxContent">
-        <Swiper
-          slidesPerView={slidesPerView} // Dynamically set slidesPerView
+    <div className='text-white w-full'>
+         <div className='h-[190px] max-w-maxContent'>
+
+         <Swiper
+          slidesPerView={4}
           spaceBetween={25}
-          loop={enableLoop} // Enable loop only if there are enough slides
+          loop={true}
           freeMode={true}
           autoplay={{
             delay: 2500,
             disableOnInteraction: false,
           }}
           modules={[FreeMode, Pagination, Autoplay]}
-          className="w-full"
+          className="w-full "
         >
-          {reviews.map((review, i) => {
+          {reviewArray?.map((review, i) => {
             return (
               <SwiperSlide key={i}>
                 <div className="flex flex-col gap-3 bg-richblack-800 p-3 text-[14px] text-richblack-25">
@@ -61,13 +58,11 @@ function ReviewSlider() {
                           ? review?.user?.image
                           : `https://api.dicebear.com/5.x/initials/svg?seed=${review?.user?.firstName} ${review?.user?.lastName}`
                       }
-                      alt=""
+                      alt="userprofile"
                       className="h-9 w-9 rounded-full object-cover"
                     />
                     <div className="flex flex-col">
-                      <h1 className="font-semibold text-richblack-5">
-                        {`${review?.user?.firstName} ${review?.user?.lastName}`}
-                      </h1>
+                      <h1 className="font-semibold text-richblack-5">{`${review?.user?.firstName} ${review?.user?.lastName}`}</h1>
                       <h2 className="text-[12px] font-medium text-richblack-500">
                         {review?.course?.courseName}
                       </h2>
@@ -97,12 +92,15 @@ function ReviewSlider() {
                   </div>
                 </div>
               </SwiperSlide>
-            );
+            )
           })}
+          {/* <SwiperSlide>Slide 1</SwiperSlide> */}
         </Swiper>
-      </div>
+
+
+         </div>
     </div>
-  );
+  )
 }
 
-export default ReviewSlider;
+export default ReviewSlider

@@ -1,203 +1,233 @@
-import { useEffect, useState } from "react"
-import { useForm } from "react-hook-form"
-import { toast } from "react-hot-toast"
-import { RxCross2 } from "react-icons/rx"
-import { useDispatch, useSelector } from "react-redux"
-
-import {
-  createSubSection,
-  updateSubSection,
-} from "../../../../../services/operations/courseDetailsAPI"
-import { setCourse } from "../../../../../slices/courseSlice"
+import React,{useEffect, useState} from 'react'
+import { useForm } from 'react-hook-form';
+import { useDispatch, useSelector } from 'react-redux';
+import { setCourse } from '../../../../../slices/courseSlice';
+import toast from 'react-hot-toast';
+import { createSubSection, updateSubsection } from '../../../../../services/operations/courseDetailsAPI';
+import { RxCross2 } from "react-icons/rx";
+import Upload from '../Upload';
 import IconBtn from "../../../../common/IconBtn"
-import Upload from "../Upload"
 
-export default function SubSectionModal({
-  modalData,
-  setModalData,
-  add = false,
-  view = false,
-  edit = false,
-}) {
-  const {
-    register,
-    handleSubmit,
-    setValue,
-    formState: { errors },
-    getValues,
-  } = useForm()
+const SubSectionModal = ({modalData, setmodalData, add=false, view=false, edit=false }) => {
 
-  // console.log("view", view)
-  // console.log("edit", edit)
-  // console.log("add", add)
 
-  const dispatch = useDispatch()
-  const [loading, setLoading] = useState(false)
-  const { token } = useSelector((state) => state.auth)
-  const { course } = useSelector((state) => state.course)
+    const {
+        register,
+        handleSubmit,
+        setValue,
+        getValues,
+        formState: {errors}
+    } = useForm();
 
-  useEffect(() => {
-    if (view || edit) {
-      // console.log("modalData", modalData)
-      setValue("lectureTitle", modalData.title)
-      setValue("lectureDesc", modalData.description)
-      setValue("lectureVideo", modalData.videoUrl)
-    }
-  }, [])
+    // const [videoFile, setvideoFile] = useState(null);
 
-  // detect whether form is updated or not
-  const isFormUpdated = () => {
-    const currentValues = getValues()
-    // console.log("changes after editing form values:", currentValues)
-    if (
-      currentValues.lectureTitle !== modalData.title ||
-      currentValues.lectureDesc !== modalData.description ||
-      currentValues.lectureVideo !== modalData.videoUrl
-    ) {
-      return true
-    }
-    return false
-  }
+    const dispatch = useDispatch();
+    const [loading, setloading] = useState(false);
+    const {token} = useSelector((state) => state.auth);
+    //dekhenge yaha pe course ki kya jarurat
+    const {course} = useSelector((state) => state.course);
 
-  // handle the editing of subsection
-  const handleEditSubsection = async () => {
-    const currentValues = getValues()
-    // console.log("changes after editing form values:", currentValues)
-    const formData = new FormData()
-    // console.log("Values After Editing form values:", currentValues)
-    formData.append("sectionId", modalData.sectionId)
-    formData.append("subSectionId", modalData._id)
-    if (currentValues.lectureTitle !== modalData.title) {
-      formData.append("title", currentValues.lectureTitle)
-    }
-    if (currentValues.lectureDesc !== modalData.description) {
-      formData.append("description", currentValues.lectureDesc)
-    }
-    if (currentValues.lectureVideo !== modalData.videoUrl) {
-      formData.append("video", currentValues.lectureVideo)
-    }
-    setLoading(true)
-    const result = await updateSubSection(formData, token)
-    if (result) {
-      // console.log("result", result)
-      // update the structure of course
-      const updatedCourseContent = course.courseContent.map((section) =>
-        section._id === modalData.sectionId ? result : section
-      )
-      const updatedCourse = { ...course, courseContent: updatedCourseContent }
-      dispatch(setCourse(updatedCourse))
-    }
-    setModalData(null)
-    setLoading(false)
-  }
+     //dekhenge yaha pe ye view hone aya hai ki edit hone aya hai.... agar indono me se koi bhi true hua then to hame dono cases me form data fill kia hua dikhana padega..... matlab view ke case me bas data fill kia hua dikhayenge par edit nehi karne denge but in case of edit we will allow for editing
 
-  const onSubmit = async (data) => {
-    // console.log(data)
-    if (view) return
+     //so ye kaam hame kab karna chahiye??? ky hame kisi chiz hone ka wait kerna chahiye??? ABSOLUTELY NOT 
 
-    if (edit) {
-      if (!isFormUpdated()) {
-        toast.error("No changes made to the form")
-      } else {
-        handleEditSubsection()
+     // ye page jese hi load hoga hame to wese hi user ko wo data filled for dikhana hai na to ham yaha pe useEffect() ka use karenge
+
+     useEffect(()=>{
+      //agar hame view ya phir edit karna hai to
+      if(view || edit) {
+        setValue("lectureTitle", modalData.title)
+        setValue("lectureDesc", modalData.description)
+        setValue("lectureVideo", modalData.videoUrl)
       }
-      return
-    }
+         // eslint-disable-next-line react-hooks/exhaustive-deps
+     },[])
 
-    const formData = new FormData()
-    formData.append("sectionId", modalData)
-    formData.append("title", data.lectureTitle)
-    formData.append("description", data.lectureDesc)
-    formData.append("video", data.lectureVideo)
-    setLoading(true)
-    const result = await createSubSection(formData, token)
-    if (result) {
-      // update the structure of course
-      const updatedCourseContent = course.courseContent.map((section) =>
-        section._id === modalData ? result : section
-      )
-      const updatedCourse = { ...course, courseContent: updatedCourseContent }
-      dispatch(setCourse(updatedCourse))
-    }
-    setModalData(null)
-    setLoading(false)
-  }
+     //function to check wheather user changed some value in the form in edit mode or alll the data are same as before and nothing changed
+
+     const isFormUpdated = () => {
+         //new thing learned.............how to get all values of the form???? using "getValues()" function which returns us a objcet of key value pair .... where key is the name with which the value got registered
+
+         const currentValues = getValues();
+         //comparing current values with initial values of form when it was created
+         if(currentValues.lectureTitle !== modalData.title ||
+            currentValues.lectureDesc !== modalData.description ||
+            currentValues.lectureVideo !== modalData.videoUrl)
+            {
+                return true;
+            }
+          
+            return false;
+     }
+
+     //function which will be called when the form is edited and clicked on submit button
+     const EditSubSectionHandler = async (Data) => {
+        setloading(true);
+        //preparing the form data that will be passed to api
+        const formData = new FormData();
+        formData.append('courseId', course._id);
+        formData.append('subSectionId', modalData._id);
+        formData.append('title', Data.lectureTitle);
+        formData.append('description', Data.lectureDesc);
+        formData.append('videoFile', Data.lectureVideo);
+
+        try{
+            const response = await updateSubsection(formData,token);
+            setloading(false);
+            console.log('printing the response after updating subsection:- ',response);
+            return response;
+        }catch(err){
+            console.log('error occured while updating a subsection: ',err.message);
+            console.error(err.message);
+            toast.error('Failed to update subsection');
+            setloading(false);
+            return;
+        }
+     }
+
+     //function for submitting the form
+     //agr view hai to submit hoga hi nehi kyu ki koi  button hoga hi nehi
+     //agar edit karne aye ho to phir "isFormUpdated" ko call karke puch lo ki bhjai kya form update hua hai kya agar hua hai to phir api  call mardo agar nehi to kuch mat karo
+     //aur agar add karne aye ho then tum normally api call marke add kardo
+
+     const submitHandler = async (Data) => {
+        //try catch to tabhi lagega jab ham api call marenge usse pehele kuch bina api call bale cases  handle kar lete hein
+        
+        //variable which will store the result of api call
+       let result;
+
+        if(view){
+            return;
+        }
+        if(edit){
+            if(!isFormUpdated()){
+                toast.error('No changes made to the form')
+                return;
+            }
+            else{
+                result = await EditSubSectionHandler(Data);
+
+                console.log('printing the updated course after updating a subsectiion: -' , result);
+                toast.success('Subsection updated successfully')
+                dispatch(setCourse(result));
+                setmodalData(null);
+                return;
+            }
+        }
+
+        //agar yaha tak aye ho matlab subsection create  karna tha
+        const formData = new FormData();
+        formData.append('courseId', course._id);
+        formData.append('sectionId', modalData);
+        formData.append('title', Data.lectureTitle);
+        formData.append('description', Data.lectureDesc);
+        formData.append('videoFile', Data.lectureVideo);
+        setloading(true);
+        const toastId = toast.loading('Creating SubSection');
+
+       try{
+
+        result = await createSubSection(formData,token);
+        console.log('printing the updated course after creating a subsectiion: -' , result);
+        toast.success('Subsection created successfully')
+        dispatch(setCourse(result));
+        setmodalData(null);
+        toast.dismiss(toastId);
+        return;
+
+
+       }catch(err){
+          console.log('error occured while creating a subsection: ',err.message);
+          console.error(err.message);
+          toast.dismiss(toastId);
+          toast.error('Failed to create subsection');
+          return;
+ 
+       }
+     }
+
+     
 
   return (
-    <div className="fixed inset-0 z-[1000] !mt-0 grid h-screen w-screen place-items-center overflow-auto bg-white bg-opacity-10 backdrop-blur-sm">
-      <div className="my-10 w-11/12 max-w-[700px] rounded-lg border border-richblack-400 bg-richblack-800">
-        {/* Modal Header */}
-        <div className="flex items-center justify-between rounded-t-lg bg-richblack-700 p-5">
-          <p className="text-xl font-semibold text-richblack-5">
-            {view && "Viewing"} {add && "Adding"} {edit && "Editing"} Lecture
-          </p>
-          <button onClick={() => (!loading ? setModalData(null) : {})}>
-            <RxCross2 className="text-2xl text-richblack-5" />
-          </button>
-        </div>
-        {/* Modal Form */}
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          className="space-y-8 px-8 py-10"
-        >
-          {/* Lecture Video Upload */}
-          <Upload
-            name="lectureVideo"
-            label="Lecture Video"
-            register={register}
-            setValue={setValue}
-            errors={errors}
-            video={true}
-            viewData={view ? modalData.videoUrl : null}
-            editData={edit ? modalData.videoUrl : null}
-          />
-          {/* Lecture Title */}
-          <div className="flex flex-col space-y-2">
-            <label className="text-sm text-richblack-5" htmlFor="lectureTitle">
-              Lecture Title {!view && <sup className="text-pink-200">*</sup>}
-            </label>
-            <input
-              disabled={view || loading}
-              id="lectureTitle"
-              placeholder="Enter Lecture Title"
-              {...register("lectureTitle", { required: true })}
-              className="form-style w-full"
-            />
-            {errors.lectureTitle && (
-              <span className="ml-2 text-xs tracking-wide text-pink-200">
-                Lecture title is required
-              </span>
-            )}
-          </div>
-          {/* Lecture Description */}
-          <div className="flex flex-col space-y-2">
-            <label className="text-sm text-richblack-5" htmlFor="lectureDesc">
-              Lecture Description{" "}
-              {!view && <sup className="text-pink-200">*</sup>}
-            </label>
-            <textarea
-              disabled={view || loading}
-              id="lectureDesc"
-              placeholder="Enter Lecture Description"
-              {...register("lectureDesc", { required: true })}
-              className="form-style resize-x-none min-h-[130px] w-full"
-            />
-            {errors.lectureDesc && (
-              <span className="ml-2 text-xs tracking-wide text-pink-200">
-                Lecture Description is required
-              </span>
-            )}
-          </div>
-          {!view && (
-            <div className="flex justify-end">
-              <IconBtn
-                disabled={loading}
-                text={loading ? "Loading.." : edit ? "Save Changes" : "Save"}
-              />
+    <div className='fixed inset-0 z-50 overflow-auto flex justify-center items-center w-screen h-screen backdrop-blur-sm '>
+
+        <div className='flex flex-col gap-6 p-7 bg-richblack-800 rounded-lg w-[40%] '>
+            <div className='flex justify-between items-center'>
+            <h1 className='text-2xl font-semibold'>{view && 'Viewing'} {edit && 'Editing'} {add && 'adding'} Lecture</h1>
+            <RxCross2 size={20} className='cursor-pointer hover:rotate-90 transition-all duration-200' onClick={()=>{!loading && setmodalData(null)}} />
             </div>
-          )}
-        </form>
-      </div>
+             <form onSubmit={handleSubmit(submitHandler)} className='flex flex-col gap-4'>
+
+                <Upload
+                name='lectureVideo'
+                label='Lecture Video'
+                register={register}
+                setValue={setValue}
+                errors={errors}
+                video={true}
+                viewData = {view ? modalData.videoUrl :null }
+                editData = {edit ? modalData.videoUrl :null }
+                // setvideoFile = {setvideoFile}
+                />
+
+                <div className='flex flex-col gap-1'>
+                    <label htmlFor='lectureTitle'>Lecture Title <sup className='text-pink-300'>*</sup> </label>
+                    <input
+                    name='lectureTitle'
+                    id='lectureTitle'
+                    placeholder='Enter Lecture Title'
+                    {...register('lectureTitle', {required:true})}
+                    className='px-3 py-3 rounded-lg bg-richblack-700 border-b-2 border-b-richblack-600 focus:outline-none '
+                    />
+
+                    {
+                        errors.lectureTitle && <p className='text-[#D70040]'>This field is required</p>
+                    }
+                </div>
+
+                <div className='flex flex-col gap-1'>
+                    <label htmlFor='lectureDesc'>Lecture Description <sup className='text-pink-300'>*</sup> </label>
+                    <textarea
+                    rows={5}
+                    name='lectureDesc'
+                    id='lectureDesc'
+                    placeholder='Enter Lecture Description'
+                    {...register('lectureDesc', {required:true})}
+                    className='px-3 py-3 rounded-lg bg-richblack-700 border-b-2 border-b-richblack-600 focus:outline-none '
+                    />
+
+                    {
+                        errors.lectureDesc && <p className='text-[#D70040]'>This field is required</p>
+                    }
+                </div>
+
+                {/* buttons Div */}
+
+                {/* agar view true hai to koi button ana nehi chahiye */}
+
+                {
+                    !view && (
+                        <div className='flex justify-end items-center gap-4 '>
+                            <button onClick={()=> {setmodalData(null)}} 
+                                className='bg-richblack-600 py-2 px-5 rounded-lg'>
+                                cancel
+                            </button>
+
+                            <IconBtn 
+                            text={loading ? 'Loading...' : edit ? 'Save Changes' : 'Save' }
+                            type='submit'
+                            >
+
+                            </IconBtn>
+                        </div>
+                    )
+                }
+
+             </form>
+        </div>
+
     </div>
   )
 }
+
+export default SubSectionModal

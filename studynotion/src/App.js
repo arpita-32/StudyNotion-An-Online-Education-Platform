@@ -1,33 +1,32 @@
+import { Route, Routes, useNavigate } from "react-router-dom";
 import "./App.css";
-import {Route, Routes, useNavigate } from "react-router-dom";
-import Home from "./pages/Home"
-import Navbar from "./components/common/Navbar"
-import OpenRoute from "./components/core/Auth/OpenRoute"
+import Navbar from "./components/common/Navbar";
+import OpenRoute from "./components/core/Auth/OpenRoute";
+import Home from "./pages/Home";
 
-import Login from "./pages/Login"
-import Signup from "./pages/Signup"
+import { useDispatch, useSelector } from "react-redux";
+import PrivateRoute from "./components/core/Auth/PrivateRoute";
+import AddCourse from "./components/core/Dashboard/AddCourse";
+import Cart from "./components/core/Dashboard/Cart";
+import EditCourse from "./components/core/Dashboard/EditCourse";
+import EnrolledCourses from "./components/core/Dashboard/EnrolledCourses";
+import Instructor from "./components/core/Dashboard/InstructorDashboard/Instructor";
+import MyProfile from "./components/core/Dashboard/Profile";
+import Settings from "./components/core/Dashboard/Setting";
+import VideoDetails from "./components/core/ViewCourse/VideoDetails";
+import About from "./pages/About";
+import Catalog from "./pages/Catalog";
+import Contact from "./pages/Contact";
+import CoursePage from "./pages/CoursePage";
+import Dashboard from "./pages/Dashboard";
+import Error from "./pages/Error";
 import ForgotPassword from "./pages/ForgotPassword";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
 import UpdatePassword from "./pages/UpdatePassword";
 import VerifyEmail from "./pages/VerifyEmail";
-import About from "./pages/About";
-import Contact from "./pages/Contact";
-import MyProfile from "./components/core/Dashboard/MyProfile";
-import Dashboard from "./pages/Dashboard";
-import PrivateRoute from "./components/core/Auth/PrivateRoute";
-import Error from "./pages/Error"
-import Settings from "./components/core/Dashboard/Settings";
-import { useDispatch, useSelector } from "react-redux";
-import EnrolledCourses from "./components/core/Dashboard/EnrolledCourses";
-import Cart from "./components/core/Dashboard/Cart";
-import { ACCOUNT_TYPE } from "./utils/constants";
-import AddCourse from "./components/core/Dashboard/AddCourse";
-import MyCourses from "./components/core/Dashboard/MyCourses";
-import EditCourse from "./components/core/Dashboard/EditCourse";
-import Catalog from "./pages/Catalog";
 import ViewCourse from "./pages/ViewCourse";
-import VideoDetails from "./components/core/ViewCourse/VideoDetails";
-import Instructor from "./components/core/Dashboard/InstructorDashboard/Instructor";
-import CoursePage from "./pages/CoursePage";
+import { ACCOUNT_TYPE } from "./utils/constants";
 
 function App() {
 
@@ -125,7 +124,6 @@ function App() {
           <>
           <Route path="dashboard/instructor" element={<Instructor />} />
           <Route path="dashboard/add-course" element={<AddCourse />} />
-          <Route path="dashboard/my-courses" element={<MyCourses />} />
           <Route path="dashboard/edit-course/:courseId" element={<EditCourse />} />
           
           </>
