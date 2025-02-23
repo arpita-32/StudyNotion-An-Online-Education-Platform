@@ -20,49 +20,46 @@ const CourseBuyCard = ({course,setConfirmationModal}) => {
     const {cart} = useSelector((state)=>state.cart);
   
   
-    const handleBuyCourse = async() => {
-  
-        // if(token){
-        //   buyCourse(token, [courseId], user, navigate ,dispatch);
-        //   return;
-        // }
-  
-      //me buy karne kelie tabhi allow karunga jab user ke paas ek valid authentiaction ka chiz ho aur wo chiz kya ho sakta hai ?????? wo ek token ho skata hai.... and wo ek student ho warna buy keliye allow nehi karenge
-  
-       if(token && user.accountType === 'Student'){
+    const handleBuyCourse = async () => {
+      if (token && user.accountType === 'Student') {
           const stripe = await loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
   
           const body = {
-             products:[{...course}],
-             userId:user._id
-          }
-    
-          const headers = {
-            "Content-Type": "application/json",
-            
-          } 
-    
-          const response = await fetch(`${process.env.REACT_APP_BASE_URL}/payment/create-checkout-session` , {
-            method:"POST",
-            headers:headers,
-            body:JSON.stringify(body)
-          });
-    
-          const session = await response.json();
-    
-          const result = stripe.redirectToCheckout({
-            sessionId:session.id
-          });
-    
-          if(result.error){
-            console.log(result.error);
-          }
-       }
+              products: [{ ...course }],
+              userId: user._id
+          };
   
-       else{
+          const headers = {
+              "Content-Type": "application/json",
+          };
+  
+          try {
+              const response = await fetch(`${process.env.REACT_APP_BASE_URL}/payment/create-checkout-session`, {
+                  method: "POST",
+                  headers: headers,
+                  body: JSON.stringify(body)
+              });
+  
+              const session = await response.json();
+  
+              if (session.id) {
+                  const result = await stripe.redirectToCheckout({
+                      sessionId: session.id
+                  });
+  
+                  if (result.error) {
+                      console.log(result.error);
+                  }
+              } else {
+                  console.error("Failed to create Stripe session");
+              }
+          } catch (error) {
+              console.error("Error during payment process:", error);
+          }
+      } else {
           setConfirmationModal(true);
-       }
-    }
+      }
+  };
   
     const handleShare = () => {
       navigator.clipboard.writeText(window.location.href);

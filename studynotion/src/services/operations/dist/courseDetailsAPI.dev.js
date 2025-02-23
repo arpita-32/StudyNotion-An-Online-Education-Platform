@@ -5,11 +5,13 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.markLectureAsComplete = exports.saveReview = exports.updateSubsection = exports.createSubSection = exports.deleteSubsection = exports.deleteSection = exports.updateSection = exports.createSection = exports.getFullDetailsOfCourse = exports.getCourseDetails = exports.editCourseDetails = exports.createCourse = exports.getAllCategories = exports.deleteCourse = exports.getAllCoursesOfInstructor = void 0;
 
-var _reactHotToast = require("react-hot-toast");
-
 var _apiconnector = require("../apiconnector");
 
 var _api = require("../api");
+
+var _reactHotToast = _interopRequireDefault(require("react-hot-toast"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 var getAllCoursesOfInstructor = function getAllCoursesOfInstructor(token) {
   var response;
@@ -41,7 +43,7 @@ var getAllCoursesOfInstructor = function getAllCoursesOfInstructor(token) {
           _context.prev = 10;
           _context.t0 = _context["catch"](0);
 
-          _reactHotToast.toast.error('Failed to fetch courses of instructor');
+          _reactHotToast["default"].error('Failed to fetch courses of instructor');
 
           console.log('error occured while fetching courses of instructor:- ', _context.t0.message);
 
@@ -80,7 +82,7 @@ var deleteCourse = function deleteCourse(courseId, token) {
           throw new Error(response.data.message);
 
         case 6:
-          _reactHotToast.toast.success('Course deleted successfully');
+          _reactHotToast["default"].success('Course deleted successfully');
 
           _context2.next = 14;
           break;
@@ -89,7 +91,7 @@ var deleteCourse = function deleteCourse(courseId, token) {
           _context2.prev = 9;
           _context2.t0 = _context2["catch"](0);
 
-          _reactHotToast.toast.error('Failed to delete course');
+          _reactHotToast["default"].error('Failed to delete course');
 
           console.log('error occured while deleting course:- ', _context2.t0.message);
           console.error(_context2.t0.message);
@@ -133,7 +135,7 @@ var getAllCategories = function getAllCategories(token) {
           _context3.prev = 9;
           _context3.t0 = _context3["catch"](0);
 
-          _reactHotToast.toast.error('Failed to fetch categories');
+          _reactHotToast["default"].error('Failed to fetch categories');
 
           console.log('error occured while fetching categories:- ', _context3.t0.message);
           console.error(_context3.t0.message);
@@ -173,7 +175,7 @@ var createCourse = function createCourse(token, formData) {
           throw new Error(response.data.message);
 
         case 7:
-          _reactHotToast.toast.success('Course details added successfully');
+          _reactHotToast["default"].success('Course details added successfully');
 
           console.log("data from the create course", response.data.data);
           return _context4.abrupt("return", response.data.data);
@@ -182,7 +184,7 @@ var createCourse = function createCourse(token, formData) {
           _context4.prev = 12;
           _context4.t0 = _context4["catch"](0);
 
-          _reactHotToast.toast.error('Failed to create course');
+          _reactHotToast["default"].error('Failed to create course');
 
           console.log('error occured while creating course:- ', _context4.t0.message);
           console.error(_context4.t0.message);
@@ -221,7 +223,7 @@ var editCourseDetails = function editCourseDetails(formData, token) {
           throw new Error(response.data.message);
 
         case 6:
-          _reactHotToast.toast.success('Course details updated successfully');
+          _reactHotToast["default"].success('Course details updated successfully');
 
           console.log("data from the edit course details", response.data.data);
           return _context5.abrupt("return", response.data.data);
@@ -600,7 +602,7 @@ var saveReview = function saveReview(courseId, rating, review, token) {
     while (1) {
       switch (_context14.prev = _context14.next) {
         case 0:
-          toastId = _reactHotToast.toast.loading('Posting Review...');
+          toastId = _reactHotToast["default"].loading('Posting Review...');
           _context14.prev = 1;
           _context14.next = 4;
           return regeneratorRuntime.awrap((0, _apiconnector.apiConnector)('POST', _api.courseEndpoints.CREATE_RATING_API, {
@@ -622,9 +624,9 @@ var saveReview = function saveReview(courseId, rating, review, token) {
           throw new Error(response.data.message);
 
         case 7:
-          _reactHotToast.toast.dismiss(toastId);
+          _reactHotToast["default"].dismiss(toastId);
 
-          _reactHotToast.toast.success('Review Posted Successfully');
+          _reactHotToast["default"].success('Review Posted Successfully');
 
           _context14.next = 17;
           break;
@@ -633,9 +635,9 @@ var saveReview = function saveReview(courseId, rating, review, token) {
           _context14.prev = 11;
           _context14.t0 = _context14["catch"](1);
 
-          _reactHotToast.toast.dismiss(toastId);
+          _reactHotToast["default"].dismiss(toastId);
 
-          _reactHotToast.toast.error('Failed to save review');
+          _reactHotToast["default"].error('Failed to save review');
 
           console.log('error occured while saving review: ', _context14.t0.message);
           console.error(_context14.t0.message);
@@ -673,7 +675,7 @@ var markLectureAsComplete = function markLectureAsComplete(courseId, subsectionI
             break;
           }
 
-          _reactHotToast.toast.error('Lecture can not be marked as complete');
+          _reactHotToast["default"].error('Lecture can not be marked as complete');
 
           throw new Error(response.data.message);
 

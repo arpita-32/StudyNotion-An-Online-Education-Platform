@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux';
 import {getAllCoursesOfInstructor} from '../../../../services/operations/courseDetailsAPI'
-import CoursesTable from './CourseTable';
+import CoursesTable from './CoursesTable';
 import IconBtn from '../../../common/IconBtn';
 import { IoIosAddCircleOutline } from "react-icons/io";
 import { useNavigate } from 'react-router-dom';

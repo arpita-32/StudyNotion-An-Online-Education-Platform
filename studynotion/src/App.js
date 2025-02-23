@@ -1,167 +1,79 @@
-import { Route, Routes, useNavigate } from "react-router-dom";
-import "./App.css";
-import Navbar from "./components/common/Navbar";
-import OpenRoute from "./components/core/Auth/OpenRoute";
-import Home from "./pages/Home";
+import React from 'react'
+import { Routes } from 'react-router-dom'
+import { Route } from 'react-router-dom'
+import Home from './pages/Home'
+import PageNotFound from './components/core/HomePage/PageNotFound'
+import NavBar from "./components/common/Navbar";
+import './App.css'
+import Login from './pages/Login'
+import Signup from './pages/Signup'
+import OpenRoute from './components/core/Auth/OpenRoute'
+import ForgotPassword from './pages/ForgotPassword'
+import UpdatePassword from './pages/UpdatePassword'
+import VerifyEmail from './pages/VerifyEmail'
+import ContactUs from './pages/Contact'
+import AboutUs from './pages/About'
+import Dashboard from './pages/Dashboard'
+import Profile from './components/core/Dashboard/Profile';
+import EnrolledCourses from './components/core/Dashboard/EnrolledCourses'
+import PrivateRoute from './components/core/Auth/PrivateRoute'
+import Setting from './components/core/Dashboard/Setting';
+import Cart from './components/core/Dashboard/Cart/index';
+import StudentOnlyRoute from './components/core/Auth/StudentOnlyRoute'
+import InstructorOnlyRoute from './components/core/Auth/InstructorOnlyRoute'
+import InstructorCourses from './components/core/Dashboard/Instructor/InstructorCourses'
+import AddCourse from './components/core/Dashboard/AddCourse'
+import EditCourse from './components/core/Dashboard/EditCourse/index'
+import Catalog from './pages/Catalog'
+import CoursePage from './pages/CoursePage'
+import ViewCourse from './pages/ViewCourse'
+import Instructor from './components/core/Dashboard/InstructorDashboard/Instructor'
 
-import { useDispatch, useSelector } from "react-redux";
-import PrivateRoute from "./components/core/Auth/PrivateRoute";
-import AddCourse from "./components/core/Dashboard/AddCourse";
-import Cart from "./components/core/Dashboard/Cart";
-import EditCourse from "./components/core/Dashboard/EditCourse";
-import EnrolledCourses from "./components/core/Dashboard/EnrolledCourses";
-import Instructor from "./components/core/Dashboard/InstructorDashboard/Instructor";
-import MyProfile from "./components/core/Dashboard/Profile";
-import Settings from "./components/core/Dashboard/Setting";
-import VideoDetails from "./components/core/ViewCourse/VideoDetails";
-import About from "./pages/About";
-import Catalog from "./pages/Catalog";
-import Contact from "./pages/Contact";
-import CoursePage from "./pages/CoursePage";
-import Dashboard from "./pages/Dashboard";
-import Error from "./pages/Error";
-import ForgotPassword from "./pages/ForgotPassword";
-import Login from "./pages/Login";
-import Signup from "./pages/Signup";
-import UpdatePassword from "./pages/UpdatePassword";
-import VerifyEmail from "./pages/VerifyEmail";
-import ViewCourse from "./pages/ViewCourse";
-import { ACCOUNT_TYPE } from "./utils/constants";
+const App = () => {
 
-function App() {
-
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-  
-  const { user } = useSelector((state) => state.profile)
 
 
   return (
-   <div className="w-screen min-h-screen bg-richblack-900 flex flex-col font-inter">
-    <Navbar/>
-    <Routes>
-      <Route path="/" element={<Home/>} />
-      <Route path="catalog/:catalogName" element={<Catalog/>} />
-      <Route path='/courses/:courseId' element={<CoursePage/>}/>
-      
-      <Route
-          path="signup"
-          element={
-            <OpenRoute>
-              <Signup />
-            </OpenRoute>
-          }
-        />
-    <Route
-          path="login"
-          element={
-            <OpenRoute>
-              <Login />
-            </OpenRoute>
-          }
-        />
+    <div className="container width-screen min-h-screen bg-richblack-900 flex flex-col font-inter">
 
-    <Route
-          path="forgot-password"
-          element={
-            <OpenRoute>
-              <ForgotPassword />
-            </OpenRoute>
-          }
-        />  
+  {/* navbar is a common componenet that is why we will place this here and that will dont have any route */}
+  {/* as nav bar is common so we will make its component in common folder of core of component */}
+      <NavBar/>
 
-      <Route
-          path="verify-email"
-          element={
-            <OpenRoute>
-              <VerifyEmail />
-            </OpenRoute>
-          }
-        />  
+      <Routes>
 
-    <Route
-          path="update-password/:id"
-          element={
-            <OpenRoute>
-              <UpdatePassword />
-            </OpenRoute>
-          }
-        />  
+        <Route path='/' element= {<Home/>} />
+        <Route path='*' element={<PageNotFound/>}/>
+        <Route path='login' element={<OpenRoute> <Login/> </OpenRoute> } />
+        <Route path='signup' element={<OpenRoute> <Signup/> </OpenRoute>}/>
+        <Route path='forgot-password' element={<OpenRoute> <ForgotPassword/> </OpenRoute>}/>
+        <Route path='reset-password/:token' element={<UpdatePassword/>}/>
+        <Route path='verify-email' element={<VerifyEmail/>}/>
+        <Route path='contact' element={<ContactUs/>}/>
+        <Route path='about' element={<AboutUs/>}/>
 
-    <Route
-          path="/about"
-          element={
+        {/* nested route */}
+        <Route path='/dashboard' element={<PrivateRoute><Dashboard/></PrivateRoute>}>
+            <Route path='/dashboard/my-profile' element={<Profile/>}/>
+            <Route path='/dashboard/settings' element={<Setting/>}/>
+            <Route path='/dashboard/enrolled-courses' element={<StudentOnlyRoute><EnrolledCourses/></StudentOnlyRoute>}/>
+            <Route path='/dashboard/cart' element={<StudentOnlyRoute><Cart/></StudentOnlyRoute>}/>
+            <Route path='/dashboard/my-courses' element={<InstructorOnlyRoute><InstructorCourses/></InstructorOnlyRoute>}/>
+            <Route path='/dashboard/add-course' element={<InstructorOnlyRoute><AddCourse/></InstructorOnlyRoute>}/>
+            <Route path='/dashboard/edit-course/:courseId' element={<InstructorOnlyRoute><EditCourse/></InstructorOnlyRoute>}/>
+            <Route path='/dashboard/instructor' element={<InstructorOnlyRoute><Instructor/></InstructorOnlyRoute>} />
             
-              <About />
-            
-          }
-        />
-    <Route path="/contact" element={<Contact />} />
+        </Route>
 
-    <Route 
-      element={
-        <PrivateRoute>
-          <Dashboard />
-        </PrivateRoute>
-      }
-    >
-      <Route path="dashboard/my-profile" element={<MyProfile />} />
-      
-      <Route path="dashboard/Settings" element={<Settings />} />
-      
+        <Route path='/catalog/:catalogName' element={<Catalog/>}/>
+        <Route path='/courses/:courseId' element={<CoursePage/>}/>
+        <Route path='/view-course/:courseId/section/:sectionId/sub-section/:subsectionId' element={<StudentOnlyRoute><ViewCourse/></StudentOnlyRoute>} />
+        
 
-      {
-        user?.accountType === ACCOUNT_TYPE.STUDENT && (
-          <>
-          <Route path="dashboard/cart" element={<Cart />} />
-          <Route path="dashboard/enrolled-courses" element={<EnrolledCourses />} />
-          </>
-        )
-      }
+     </Routes>
 
-      {
-        user?.accountType === ACCOUNT_TYPE.INSTRUCTOR && (
-          <>
-          <Route path="dashboard/instructor" element={<Instructor />} />
-          <Route path="dashboard/add-course" element={<AddCourse />} />
-          <Route path="dashboard/edit-course/:courseId" element={<EditCourse />} />
-          
-          </>
-        )
-      }
-
-
-    </Route>
-
-    
-      <Route element={
-        <PrivateRoute>
-          <ViewCourse />
-        </PrivateRoute>
-      }>
-
-      {
-        user?.accountType === ACCOUNT_TYPE.STUDENT && (
-          <>
-          <Route 
-            path="view-course/:courseId/section/:sectionId/sub-section/:subSectionId"
-            element={<VideoDetails />}
-          />
-          </>
-        )
-      }
-
-      </Route>
-
-
-
-    <Route path="*" element={<Error />} />
-
-
-    </Routes>
-
-   </div>
-  );
+    </div>
+  )
 }
 
 export default App;

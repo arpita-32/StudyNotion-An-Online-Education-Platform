@@ -22,23 +22,21 @@ const CoursePage = () => {
 
   const fetchCourseDetails = async (courseId) => {
     setloading(true);  // show loading state before fetching data
-    try{
-         const result = await getCourseDetails (courseId);
-         if(!result){
+    try {
+        const result = await getCourseDetails(courseId);
+        if (!result) {
             console.log('No course found with this id');
             return;
-         }
-         console.log('result:- ',result);
-         setcourse(result);
-    }catch(err){
-        console.log('Error occured while fetching course details: ',err.message);
+        }
+        console.log('result:- ', result);
+        setcourse(result);
+    } catch (err) {
+        console.log('Error occurred while fetching course details: ', err.message);
         console.error(err.message);
-        return;  // return to avoid showing loading state after error occurs.  If you want to show loading state even after error, remove this return statement.
-    }finally{
+    } finally {
         setloading(false);  // hide loading state after fetching data
     }
-  }
-
+};
 
   //useEffect chaing(very very itresting concept)
   useEffect(()=> {
