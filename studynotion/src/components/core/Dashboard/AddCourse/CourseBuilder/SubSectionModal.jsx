@@ -3,7 +3,10 @@ import { useForm } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
 import { setCourse } from '../../../../../slices/courseSlice';
 import toast from 'react-hot-toast';
-import { createSubSection, updateSubsection } from '../../../../../services/operations/courseDetailsAPI';
+import {
+    createSubSection,
+    updateSubSection,
+  } from "../../../../../services/operations/courseDetailsAPI"
 import { RxCross2 } from "react-icons/rx";
 import Upload from '../Upload';
 import IconBtn from "../../../../common/IconBtn"
@@ -72,7 +75,7 @@ const SubSectionModal = ({modalData, setmodalData, add=false, view=false, edit=f
         formData.append('videoFile', Data.lectureVideo);
 
         try{
-            const response = await updateSubsection(formData,token);
+            const response = await updateSubSection(formData,token);
             setloading(false);
             console.log('printing the response after updating subsection:- ',response);
             return response;

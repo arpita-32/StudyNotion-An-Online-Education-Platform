@@ -1,11 +1,13 @@
 export default function GetAvgRating(ratingArr) {
-  if (!Array.isArray(ratingArr) || ratingArr.length === 0) return 0; // Ensure ratingArr is a valid array
-  
-  const totalReviewCount = ratingArr.reduce((acc, curr) => {
-    return acc + (curr?.rating || 0);  // Ensure undefined ratings don’t break it
-  }, 0);
+  if (ratingArr?.length === 0) return 0
+  const totalReviewCount = ratingArr?.reduce((acc, curr) => {
+    acc += curr.rating
+    return acc
+  }, 0)
 
-  const avgReviewCount = totalReviewCount / ratingArr.length;
+  const multiplier = Math.pow(10, 1)
+  const avgReviewCount =
+    Math.round((totalReviewCount / ratingArr?.length) * multiplier) / multiplier
 
-  return isNaN(avgReviewCount) ? 0 : Math.round(avgReviewCount * 10) / 10;
+  return avgReviewCount
 }

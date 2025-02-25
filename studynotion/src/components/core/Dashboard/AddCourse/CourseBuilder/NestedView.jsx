@@ -6,7 +6,10 @@ import { MdEdit } from "react-icons/md";
 import { RiDeleteBin6Line } from "react-icons/ri";
 import { RxDropdownMenu } from "react-icons/rx";
 import { useDispatch, useSelector } from "react-redux";
-import { deleteSection, deleteSubsection } from "../../../../../services/operations/courseDetailsAPI";
+import {
+  deleteSection,
+  deleteSubSection,
+} from "../../../../../services/operations/courseDetailsAPI"
 import { setCourse } from "../../../../../slices/courseSlice";
 import ConfirmationModal from "../../../../common/ConfirmationModal"
 import SubSectionModal from "./SubSectionModal";
@@ -54,7 +57,7 @@ const NestedView = ({handleEditSection}) => {
   const handleDeleteSubSection = async (sectionId, subSectionId) => {
     const toastid = toast.loading("Deleting SubSection...");
     try {
-      const result = await deleteSubsection(
+      const result = await deleteSubSection(
         course._id,
         sectionId,
         subSectionId,

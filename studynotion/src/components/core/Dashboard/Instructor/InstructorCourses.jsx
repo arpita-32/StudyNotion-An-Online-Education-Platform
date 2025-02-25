@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux';
-import {getAllCoursesOfInstructor} from '../../../../services/operations/courseDetailsAPI'
+import { getInstructorData } from '../../../../services/operations/profileAPI';
 import CoursesTable from './CoursesTable';
 import IconBtn from '../../../common/IconBtn';
 import { IoIosAddCircleOutline } from "react-icons/io";
@@ -26,7 +26,7 @@ const navigate = useNavigate();
     setloading(true);
     try{
 
-     const fetchedCourses = await getAllCoursesOfInstructor(token);
+     const fetchedCourses = await  getInstructorData(token);
      setCourses(fetchedCourses);
      setloading(false);
 

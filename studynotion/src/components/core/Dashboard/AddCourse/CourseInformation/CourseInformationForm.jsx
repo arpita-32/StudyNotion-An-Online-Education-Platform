@@ -3,16 +3,18 @@ import { useForm } from 'react-hook-form'
 import { useDispatch, useSelector } from 'react-redux'
 import { HiOutlineCurrencyRupee } from "react-icons/hi2";
 import { RxCross2 } from "react-icons/rx";
-import { getAllCategories } from '../../../../../services/operations/courseDetailsAPI';
+import {
+  addCourseDetails,
+  editCourseDetails,
+  fetchCourseCategories,
+} from "../../../../../services/operations/courseDetailsAPI"
 import ImageUploader  from './ImageUploader';
 import { setStep } from '../../../../../slices/courseSlice';
 import IconBtn from "../../../../common/IconBtn"
 import { MdNavigateNext } from "react-icons/md";
 import toast from 'react-hot-toast';
 import { COURSE_STATUS } from '../../../../../utils/constants';
-import { createCourse } from '../../../../../services/operations/courseDetailsAPI';
 import { setCourse } from '../../../../../slices/courseSlice';
-import { editCourseDetails } from '../../../../../services/operations/courseDetailsAPI';
 
 const CourseInformationForm = () => {
 
@@ -41,7 +43,7 @@ const CourseInformationForm = () => {
   const fetchAllCategories = async () => {
     setloading(true);
     try {
-      const result = await getAllCategories(token);
+      const result = await fetchCourseCategories(token);
       if(result){
         setCourseCategories(result);
       }
@@ -212,7 +214,7 @@ const CourseInformationForm = () => {
           
   
           try{
-              const result = await createCourse(token,formData);
+              const result = await addCourseDetails(token,formData);
               dispatch(setCourse(result));
               console.log('new course looks like:- ',result);
           }catch(err){
