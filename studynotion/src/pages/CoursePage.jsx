@@ -5,6 +5,7 @@ import { ReactMarkdown } from "react-markdown/lib/react-markdown"
 import { useDispatch, useSelector } from "react-redux"
 import { useNavigate, useParams } from "react-router-dom"
 
+import { loadStripe } from '@stripe/stripe-js'
 import ConfirmationModal from "../components/common/ConfirmationModal"
 import Footer from "../components/common/Footer"
 import RatingStars from "../components/common/RatingStars"
@@ -14,7 +15,6 @@ import { formatDate } from "../services/formatDate"
 import { fetchCourseDetails } from "../services/operations/courseDetailsAPI"
 import GetAvgRating from "../utils/avgRating"
 import Error from "./Error"
-import { loadStripe } from '@stripe/stripe-js';
 
 
 function CoursePage() {
@@ -48,11 +48,12 @@ function CoursePage() {
   // console.log("response: ", response)
 
   // Calculating Avg Review count
-  const [avgReviewCount, setAvgReviewCount] = useState(0)
-  useEffect(() => {
-    const count = GetAvgRating(response?.data?.courseDetails.ratingAndReviews)
-    setAvgReviewCount(count)
-  }, [response])
+  const [avgReviewCount, setAvgReviewCount] = useState(0);
+
+useEffect(() => {
+  const count = GetAvgRating(response?.data?.courseDetails.ratingAndReviews);
+  setAvgReviewCount(count || 0); // Default to 0 if count is undefined or null
+}, [response]);
   // console.log("avgReviewCount: ", avgReviewCount)
 
   // // Collapse all
@@ -102,50 +103,50 @@ function CoursePage() {
     createdAt,
   } = response.data?.courseDetails
 
-  const handleBuyCourse = async() => {
-
-    // if(token){
-    //   buyCourse(token, [courseId], user, navigate ,dispatch);
-    //   return;
-    // }
-
-  //me buy karne kelie tabhi allow karunga jab user ke paas ek valid authentiaction ka chiz ho aur wo chiz kya ho sakta hai ?????? wo ek token ho skata hai.... and wo ek student ho warna buy keliye allow nehi karenge
-
-   if(token && user.accountType === 'Student'){
+  const handleBuyCourse = async () => {
+    if (!response || !response.data) {
+      console.error("Course details not available");
+      return;
+    }
+  
+    if (token && user.accountType === 'Student') {
       const stripe = await loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
-
+  
       const body = {
-         products:[{...response.data.courseDetails}],
-         userId:user._id
-      }
-
+        products: [{ ...response.data.courseDetails }],
+        userId: user._id,
+      };
+  
       const headers = {
         "Content-Type": "application/json",
-        
-      } 
-
-      const response = await fetch(`${process.env.REACT_APP_BASE_URL}/payment/create-checkout-session` , {
-        method:"POST",
-        headers:headers,
-        body:JSON.stringify(body)
+      };
+  
+      console.log("Sending payment request...");
+      const paymentResponse = await fetch(`${process.env.REACT_APP_BASE_URL}/payment/create-checkout-session`, {
+        method: "POST",
+        headers: headers,
+        body: JSON.stringify(body),
       });
-
-      const session = await response.json();
-
-      const result = stripe.redirectToCheckout({
-        sessionId:session.id
-      });
-
-      if(result.error){
-        console.log(result.error);
+  
+      if (!paymentResponse.ok) {
+        console.error("Payment request failed:", paymentResponse.statusText);
+        return;
       }
-   }
-
-   else{
+  
+      const session = await paymentResponse.json();
+      console.log("Received session:", session);
+  
+      const result = await stripe.redirectToCheckout({
+        sessionId: session.id,
+      });
+  
+      if (result.error) {
+        console.error("Stripe redirect error:", result.error);
+      }
+    } else {
       setConfirmationModal(true);
-   }
-}
-
+    }
+  };
   if (paymentLoading) {
     // console.log("payment loading")
     return (
