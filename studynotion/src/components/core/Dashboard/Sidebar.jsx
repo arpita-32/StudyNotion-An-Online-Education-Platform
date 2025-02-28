@@ -3,77 +3,66 @@ import { sidebarLinks } from "../../../data/dashboard-links";
 import { NavLink } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
-//mere pass abhi sirf icons ka nnam hain in data so to use them i will impport all the icons .....not exactly all but all the icons having vsc as their prefix .... because all icons in our data  have vsc as their prefix
-//what a geniuss observation
-
 import * as Icons from 'react-icons/vsc';
-//this wiill return array of all icons having vsc as their prefix
 import { IoSettingsOutline } from "react-icons/io5";
 import { PiSignOut } from "react-icons/pi";
 
-const Sidebar = ({setshowModal}) => {
+const Sidebar = ({ setshowModal }) => {
   const { user } = useSelector((state) => state.profile);
-  console.log("user from the redux store:- ", user);
-
-  const loaction = useLocation();
-  console.log(loaction.pathname);
+  const location = useLocation();
 
   return (
-       <div className="fixed  ">
-            <div className="flex flex-col gap-5 absolute left-0 h-screen  bg-richblack-700 text-richblack-300 w-36 lg:w-40  xl:w-52 pt-4">
-      <div className=" flex flex-col py-3 gap-4 transition-all duration-200">
-        {sidebarLinks.map((link, index) => {
-            //getting the icon form icon name
-            //from the array i will direcatly access the icon
-          const Icon = Icons[link.icon];
-          if (!link.type) {
-            return (
-              <NavLink key={index} to={link.path} >
-                <div className={`flex items-center justify-start gap-3 px-4 py-2 border-l-[3px]  ${loaction.pathname === link.path ? ('bg-yellow-50 bg-opacity-20  border-l-yellow-200') : ('border-l-transparent')}`}>
-                    <Icon className= {` text-xl ${loaction.pathname === link.path && 'text-yellow-100'}`}/>
-                  <p>{link.name}</p>
-                </div>
-              </NavLink>
-            );
-          }
+    <div className="fixed left-0 top-0 h-screen bg-richblack-800 shadow-lg">
+      <div className="flex flex-col gap-5 h-full w-64 pt-6 px-4">
+        <div className="flex flex-col gap-3">
+          {sidebarLinks.map((link, index) => {
+            const Icon = Icons[link.icon];
+            if (!link.type) {
+              return (
+                <NavLink key={index} to={link.path} className="hover:no-underline">
+                  <div className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 ${location.pathname === link.path ? 'bg-richblack-900 text-yellow-200' : 'text-richblack-100 hover:bg-richblack-700'}`}>
+                    <Icon className="text-xl" />
+                    <p className="text-sm font-medium">{link.name}</p>
+                  </div>
+                </NavLink>
+              );
+            }
 
-          if (user && link.type === user?.accountType) {
-            return (
-              <NavLink key={index} to={link.path} >
-                <div className={`flex items-center justify-start gap-3 px-4 py-2 border-l-[3px]  ${loaction.pathname === link.path ? ('bg-yellow-50 bg-opacity-20  border-l-yellow-200') : ('border-l-transparent')}`}>
-                  <Icon className= {` text-xl ${loaction.pathname === link.path && 'text-yellow-100'}`} />
-                  <p>{link.name}</p>
-                </div>
-              </NavLink>
-            );
-          }
+            if (user && link.type === user?.accountType) {
+              return (
+                <NavLink key={index} to={link.path} className="hover:no-underline">
+                  <div className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 ${location.pathname === link.path ? 'bg-richblack-900 text-yellow-200' : 'text-richblack-100 hover:bg-richblack-700'}`}>
+                    <Icon className="text-xl" />
+                    <p className="text-sm font-medium">{link.name}</p>
+                  </div>
+                </NavLink>
+              );
+            }
 
-          return null;
-        })}
-      </div>
+            return null;
+          })}
+        </div>
 
-      <div className="h-[1px] bg-richblack-500"></div>
+        <div className="h-[1px] bg-richblack-600 my-4"></div>
 
-      <div className="flex flex-col  gap-4">
-        <NavLink to={'/dashboard/settings'}>
-          <div className={`flex items-center justify-start gap-4 px-4 py-2 border-l-[3px]  ${loaction.pathname === '/dashboard/settings' ? ('bg-yellow-50 bg-opacity-20  border-l-yellow-200') : ('border-l-transparent')}`}>
-          <IoSettingsOutline className= {` text-xl ${loaction.pathname === '/dashboard/settings' && 'text-yellow-100'}`}/>
-            <p>Settings</p>
+        <div className="flex flex-col gap-3">
+          <NavLink to={'/dashboard/settings'} className="hover:no-underline">
+            <div className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 ${location.pathname === '/dashboard/settings' ? 'bg-richblack-900 text-yellow-200' : 'text-richblack-100 hover:bg-richblack-700'}`}>
+              <IoSettingsOutline className="text-xl" />
+              <p className="text-sm font-medium">Settings</p>
+            </div>
+          </NavLink>
+
+          <div
+            className="flex items-center gap-3 px-4 py-2 rounded-lg cursor-pointer text-richblack-100 hover:bg-richblack-700 transition-all duration-200"
+            onClick={() => setshowModal(true)}
+          >
+            <PiSignOut className="text-xl" />
+            <p className="text-sm font-medium">LogOut</p>
           </div>
-        </NavLink>
-
-        <div
-        className="cursor-pointer group flex items-center justify-start gap-4 px-4 py-2"
-          onClick={() => {
-            setshowModal(true);
-          }}
-        >
-          <PiSignOut className="text-xl group-hover:text-yellow-100"/>
-          <p className="group-hover:text-yellow-100 ">LogOut</p>
         </div>
       </div>
     </div>
-       </div>
   );
 };
 
