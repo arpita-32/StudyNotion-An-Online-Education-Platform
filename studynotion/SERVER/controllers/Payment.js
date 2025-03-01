@@ -39,8 +39,8 @@ exports.startPayment = async (req, res) => {
             mode: "payment",
             payment_method_types: ["card"],
             line_items: lineItems,
-            success_url: "http://localhost:3000/success",
-            cancel_url: "http://localhost:3000/cancel",
+            success_url: "http://localhost:3000/login",
+            cancel_url: "http://localhost:3000/error",
             metadata: { userID: userId, courses: JSON.stringify(products.map((p) => p.courseId)) },
         });
 

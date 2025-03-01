@@ -211,47 +211,44 @@ function getUserEnrolledCourses(token) {
           toastId = _reactHotToast["default"].loading("Loading...");
           result = [];
           _context4.prev = 2;
-          console.log("BEFORE Calling BACKEND API FOR ENROLLED COURSES");
-          _context4.next = 6;
-          return regeneratorRuntime.awrap((0, _apiconnector.apiConnector)("GET", _api.profile.GET_ENROLLED_COURSES, {}, {
-            'Authorization': "Bearer ".concat(token)
+          _context4.next = 5;
+          return regeneratorRuntime.awrap((0, _apiconnector.apiConnector)("GET", _api.profile.GET_ENROLLED_COURSES, null, {
+            Authorization: "Bearer ".concat(token)
           }));
 
-        case 6:
+        case 5:
           response = _context4.sent;
-          console.log("AFTER Calling BACKEND API FOR ENROLLED COURSES");
-          console.log("GET_USER_ENROLLED_COURSES_API API RESPONSE............", response);
 
           if (response.data.success) {
-            _context4.next = 11;
+            _context4.next = 8;
             break;
           }
 
           throw new Error(response.data.message);
 
-        case 11:
+        case 8:
           result = response.data.data;
-          _context4.next = 18;
+          _context4.next = 15;
           break;
 
-        case 14:
-          _context4.prev = 14;
+        case 11:
+          _context4.prev = 11;
           _context4.t0 = _context4["catch"](2);
-          console.log("GET_USER_ENROLLED_COURSES_API API ERROR............", _context4.t0.message);
+          console.log("GET_USER_ENROLLED_COURSES_API API ERROR............", _context4.t0);
 
           _reactHotToast["default"].error("Could Not Get Enrolled Courses");
 
-        case 18:
+        case 15:
           _reactHotToast["default"].dismiss(toastId);
 
           return _context4.abrupt("return", result);
 
-        case 20:
+        case 17:
         case "end":
           return _context4.stop();
       }
     }
-  }, null, null, [[2, 14]]);
+  }, null, null, [[2, 11]]);
 }
 
 var getInstructorData = function getInstructorData(token) {
