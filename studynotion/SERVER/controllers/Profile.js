@@ -1,11 +1,11 @@
 const Profile = require("../models/Profile")
 const CourseProgress = require("../models/CourseProgress")
+
 const Course = require("../models/Course")
 const User = require("../models/User")
 const { uploadImageToCloudinary } = require("../utils/imageUploader")
 const mongoose = require("mongoose")
 const { convertSecondsToDuration } = require("../utils/secToDuration")
-
 // Method for updating a profile
 exports.updateProfile = async (req, res) => {
   try {
@@ -118,14 +118,13 @@ exports.updateDisplayPicture = async (req, res) => {
   try {
     const displayPicture = req.files.displayPicture
     const userId = req.user.id
-
     const image = await uploadImageToCloudinary(
       displayPicture,
       process.env.FOLDER_NAME,
       1000,
       1000
     )
-
+    console.log(image)
     const updatedProfile = await User.findByIdAndUpdate(
       { _id: userId },
       { image: image.secure_url },
@@ -215,7 +214,7 @@ exports.instructorDashboard = async (req, res) => {
     const courseDetails = await Course.find({ instructor: req.user.id })
 
     const courseData = courseDetails.map((course) => {
-      const totalStudentsEnrolled = course.studentsEnroled.length
+      const totalStudentsEnrolled = course.studentsEnrolled.length
       const totalAmountGenerated = totalStudentsEnrolled * course.price
 
       // Create a new object with the additional fields

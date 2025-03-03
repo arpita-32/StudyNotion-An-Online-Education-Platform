@@ -9,9 +9,7 @@ var _axios = _interopRequireDefault(require("axios"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
-var axiosInstance = _axios["default"].create({
-  baseURL: process.env.REACT_APP_BASE_URL || "http://localhost:4000/api/v1"
-});
+var axiosInstance = _axios["default"].create({});
 
 exports.axiosInstance = axiosInstance;
 
