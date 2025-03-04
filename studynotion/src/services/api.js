@@ -27,6 +27,7 @@ export const profile = {
   INSTRUCTOR_DASHBOARD: BASE_URL + "/profile/instructorDashboard",
 }
 
+
 // STUDENTS ENDPOINTS
 export const studentEndpoints = {
   // COURSE_PAYMENT_API: BASE_URL + "/payment/capturePayment",
