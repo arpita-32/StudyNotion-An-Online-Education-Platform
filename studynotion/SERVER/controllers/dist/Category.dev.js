@@ -5,9 +5,6 @@ var _require = require("mongoose"),
 
 var Category = require("../models/Category");
 
-var User = require("../models/User"); // Import the User model
-
-
 function getRandomInt(max) {
   return Math.floor(Math.random() * max);
 }
@@ -116,105 +113,100 @@ exports.categoryPageDetails = function _callee3(req, res) {
             match: {
               status: "Published"
             },
-            populate: [{
-              path: "ratingAndReviews"
-            }, {
-              path: "instructor",
-              select: "firstName lastName" // Only select necessary fields
-
-            }]
+            populate: "ratingAndReviews"
           }).exec());
 
         case 5:
           selectedCategory = _context3.sent;
 
           if (selectedCategory) {
-            _context3.next = 8;
+            _context3.next = 9;
             break;
           }
 
+          console.log("Category not found.");
           return _context3.abrupt("return", res.status(404).json({
             success: false,
             message: "Category not found"
           }));
 
-        case 8:
-          _context3.next = 10;
+        case 9:
+          if (!(selectedCategory.courses.length === 0)) {
+            _context3.next = 12;
+            break;
+          }
+
+          console.log("No courses found for the selected category.");
+          return _context3.abrupt("return", res.status(404).json({
+            success: false,
+            message: "No courses found for the selected category."
+          }));
+
+        case 12:
+          _context3.next = 14;
           return regeneratorRuntime.awrap(Category.find({
             _id: {
               $ne: categoryId
             }
           }));
 
-        case 10:
+        case 14:
           categoriesExceptSelected = _context3.sent;
-          differentCategory = null;
-
-          if (!(categoriesExceptSelected.length > 0)) {
-            _context3.next = 16;
-            break;
-          }
-
-          _context3.next = 15;
+          _context3.next = 17;
           return regeneratorRuntime.awrap(Category.findOne(categoriesExceptSelected[getRandomInt(categoriesExceptSelected.length)]._id).populate({
             path: "courses",
             match: {
               status: "Published"
-            },
-            populate: {
-              path: "instructor",
-              select: "firstName lastName"
             }
           }).exec());
 
-        case 15:
+        case 17:
           differentCategory = _context3.sent;
-
-        case 16:
-          _context3.next = 18;
+          _context3.next = 20;
           return regeneratorRuntime.awrap(Category.find().populate({
             path: "courses",
             match: {
               status: "Published"
             },
             populate: {
-              path: "instructor",
-              select: "firstName lastName"
+              path: "instructor"
             }
           }).exec());
 
-        case 18:
+        case 20:
           allCategories = _context3.sent;
           allCourses = allCategories.flatMap(function (category) {
             return category.courses;
           });
           mostSellingCourses = allCourses.sort(function (a, b) {
             return b.sold - a.sold;
-          }).slice(0, 10);
-          return _context3.abrupt("return", res.status(200).json({
+          }).slice(0, 10); // console.log("mostSellingCourses COURSE", mostSellingCourses)
+
+          res.status(200).json({
             success: true,
             data: {
               selectedCategory: selectedCategory,
               differentCategory: differentCategory,
               mostSellingCourses: mostSellingCourses
             }
-          }));
+          });
+          _context3.next = 29;
+          break;
 
-        case 24:
-          _context3.prev = 24;
+        case 26:
+          _context3.prev = 26;
           _context3.t0 = _context3["catch"](0);
-          console.error("Category page details error:", _context3.t0);
           return _context3.abrupt("return", res.status(500).json({
             success: false,
             message: "Internal server error",
             error: _context3.t0.message
           }));
 
-        case 28:
+        case 29:
         case "end":
           return _context3.stop();
       }
     }
-  }, null, null, [[0, 24]]);
+  }, null, null, [[0, 26]]);
 };
 //# sourceMappingURL=Category.dev.js.map

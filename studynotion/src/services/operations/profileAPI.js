@@ -148,7 +148,6 @@ export async function getUserEnrolledCourses(token) {
   toast.dismiss(toastId)
   return result
 }
-
 export const getInstructorData = async (token) => {
   try{
 
