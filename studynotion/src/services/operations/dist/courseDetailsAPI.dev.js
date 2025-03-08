@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.markLectureAsComplete = exports.saveReview = exports.updateSubsection = exports.createSubSection = exports.deleteSubsection = exports.deleteSection = exports.updateSection = exports.createSection = exports.getFullDetailsOfCourse = exports.getCourseDetails = exports.editCourseDetails = exports.createCourse = exports.getAllCategories = exports.deleteCourse = exports.getAllCoursesOfInstructor = void 0;
+exports.markLectureAsComplete = exports.saveReview = exports.updateSubsection = exports.createSubSection = exports.deleteSubsection = exports.deleteSection = exports.updateSection = exports.createSection = exports.getFullDetailsOfCourse = exports.fetchCourseDetails = exports.editCourseDetails = exports.createCourse = exports.getAllCategories = exports.deleteCourse = exports.getAllCoursesOfInstructor = void 0;
 
 var _apiconnector = require("../apiconnector");
 
@@ -244,9 +244,9 @@ var editCourseDetails = function editCourseDetails(formData, token) {
 
 exports.editCourseDetails = editCourseDetails;
 
-var getCourseDetails = function getCourseDetails(courseId) {
+var fetchCourseDetails = function fetchCourseDetails(courseId) {
   var response;
-  return regeneratorRuntime.async(function getCourseDetails$(_context6) {
+  return regeneratorRuntime.async(function fetchCourseDetails$(_context6) {
     while (1) {
       switch (_context6.prev = _context6.next) {
         case 0:
@@ -285,7 +285,7 @@ var getCourseDetails = function getCourseDetails(courseId) {
   }, null, null, [[0, 11]]);
 };
 
-exports.getCourseDetails = getCourseDetails;
+exports.fetchCourseDetails = fetchCourseDetails;
 
 var getFullDetailsOfCourse = function getFullDetailsOfCourse(courseId, token) {
   var response;

@@ -12,7 +12,7 @@ import { useNavigate } from "react-router-dom"
 import dateFormat from "dateformat"
 import {
   deleteCourse,
-  fetchInstructorCourses,
+  getAllCoursesOfInstructor,
 } from "../../../../services/operations/courseDetailsAPI"
 import { COURSE_STATUS } from "../../../../utils/constants"
 import ConfirmationModal from "../../../common/ConfirmationModal"
@@ -29,7 +29,7 @@ export default function CoursesTable({courses,setCourses}) {
   const handleCourseDelete = async (courseId) => {
     setLoading(true)
     await deleteCourse( courseId , token)
-    const result = await fetchInstructorCourses(token)
+    const result = await getAllCoursesOfInstructor(token)
     if (result) {
       setCourses(result)
     }

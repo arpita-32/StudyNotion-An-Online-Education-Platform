@@ -8,7 +8,7 @@ import { RxDropdownMenu } from "react-icons/rx";
 import { useDispatch, useSelector } from "react-redux";
 import {
   deleteSection,
-  deleteSubSection,
+  deleteSubsection,
 } from "../../../../../services/operations/courseDetailsAPI"
 import { setCourse } from "../../../../../slices/courseSlice";
 import ConfirmationModal from "../../../../common/ConfirmationModal"
@@ -57,7 +57,7 @@ const NestedView = ({handleEditSection}) => {
   const handleDeleteSubSection = async (sectionId, subSectionId) => {
     const toastid = toast.loading("Deleting SubSection...");
     try {
-      const result = await deleteSubSection(
+      const result = await deleteSubsection(
         course._id,
         sectionId,
         subSectionId,

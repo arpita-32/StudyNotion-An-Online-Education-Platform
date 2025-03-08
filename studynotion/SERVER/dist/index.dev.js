@@ -8,11 +8,11 @@ var userRoutes = require("./routes/User");
 
 var profileRoutes = require("./routes/Profile");
 
-var paymentRoutes = require("./routes/Payments");
-
 var courseRoutes = require("./routes/Course");
 
 var contactUsRoute = require("./routes/Contact");
+
+var paymentRoutes = require("./routes/Payments");
 
 var database = require("./config/database");
 
@@ -47,9 +47,10 @@ cloudinaryConnect(); //routes
 
 app.use("/api/v1/auth", userRoutes);
 app.use("/api/v1/profile", profileRoutes);
-app.use("/api/v1/course", courseRoutes);
-app.use("/api/v1/payment", paymentRoutes);
-app.use("/api/v1/reach", contactUsRoute); //def route
+app.use("/api/v1/course", courseRoutes); // app.use("/api/v1/payment", paymentRoutes);
+
+app.use("/api/v1/reach", contactUsRoute);
+app.use('/api/v1/payment', paymentRoutes); //def route
 
 app.get("/", function (req, res) {
   return res.json({

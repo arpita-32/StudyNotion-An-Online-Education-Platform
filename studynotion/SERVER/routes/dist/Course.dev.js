@@ -67,7 +67,7 @@ router.post("/deleteSubSection", auth, isInstructor, deleteSubSection); // Add a
 
 router.post("/addSubSection", auth, isInstructor, createSubSection); // Get all Registered Courses
 
-router.post("/getAllCourses", getAllCourses); // Get Details for a Specific Courses
+router.get("/getAllCourses", getAllCourses); // Get Details for a Specific Courses
 
 router.post("/getCourseDetails", getCourseDetails); // Get Details for a Specific Courses
 

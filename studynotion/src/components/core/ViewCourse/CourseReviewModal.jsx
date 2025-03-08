@@ -3,7 +3,7 @@ import { useReducer } from 'react';
 import { RxCross2 } from "react-icons/rx";
 import { useSelector } from 'react-redux';
 import GiveRating from './GiveRating';
-import { createRating } from "../../../services/operations/courseDetailsAPI"
+import { saveReview } from '../../../services/operations/courseDetailsAPI';
 
 const CourseReviewModal = ({setReviewModal, courseId}) => {
 
@@ -28,7 +28,7 @@ const CourseReviewModal = ({setReviewModal, courseId}) => {
   const submitHandler = async (e) => {
     e.preventDefault();
     // save the review
-    await createRating(courseId, rating, review, token);
+    await saveReview(courseId, rating, review, token);
      setReviewModal(false);
   }
 
