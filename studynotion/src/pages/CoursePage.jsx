@@ -12,7 +12,7 @@ import RatingStars from "../components/common/RatingStars"
 import CourseAccordionBar from "../components/core/CoursePage/CourseAccordionBar"
 import CourseDetailsCard from "../components/core/CoursePage/CourseBuyCard"
 import { formatDate } from "../services/formatDate"
-import { fetchCourseDetails } from "../services/operations/courseDetailsAPI"
+import { getCourseDetails } from "../services/operations/courseDetailsAPI"
 import GetAvgRating from "../utils/avgRating"
 import Error from "./Error"
 
@@ -36,7 +36,7 @@ function CoursePage() {
     // Calling fetchCourseDetails fucntion to fetch the details
     ;(async () => {
       try {
-        const res = await fetchCourseDetails(courseId)
+        const res = await getCourseDetails(courseId)
         // console.log("course details res: ", res)
         setResponse(res)
       } catch (error) {

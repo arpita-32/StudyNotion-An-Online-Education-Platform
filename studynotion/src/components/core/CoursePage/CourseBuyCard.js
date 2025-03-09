@@ -1,113 +1,92 @@
-import copy from "copy-to-clipboard";
-import React from "react";
-import { toast } from "react-hot-toast";
-import { BsFillCaretRightFill } from "react-icons/bs";
-import { FaShareSquare } from "react-icons/fa";
-import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import React from 'react';
+import { BsFillCaretRightFill } from 'react-icons/bs';
+import { FaShareSquare } from 'react-icons/fa';
+import copy from 'copy-to-clipboard';
+import { toast } from 'react-hot-toast';
 
-import { addToCart } from "../../../slices/cartSlice";
-import { ACCOUNT_TYPE } from "../../../utils/constants";
+import RatingStars from '../../common/RatingStars'
 
 function CourseBuyCard({ course, setConfirmationModal, handleBuyCourse }) {
-  const { user } = useSelector((state) => state.profile);
-  const { token } = useSelector((state) => state.auth);
-  const navigate = useNavigate();
-  const dispatch = useDispatch();
-
-  // Check if course is null or undefined
-  if (!course) {
-    return (
-      <div className="flex flex-col gap-4 rounded-md bg-richblack-700 p-4 text-richblack-5">
-        <p className="text-center text-richblack-25">Course data not available.</p>
-      </div>
-    );
-  }
-
-  const {
-    thumbnail: ThumbnailImage,
-    price: CurrentPrice,
-    _id: courseId,
-    studentsEnrolled = [], // Default to an empty array to avoid errors
-    instructions = [], // Default to an empty array to avoid errors
-  } = course;
-
   const handleShare = () => {
-    copy(window.location.href);
-    toast.success("Link copied to clipboard");
+    if (navigator.share) {
+      navigator.share({
+        title: course.courseName,
+        url: window.location.href,
+      });
+    } else {
+      copy(window.location.href);
+      toast.success('Link copied to clipboard!');
+    }
   };
 
   const handleAddToCart = () => {
-    if (user && user?.accountType === ACCOUNT_TYPE.INSTRUCTOR) {
-      toast.error("You are an Instructor. You can't buy a course.");
-      return;
-    }
-    if (token) {
-      dispatch(addToCart(course));
-      return;
-    }
     setConfirmationModal({
       text1: "You are not logged in!",
-      text2: "Please login to add To Cart",
+      text2: "Please login to add to cart",
       btn1Text: "Login",
       btn2Text: "Cancel",
-      btn1Handler: () => navigate("/login"),
+      btn1Handler: () => window.location.href = "/login",
       btn2Handler: () => setConfirmationModal(null),
     });
   };
 
   return (
-    <div className="flex flex-col gap-4 rounded-md bg-richblack-700 p-4 text-richblack-5">
+    <div className="flex flex-col gap-4 rounded-md bg-white p-4 shadow-lg">
       {/* Course Image */}
       <img
-        src={ThumbnailImage}
-        alt={course?.courseName}
-        className="max-h-[300px] min-h-[180px] w-[400px] overflow-hidden rounded-2xl object-cover md:max-w-full"
+        src={course.thumbnail}
+        alt={course.courseName}
+        className="h-48 w-full rounded-lg object-cover"
       />
 
       <div className="px-4">
         <div className="space-x-3 pb-4 text-3xl font-semibold">
-          Rs. {CurrentPrice}
+          Rs. {course.price}
         </div>
+        
+        {course.rating && (
+          <div className="mb-4">
+            <RatingStars rating={course.rating} />
+          </div>
+        )}
+        
         <div className="flex flex-col gap-4">
           <button
-            className="yellowButton"
-            onClick={
-              user && studentsEnrolled.includes(user?._id)
-                ? () => navigate("/dashboard/enrolled-courses")
-                : handleBuyCourse
-            }
+            className="w-full rounded-md bg-blue-600 py-2 px-4 text-white hover:bg-blue-700 transition"
+            onClick={handleBuyCourse}
           >
-            {user && studentsEnrolled.includes(user?._id)
-              ? "Go To Course"
-              : "Buy Now"}
+            Buy Now
           </button>
-          {(!user || !studentsEnrolled.includes(user?._id)) && (
-            <button onClick={handleAddToCart} className="blackButton">
-              Add to Cart
-            </button>
-          )}
-        </div>
-        <div>
-          <p className="pb-3 pt-6 text-center text-sm text-richblack-25">
-            30-Day Money-Back Guarantee
-          </p>
+          
+          <button 
+            onClick={handleAddToCart}
+            className="w-full rounded-md border-2 border-blue-600 py-2 px-4 text-blue-600 hover:bg-blue-50 transition"
+          >
+            Add to Cart
+          </button>
         </div>
 
+        <p className="pb-3 pt-6 text-center text-sm text-gray-600">
+          30-Day Money-Back Guarantee
+        </p>
+
         <div>
-          <p className="my-2 text-xl font-semibold">This Course Includes:</p>
-          <div className="flex flex-col gap-3 text-sm text-caribbeangreen-100">
-            {instructions.map((item, i) => (
-              <p className="flex gap-2" key={i}>
-                <BsFillCaretRightFill />
+          <p className="my-2 text-xl font-semibold">
+            This Course Includes:
+          </p>
+          <div className="flex flex-col gap-3 text-sm text-gray-600">
+            {course.instructions?.map((item, i) => (
+              <p className="flex items-center gap-2" key={i}>
+                <BsFillCaretRightFill className="text-blue-600" />
                 <span>{item}</span>
               </p>
             ))}
           </div>
         </div>
+
         <div className="text-center">
           <button
-            className="mx-auto flex items-center gap-2 py-6 text-yellow-100"
+            className="mx-auto flex items-center gap-2 py-6 text-blue-600 hover:text-blue-700"
             onClick={handleShare}
           >
             <FaShareSquare size={15} /> Share

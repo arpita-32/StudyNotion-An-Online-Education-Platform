@@ -4,7 +4,7 @@ var User = require("../models/User");
 
 var mailSender = require("../utils/mailSender");
 
-var bcrypt = require("bcrypt");
+var bcrypt = require("bcryptjs");
 
 var crypto = require("crypto");
 
@@ -29,42 +29,45 @@ exports.resetPasswordToken = function _callee(req, res) {
             break;
           }
 
-          return _context.abrupt("return", res.status(404).json({
+          return _context.abrupt("return", res.json({
             success: false,
-            message: 'Your email is not registered with us'
+            message: "This Email: ".concat(email, " is not Registered With Us Enter a Valid Email ")
           }));
 
         case 7:
-          token = crypto.randomUUID();
+          token = crypto.randomBytes(20).toString("hex");
           _context.next = 10;
           return regeneratorRuntime.awrap(User.findOneAndUpdate({
             email: email
           }, {
             token: token,
-            resetPasswordExpires: Date.now() + 5 * 60 * 1000
+            resetPasswordExpires: Date.now() + 3600000
           }, {
             "new": true
           }));
 
         case 10:
           updatedDetails = _context.sent;
+          console.log("DETAILS", updatedDetails);
           url = "http://localhost:3000/update-password/".concat(token);
-          _context.next = 14;
-          return regeneratorRuntime.awrap(mailSender(email, "Password Reset Link", "Password Reset Link: ".concat(url)));
+          _context.next = 15;
+          return regeneratorRuntime.awrap(mailSender(email, "Password Reset", "Your Link for email verification is ".concat(url, ". Please click this url to reset your password.")));
 
-        case 14:
-          return _context.abrupt("return", res.json({
+        case 15:
+          res.json({
             success: true,
-            message: 'Email sent successfully, please check email and change password'
-          }));
+            message: "Email Sent Successfully, Please Check Your Email to Continue Further"
+          });
+          _context.next = 21;
+          break;
 
-        case 17:
-          _context.prev = 17;
+        case 18:
+          _context.prev = 18;
           _context.t0 = _context["catch"](0);
-          console.log(_context.t0);
-          return _context.abrupt("return", res.status(500).json({
+          return _context.abrupt("return", res.json({
+            error: _context.t0.message,
             success: false,
-            message: 'Something went wrong while sending reset email'
+            message: "Some Error in Sending the Reset Message"
           }));
 
         case 21:
@@ -72,11 +75,11 @@ exports.resetPasswordToken = function _callee(req, res) {
           return _context.stop();
       }
     }
-  }, null, null, [[0, 17]]);
+  }, null, null, [[0, 18]]);
 };
 
 exports.resetPassword = function _callee2(req, res) {
-  var _req$body, password, confirmPassword, token, userDetails, hashedPassword;
+  var _req$body, password, confirmPassword, token, userDetails, encryptedPassword;
 
   return regeneratorRuntime.async(function _callee2$(_context2) {
     while (1) {
@@ -85,14 +88,14 @@ exports.resetPassword = function _callee2(req, res) {
           _context2.prev = 0;
           _req$body = req.body, password = _req$body.password, confirmPassword = _req$body.confirmPassword, token = _req$body.token;
 
-          if (!(password !== confirmPassword)) {
+          if (!(confirmPassword !== password)) {
             _context2.next = 4;
             break;
           }
 
-          return _context2.abrupt("return", res.status(400).json({
+          return _context2.abrupt("return", res.json({
             success: false,
-            message: 'Passwords do not match'
+            message: "Password and Confirm Password Does not Match"
           }));
 
         case 4:
@@ -109,20 +112,20 @@ exports.resetPassword = function _callee2(req, res) {
             break;
           }
 
-          return _context2.abrupt("return", res.status(404).json({
+          return _context2.abrupt("return", res.json({
             success: false,
-            message: 'Token is invalid'
+            message: "Token is Invalid"
           }));
 
         case 9:
-          if (!(userDetails.resetPasswordExpires < Date.now())) {
+          if (userDetails.resetPasswordExpires > Date.now()) {
             _context2.next = 11;
             break;
           }
 
-          return _context2.abrupt("return", res.status(400).json({
+          return _context2.abrupt("return", res.status(403).json({
             success: false,
-            message: 'Token has expired, please regenerate your token'
+            message: "Token is Expired, Please Regenerate Your Token"
           }));
 
         case 11:
@@ -130,34 +133,34 @@ exports.resetPassword = function _callee2(req, res) {
           return regeneratorRuntime.awrap(bcrypt.hash(password, 10));
 
         case 13:
-          hashedPassword = _context2.sent;
+          encryptedPassword = _context2.sent;
           _context2.next = 16;
           return regeneratorRuntime.awrap(User.findOneAndUpdate({
             token: token
           }, {
-            password: hashedPassword,
-            token: null,
-            resetPasswordExpires: null
+            password: encryptedPassword
           }, {
             "new": true
           }));
 
         case 16:
-          return _context2.abrupt("return", res.json({
+          res.json({
             success: true,
-            message: 'Password reset successfully'
-          }));
+            message: "Password Reset Successful"
+          });
+          _context2.next = 22;
+          break;
 
         case 19:
           _context2.prev = 19;
           _context2.t0 = _context2["catch"](0);
-          console.error(_context2.t0);
-          return _context2.abrupt("return", res.status(500).json({
+          return _context2.abrupt("return", res.json({
+            error: _context2.t0.message,
             success: false,
-            message: 'Something went wrong while resetting password'
+            message: "Some Error in Updating the Password"
           }));
 
-        case 23:
+        case 22:
         case "end":
           return _context2.stop();
       }

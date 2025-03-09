@@ -4,6 +4,7 @@ const SubSection = require('../models/SubSection');
 const Section = require('../models/Section');
 const Category = require('../models/Category');
 const { uploadFileToCloudinary } = require('../utils/imageUploader');
+const mongoose = require('mongoose');
 require('dotenv').config();
 const {convertSecondsToDuration} = require('../utils/SecToDuration');
 const CourseProgress = require('../models/CourseProgress');
@@ -181,55 +182,56 @@ exports. getAllCourses = async (req, resp) => {
 }
 
 //controller for getting course details where there should not be any object id so i have to poppulater every references
-exports. getCourseDetails = async (req, resp) => {
-    try{
-        //fetch  courseid from the req body
-        const {courseId} = req.body;
-        //validate
-        if(!courseId){
-            return resp.status(403).json({
-                success: false,
-                message: 'course id is required'
-            })
-        }
-        //fetch course details
-        const courseDetail  = await Course.findById(courseId).populate(
-                                                                    {path:'courseContent', 
-                                                                        populate:{path : 'subSection'}
-                                                                    }
-                                                                )
-                                                             .populate({path: 'studentsEnrolled'})
-                                                             .populate({path: 'ratingAndReview'})
-                                                             .populate({path:'instructor',populate:{path:'additionalDetails'}})
-                                                             .populate({path:'category'})
-                                                             .exec();
+exports.getCourseDetails = async (req, resp) => {
+  try {
+    const { courseId } = req.body;
 
-        console.log("printing course details", courseDetail);
-
-        if(!courseDetail){
-            return resp.status(404).json({
-                success: false,
-                message: 'course not found'
-            })  
-            //404 not found 403 forbidden 401 unauthorized 500 internal server error 200 ok 400 bad request
-        }
-
-        return resp.status(200).json({
-            success:true,
-            courseDetail,
-            message:'course details fetched successfully'
-        })
-
-    }catch(err){
-        console.log("error occured during fetching course detail", err.message);
-        console.error(err.message);
-        return resp.status(500).json({
-            success:false,
-            message:'internal server error',
-            error: err.message
-        })  
+    // Validate courseId
+    if (!courseId || !mongoose.Types.ObjectId.isValid(courseId)) {
+      return resp.status(403).json({
+        success: false,
+        message: 'Invalid course ID',
+      });
     }
-}
+
+    // Fetch course details
+    const courseDetail = await Course.findById(courseId)
+      .populate({
+        path: 'courseContent',
+        populate: { path: 'subSection' },
+      })
+      .populate({ path: 'studentsEnrolled' })
+      .populate({ path: 'ratingAndReview' })
+      .populate({
+        path: 'instructor',
+        populate: { path: 'additionalDetails' },
+      })
+      .populate({ path: 'category' })
+      .exec();
+
+    // Check if course exists
+    if (!courseDetail) {
+      return resp.status(404).json({
+        success: false,
+        message: 'Course not found',
+      });
+    }
+
+    // Return success response
+    return resp.status(200).json({
+      success: true,
+      courseDetail,
+      message: 'Course details fetched successfully',
+    });
+  } catch (err) {
+    console.error("Error fetching course details:", err.message);
+    return resp.status(500).json({
+      success: false,
+      message: 'Internal server error',
+      error: err.message,
+    });
+  }
+};
 
 
 

@@ -1,18 +1,16 @@
-import React, { useState,useEffect, useRef } from 'react'
-import { useForm } from 'react-hook-form'
-import { useDispatch, useSelector } from 'react-redux'
-import { HiOutlineCurrencyRupee } from "react-icons/hi2";
-import { RxCross2 } from "react-icons/rx";
-import { getAllCategories } from '../../../../../services/operations/courseDetailsAPI';
-import ImageUploader  from './ImageUploader';
-import { setStep } from '../../../../../slices/courseSlice';
-import IconBtn from "../../../../common/IconBtn"
-import { MdNavigateNext } from "react-icons/md";
+import React, { useEffect, useRef, useState } from 'react';
+import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
+import { HiOutlineCurrencyRupee } from "react-icons/hi2";
+import { MdNavigateNext } from "react-icons/md";
+import { RxCross2 } from "react-icons/rx";
+import { useDispatch, useSelector } from 'react-redux';
+import { createCourse, editCourseDetails, getAllCategories } from '../../../../../services/operations/courseDetailsAPI';
+import { setCourse, setStep } from '../../../../../slices/courseSlice';
 import { COURSE_STATUS } from '../../../../../utils/constants';
-import { createCourse } from '../../../../../services/operations/courseDetailsAPI';
-import { setCourse } from '../../../../../slices/courseSlice';
-import { editCourseDetails } from '../../../../../services/operations/courseDetailsAPI';
+import IconBtn from "../../../../common/IconBtn";
+import ImageUploader from './ImageUploader';
+
 
 const CourseInformationForm = () => {
 

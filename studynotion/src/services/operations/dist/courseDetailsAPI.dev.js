@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.markLectureAsComplete = exports.saveReview = exports.updateSubsection = exports.createSubSection = exports.deleteSubsection = exports.deleteSection = exports.updateSection = exports.createSection = exports.getFullDetailsOfCourse = exports.fetchCourseDetails = exports.editCourseDetails = exports.createCourse = exports.getAllCategories = exports.deleteCourse = exports.getAllCoursesOfInstructor = void 0;
+exports.markLectureAsComplete = exports.saveReview = exports.updateSubsection = exports.createSubSection = exports.deleteSubsection = exports.deleteSection = exports.updateSection = exports.createSection = exports.getFullDetailsOfCourse = exports.getCourseDetails = exports.editCourseDetails = exports.createCourse = exports.getAllCategories = exports.deleteCourse = exports.getAllCoursesOfInstructor = void 0;
 
 var _apiconnector = require("../apiconnector");
 
@@ -244,9 +244,9 @@ var editCourseDetails = function editCourseDetails(formData, token) {
 
 exports.editCourseDetails = editCourseDetails;
 
-var fetchCourseDetails = function fetchCourseDetails(courseId) {
+var getCourseDetails = function getCourseDetails(courseId) {
   var response;
-  return regeneratorRuntime.async(function fetchCourseDetails$(_context6) {
+  return regeneratorRuntime.async(function getCourseDetails$(_context6) {
     while (1) {
       switch (_context6.prev = _context6.next) {
         case 0:
@@ -258,34 +258,33 @@ var fetchCourseDetails = function fetchCourseDetails(courseId) {
 
         case 3:
           response = _context6.sent;
-          console.log('response is: - ', response);
 
           if (response.data.success) {
-            _context6.next = 7;
+            _context6.next = 6;
             break;
           }
 
           throw new Error(response.data.message);
 
-        case 7:
-          console.log("data from the get course details", response.data.courseDetail);
+        case 6:
+          console.log("Course Details:", response.data.courseDetail);
           return _context6.abrupt("return", response.data.courseDetail);
 
-        case 11:
-          _context6.prev = 11;
+        case 10:
+          _context6.prev = 10;
           _context6.t0 = _context6["catch"](0);
-          console.log('error occured while getting course details: ', _context6.t0.message);
-          console.error(_context6.t0.message);
+          console.error("Error fetching course details:", _context6.t0.message);
+          throw _context6.t0;
 
-        case 15:
+        case 14:
         case "end":
           return _context6.stop();
       }
     }
-  }, null, null, [[0, 11]]);
+  }, null, null, [[0, 10]]);
 };
 
-exports.fetchCourseDetails = fetchCourseDetails;
+exports.getCourseDetails = getCourseDetails;
 
 var getFullDetailsOfCourse = function getFullDetailsOfCourse(courseId, token) {
   var response;

@@ -1,65 +1,42 @@
 "use strict";
 
-var mongoose = require("mongoose"); // Define the Courses schema
+// Import the required modules
+var express = require("express");
+
+var router = express.Router(); // Import the required controllers and middleware functions
+
+var _require = require("../controllers/Auth"),
+    login = _require.login,
+    signup = _require.signup,
+    sendotp = _require.sendotp,
+    changePassword = _require.changePassword;
+
+var _require2 = require("../controllers/ResetPassword"),
+    resetPasswordToken = _require2.resetPasswordToken,
+    resetPassword = _require2.resetPassword;
+
+var _require3 = require("../middlewares/auth"),
+    auth = _require3.auth; // Routes for Login, Signup, and Authentication
+// ********************************************************************************************************
+//                                      Authentication routes
+// ********************************************************************************************************
+// Route for user login
 
 
-var coursesSchema = new mongoose.Schema({
-  courseName: {
-    type: String
-  },
-  courseDescription: {
-    type: String
-  },
-  instructor: {
-    type: mongoose.Schema.Types.ObjectId,
-    required: true,
-    ref: "User" // Changed from "user" to "User"
+router.post("/login", login); // Route for user signup
 
-  },
-  whatYouWillLearn: {
-    type: String
-  },
-  courseContent: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Section"
-  }],
-  ratingAndReviews: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "RatingAndReview"
-  }],
-  price: {
-    type: Number
-  },
-  thumbnail: {
-    type: String
-  },
-  tag: {
-    type: [String],
-    required: true
-  },
-  category: {
-    type: mongoose.Schema.Types.ObjectId,
-    // required: true,
-    ref: "Category"
-  },
-  studentsEnrolled: [{
-    type: mongoose.Schema.Types.ObjectId,
-    required: true,
-    ref: "User" // Changed from "user" to "User"
+router.post("/signup", signup); // Route for sending OTP to the user's email
 
-  }],
-  instructions: {
-    type: [String]
-  },
-  status: {
-    type: String,
-    "enum": ["Draft", "Published"]
-  },
-  createdAt: {
-    type: Date,
-    "default": Date.now
-  }
-}); // Export the Courses model
+router.post("/sendotp", sendotp); // Route for Changing the password
 
-module.exports = mongoose.model("Course", coursesSchema);
+router.post("/changepassword", auth, changePassword); // ********************************************************************************************************
+//                                      Reset Password
+// ********************************************************************************************************
+// Route for generating a reset password token
+
+router.post("/reset-password-token", resetPasswordToken); // Route for resetting user's password after verification
+
+router.post("/reset-password", resetPassword); // Export the router for use in the main application
+
+module.exports = router;
 //# sourceMappingURL=Course.dev.js.map

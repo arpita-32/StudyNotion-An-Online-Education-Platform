@@ -109,26 +109,21 @@ export const editCourseDetails = async (formData,token) => {
     }
 }
 
-export const fetchCourseDetails = async (courseId) => {
-    try{
-
-        const response = await apiConnector('POST', courseEndpoints.COURSE_DETAILS_API ,{courseId})
-
-        console.log('response is: - ',response);
-
-        if(!response.data.success){
-            throw new Error(response.data.message);
-        }
-
-        console.log("data from the get course details",response.data.courseDetail);
-
-        return response.data.courseDetail;
-
-    }catch(err){
-        console.log('error occured while getting course details: ',err.message);
-        console.error(err.message);
+export const getCourseDetails = async (courseId) => {
+    try {
+      const response = await apiConnector('POST', courseEndpoints.COURSE_DETAILS_API, { courseId });
+  
+      if (!response.data.success) {
+        throw new Error(response.data.message);
+      }
+  
+      console.log("Course Details:", response.data.courseDetail);
+      return response.data.courseDetail;
+    } catch (err) {
+      console.error("Error fetching course details:", err.message);
+      throw err;
     }
-}
+  };
 
 export const getFullDetailsOfCourse = async(courseId, token) => {
     try{
