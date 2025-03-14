@@ -1,19 +1,19 @@
-import React, { useEffect, useState } from 'react';
-import { useSelector } from "react-redux";
-import { useParams } from 'react-router-dom';
-import Footer from '../components/common/Footer';
-import Course_Card from '../components/core/Catalog/Course_Card';
-import CourseSlider from '../components/core/Catalog/CourseSlider';
-import { categories } from '../services/api';
+import React, { useEffect, useState } from 'react'
+import Footer from '../components/common/Footer'
+import { useParams } from 'react-router-dom'
 import { apiConnector } from '../services/apiconnector';
+import { categories } from '../services/api';
 import { getCatalogPageData } from '../services/operations/pageAndComponentData';
-import Error from "./Error";
+import CourseCard from '../components/core/Catalog/Course_Card';
+import CourseSlider from '../components/core/Catalog/CourseSlider';
+import { useSelector } from "react-redux"
+import Error from "./Error"
 
 const Catalog = () => {
 
     const { loading } = useSelector((state) => state.profile)
-  const { catalogName } = useParams()
-  const [active, setActive] = useState(1)
+    const { catalogName } = useParams()
+    const [active, setActive] = useState(1);
     const [catalogPageData, setCatalogPageData] = useState(null);
     const [categoryId, setCategoryId] = useState("");
 
@@ -89,7 +89,7 @@ const Catalog = () => {
                 } cursor-pointer`}
                 onClick={() => setActive(1)}
               >
-                Most Populer
+                Most Popular
               </p>
               <p
                 className={`px-4 py-2 ${
@@ -128,7 +128,7 @@ const Catalog = () => {
                 {catalogPageData?.data?.mostSellingCourses
                   ?.slice(0, 4)
                   .map((course, i) => (
-                    <Course_Card course={course} key={i} Height={"h-[400px]"} />
+                    <CourseCard course={course} key={i} Height={"h-[400px]"} />
                   ))}
               </div>
             </div>

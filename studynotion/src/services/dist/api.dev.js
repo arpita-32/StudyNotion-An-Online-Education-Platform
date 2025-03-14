@@ -3,39 +3,31 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.contactusEndpoint = exports.catalogData = exports.categories = exports.ratingsEndpoints = exports.courseEndpoints = exports.studentEndpoints = exports.profile = exports.ContactEndpoint = exports.endpoints = void 0;
-//here we will mention the url of links 
-var BASE_URL = process.env.REACT_APP_BASE_URL || 'http://localhost:4000/api/v1'; // AUTH ENDPOINTS
+exports.settingsEndpoints = exports.contactusEndpoint = exports.catalogData = exports.categories = exports.ratingsEndpoints = exports.courseEndpoints = exports.studentEndpoints = exports.profileEndpoints = exports.endpoints = void 0;
+var BASE_URL = process.env.REACT_APP_BASE_URL; // AUTH ENDPOINTS
 
 var endpoints = {
-  SENDOTP_API: BASE_URL + "/auth/generateOtp",
+  SENDOTP_API: BASE_URL + "/auth/sendotp",
   SIGNUP_API: BASE_URL + "/auth/signup",
   LOGIN_API: BASE_URL + "/auth/login",
   RESETPASSTOKEN_API: BASE_URL + "/auth/reset-password-token",
-  RESETPASSWORD_API: BASE_URL + "/auth/reset-password",
-  CHANGEPASSWORD_API: BASE_URL + "/auth/changepassword"
-};
-exports.endpoints = endpoints;
-var ContactEndpoint = {
-  CONTATUS_API: BASE_URL + "/reach/contact"
-}; //PROFILE ENDPOINTS
+  RESETPASSWORD_API: BASE_URL + "/auth/reset-password"
+}; // PROFILE ENDPOINTS
 
-exports.ContactEndpoint = ContactEndpoint;
-var profile = {
-  GET_USER_DETAILS: BASE_URL + "/profile/getUserDetails",
-  UPDATE_DISPLAY_PICTURE: BASE_URL + "/profile/updateDisplayPicture",
-  GET_ENROLLED_COURSES: BASE_URL + "/profile/getEnrolledCourses",
-  DELETE_ACCOUNT: BASE_URL + "/profile/deleteProfile",
-  UPDATE_PROFILE: BASE_URL + "/profile/updateProfile",
-  INSTRUCTOR_DASHBOARD: BASE_URL + "/profile/instructorDashboard"
+exports.endpoints = endpoints;
+var profileEndpoints = {
+  GET_USER_DETAILS_API: BASE_URL + "/profile/getUserDetails",
+  GET_USER_ENROLLED_COURSES_API: BASE_URL + "/profile/getEnrolledCourses",
+  GET_INSTRUCTOR_DATA_API: BASE_URL + "/profile/instructorDashboard"
 }; // STUDENTS ENDPOINTS
 
-exports.profile = profile;
-var studentEndpoints = {} // COURSE_PAYMENT_API: BASE_URL + "/payment/capturePayment",
-// COURSE_VERIFY_API: BASE_URL + "/payment/verifyPayment",
-// SEND_PAYMENT_SUCCESS_EMAIL_API: BASE_URL + "/payment/sendPaymentSuccessEmail",
-// COURSE ENDPOINTS
-;
+exports.profileEndpoints = profileEndpoints;
+var studentEndpoints = {
+  COURSE_PAYMENT_API: BASE_URL + "/payment/capturePayment",
+  COURSE_VERIFY_API: BASE_URL + "/payment/verifyPayment",
+  SEND_PAYMENT_SUCCESS_EMAIL_API: BASE_URL + "/payment/sendPaymentSuccessEmail"
+}; // COURSE ENDPOINTS
+
 exports.studentEndpoints = studentEndpoints;
 var courseEndpoints = {
   GET_ALL_COURSE_API: BASE_URL + "/course/getAllCourses",
@@ -74,6 +66,14 @@ var catalogData = {
 exports.catalogData = catalogData;
 var contactusEndpoint = {
   CONTACT_US_API: BASE_URL + "/reach/contact"
-};
+}; // SETTINGS PAGE API
+
 exports.contactusEndpoint = contactusEndpoint;
+var settingsEndpoints = {
+  UPDATE_DISPLAY_PICTURE_API: BASE_URL + "/profile/updateDisplayPicture",
+  UPDATE_PROFILE_API: BASE_URL + "/profile/updateProfile",
+  CHANGE_PASSWORD_API: BASE_URL + "/auth/changepassword",
+  DELETE_PROFILE_API: BASE_URL + "/profile/deleteProfile"
+};
+exports.settingsEndpoints = settingsEndpoints;
 //# sourceMappingURL=api.dev.js.map
