@@ -4,7 +4,7 @@ import { FaShareSquare } from 'react-icons/fa';
 import copy from 'copy-to-clipboard';
 import { toast } from 'react-hot-toast';
 
-import RatingStars from '../../common/RatingStars'
+
 
 function CourseBuyCard({ course, setConfirmationModal, handleBuyCourse }) {
   const handleShare = () => {
@@ -44,11 +44,7 @@ function CourseBuyCard({ course, setConfirmationModal, handleBuyCourse }) {
           Rs. {course.price}
         </div>
         
-        {course.rating && (
-          <div className="mb-4">
-            <RatingStars rating={course.rating} />
-          </div>
-        )}
+        
         
         <div className="flex flex-col gap-4">
           <button

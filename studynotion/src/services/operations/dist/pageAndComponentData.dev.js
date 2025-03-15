@@ -1,62 +1,65 @@
 "use strict";
 
-var _react = _interopRequireDefault(require("react"));
-
-var _reactHotToast = _interopRequireDefault(require("react-hot-toast"));
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getCatalogData = void 0;
 
 var _apiconnector = require("../apiconnector");
 
 var _api = require("../api");
 
+var _reactHotToast = _interopRequireDefault(require("react-hot-toast"));
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
-// In Catalog.jsx, modify getCategoryDetails
-var getCategoryDetails = function getCategoryDetails() {
-  var res;
-  return regeneratorRuntime.async(function getCategoryDetails$(_context) {
+var getCatalogData = function getCatalogData(categoryId) {
+  var toastId, response;
+  return regeneratorRuntime.async(function getCatalogData$(_context) {
     while (1) {
       switch (_context.prev = _context.next) {
         case 0:
-          _context.prev = 0;
-          console.log("Fetching with categoryId:", categoryId);
+          toastId = _reactHotToast["default"].loading('Loading...');
+          _context.prev = 1;
           _context.next = 4;
-          return regeneratorRuntime.awrap(getCatalogPageData(categoryId));
+          return regeneratorRuntime.awrap((0, _apiconnector.apiConnector)('POST', _api.catalogData.CATALOGPAGEDATA_API, {
+            categoryId: categoryId
+          }));
 
         case 4:
-          res = _context.sent;
-          console.log("Response:", res);
+          response = _context.sent;
+          console.log('response from the category page detail api:- ', response);
 
-          if (!(!res || !res.success)) {
-            _context.next = 10;
+          if (response.data.success) {
+            _context.next = 8;
             break;
           }
 
-          console.error("Failed to fetch catalog data:", res); // Set a failure state to exit loading
+          throw new Error(response.data.message);
 
-          setCatalogPageData({
-            success: false
-          });
-          return _context.abrupt("return");
+        case 8:
+          return _context.abrupt("return", response.data.data);
 
-        case 10:
-          setCatalogPageData(res);
-          _context.next = 17;
-          break;
+        case 11:
+          _context.prev = 11;
+          _context.t0 = _context["catch"](1);
+          console.log('error occured while getting category page details : - (for detail error see the network tab in console)', _context.t0.message);
+          console.error(_context.t0.message);
 
-        case 13:
-          _context.prev = 13;
-          _context.t0 = _context["catch"](0);
-          console.error("Error fetching catalog data:", _context.t0); // Set a failure state to exit loading
+        case 15:
+          _context.prev = 15;
 
-          setCatalogPageData({
-            success: false
-          });
+          _reactHotToast["default"].dismiss(toastId);
 
-        case 17:
+          return _context.finish(15);
+
+        case 18:
         case "end":
           return _context.stop();
       }
     }
-  }, null, null, [[0, 13]]);
+  }, null, null, [[1, 11, 15, 18]]);
 };
+
+exports.getCatalogData = getCatalogData;
 //# sourceMappingURL=pageAndComponentData.dev.js.map

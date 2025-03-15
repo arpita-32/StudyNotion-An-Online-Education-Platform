@@ -1,21 +1,22 @@
 "use strict";
 
-var mongoose = require("mongoose"); // Define the Tags schema
+var mongoose = require('mongoose');
 
-
-var categorySchema = new mongoose.Schema({
+var CategorySchema = new mongoose.Schema({
   name: {
     type: String,
-    required: true
+    required: true,
+    trim: true
   },
   description: {
-    type: String
+    type: String,
+    required: true,
+    trim: true
   },
   courses: [{
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Course"
+    ref: 'Course'
   }]
-}); // Export the Tags model
-
-module.exports = mongoose.model("Category", categorySchema);
+});
+module.exports = mongoose.model('Category', CategorySchema);
 //# sourceMappingURL=Category.dev.js.map

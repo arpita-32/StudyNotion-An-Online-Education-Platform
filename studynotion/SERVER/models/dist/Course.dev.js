@@ -1,63 +1,72 @@
 "use strict";
 
-var mongoose = require("mongoose"); // Define the Courses schema
+var mongoose = require('mongoose');
 
-
-var coursesSchema = new mongoose.Schema({
+var CourseSchema = new mongoose.Schema({
   courseName: {
-    type: String
+    type: String,
+    required: true,
+    trim: true
   },
   courseDescription: {
-    type: String
+    type: String,
+    required: true,
+    trim: true
   },
   instructor: {
     type: mongoose.Schema.Types.ObjectId,
-    required: true,
-    ref: "user"
+    ref: 'User',
+    required: true
   },
   whatYouWillLearn: {
-    type: String
+    type: String,
+    required: true
   },
   courseContent: [{
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Section"
+    ref: 'Section',
+    required: true
   }],
-  ratingAndReviews: [{
+  ratingAndReview: [{
     type: mongoose.Schema.Types.ObjectId,
-    ref: "RatingAndReview"
+    ref: 'RatingAndReview',
+    required: true
   }],
   price: {
-    type: Number
+    type: Number,
+    required: true
   },
   thumbnail: {
-    type: String
+    type: String,
+    required: true
+  },
+  category: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Category',
+    required: true
   },
   tag: {
     type: [String],
     required: true
   },
-  category: {
-    type: mongoose.Schema.Types.ObjectId,
-    // required: true,
-    ref: "Category"
-  },
   studentsEnrolled: [{
     type: mongoose.Schema.Types.ObjectId,
-    required: true,
-    ref: "user"
+    ref: 'User',
+    required: true
   }],
+  //added in later stage
   instructions: {
     type: [String]
   },
   status: {
     type: String,
-    "enum": ["Draft", "Published"]
+    "enum": ["Draft", "Published"],
+    "default": "Draft"
   },
   createdAt: {
     type: Date,
     "default": Date.now
   }
-}); // Export the Courses model
-
-module.exports = mongoose.model("Course", coursesSchema);
+});
+module.exports = mongoose.model('Course', CourseSchema);
 //# sourceMappingURL=Course.dev.js.map
