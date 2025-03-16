@@ -10,7 +10,7 @@ import ConfirmationModal from "../components/common/ConfirmationModal"
 import Footer from "../components/common/Footer"
 import RatingStars from "../components/common/RatingStars"
 import CourseAccordionBar from "../components/core/CoursePage/CourseAccordionBar"
-import CourseDetailsCard from "../components/core/CoursePage/CourseBuyCard"
+import CourseBuyCard from "../components/core/CoursePage/CourseBuyCard"
 import { formatDate } from "../services/formatDate"
 import { getCourseDetails } from "../services/operations/courseDetailsAPI"
 import GetAvgRating from "../utils/avgRating"
@@ -213,11 +213,11 @@ useEffect(() => {
           </div>
           {/* Courses Card */}
           <div className="right-[1rem] top-[60px] mx-auto hidden min-h-[600px] w-1/3 max-w-[410px] translate-y-24 md:translate-y-0 lg:absolute  lg:block">
-            <CourseDetailsCard
-              course={response?.data?.courseDetails}
-              setConfirmationModal={setConfirmationModal}
-              handleBuyCourse={handleBuyCourse}
-            />
+          <CourseBuyCard
+  course={response?.data?.courseDetails}
+  setConfirmationModal={setConfirmationModal}
+  handleBuyCourse={handleBuyCourse}
+/>
           </div>
         </div>
       </div>
