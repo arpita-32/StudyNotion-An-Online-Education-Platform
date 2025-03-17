@@ -1,91 +1,113 @@
-import React, { useState } from 'react'
-import { useReducer } from 'react';
-import { RxCross2 } from "react-icons/rx";
-import { useSelector } from 'react-redux';
-import GiveRating from './GiveRating';
-import { saveReview } from '../../../services/operations/courseDetailsAPI';
+import { useEffect } from "react"
+import { useForm } from "react-hook-form"
+import { RxCross2 } from "react-icons/rx"
+import ReactStars from "react-rating-stars-component"
+import { useSelector } from "react-redux"
 
-const CourseReviewModal = ({setReviewModal, courseId}) => {
+import { createRating } from "../../../services/operations/courseDetailsAPI"
+import IconBtn from "../../common/IconBtn"
 
-  const [rating, setrating] = useState(0);
-  const [review, setreview] = useState('');
+export default function CourseReviewModal({ setReviewModal }) {
+  const { user } = useSelector((state) => state.profile)
+  const { token } = useSelector((state) => state.auth)
+  const { courseEntireData } = useSelector((state) => state.viewCourse)
 
-  const {user} = useSelector((state) => state.profile);
-  const {token} = useSelector((state) => state.auth);
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+  } = useForm()
 
-  const refObject = useReducer({});
+  useEffect(() => {
+    setValue("courseExperience", "")
+    setValue("courseRating", 0)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
-  const clickHandler = (e) => {
-    if(e.target === refObject.current){
-        setReviewModal(false);
-    }
+  const ratingChanged = (newRating) => {
+    // console.log(newRating)
+    setValue("courseRating", newRating)
   }
 
-  const changeHandler = (e) => {
-    setreview(e.target.value);
+  const onSubmit = async (data) => {
+    await createRating(
+      {
+        courseId: courseEntireData._id,
+        rating: data.courseRating,
+        review: data.courseExperience,
+      },
+      token
+    )
+    setReviewModal(false)
   }
-
-  const submitHandler = async (e) => {
-    e.preventDefault();
-    // save the review
-    await saveReview(courseId, rating, review, token);
-     setReviewModal(false);
-  }
-
-
 
   return (
-    <div ref={refObject} className='flex justify-center items-center inset-0 backdrop-blur-md text-white w-screen h-screen' onClick={clickHandler}>
-
-        <div  className='flex flex-col w-[40%] h-fit'>
-            <div className='flex px-3 py-3 justify-between items-center bg-richblack-700 '>
-                <h1>Add Review</h1>
-                <RxCross2 size={22} className='hover:rotate-90 transition-all duration-200 cursor-pointer' onClick={() => {setReviewModal(false)}} />
+    <div className="fixed inset-0 z-[1000] !mt-0 grid h-screen w-screen place-items-center overflow-auto bg-white bg-opacity-10 backdrop-blur-sm">
+      <div className="my-10 w-11/12 max-w-[700px] rounded-lg border border-richblack-400 bg-richblack-800">
+        {/* Modal Header */}
+        <div className="flex items-center justify-between rounded-t-lg bg-richblack-700 p-5">
+          <p className="text-xl font-semibold text-richblack-5">Add Review</p>
+          <button onClick={() => setReviewModal(false)}>
+            <RxCross2 className="text-2xl text-richblack-5" />
+          </button>
+        </div>
+        {/* Modal Body */}
+        <div className="p-6">
+          <div className="flex items-center justify-center gap-x-4">
+            <img
+              src={user?.image}
+              alt={user?.firstName + "profile"}
+              className="aspect-square w-[50px] rounded-full object-cover"
+            />
+            <div className="">
+              <p className="font-semibold text-richblack-5">
+                {user?.firstName} {user?.lastName}
+              </p>
+              <p className="text-sm text-richblack-5">Posting Publicly</p>
             </div>
-            <div className='bg-richblack-800 flex flex-col px-5 py-5 items-center gap-4'>
-
-
-            <div className='flex gap-2 justify-center items-center'>
-                <img src={user.image} alt="userImage" className='w-12 h-12 rounded-full' />
-                <div className='flex flex-col gap-1 items-start justify-center'>
-                    <h1>{`${user.firstName} ${user.lastName}`}</h1>
-                    <p className='text-richblack-300'>Posting Publicly</p>
-                </div>
-
+          </div>
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="mt-6 flex flex-col items-center"
+          >
+            <ReactStars
+              count={5}
+              onChange={ratingChanged}
+              size={24}
+              activeColor="#ffd700"
+            />
+            <div className="flex w-11/12 flex-col space-y-2">
+              <label
+                className="text-sm text-richblack-5"
+                htmlFor="courseExperience"
+              >
+                Add Your Experience <sup className="text-pink-200">*</sup>
+              </label>
+              <textarea
+                id="courseExperience"
+                placeholder="Add Your Experience"
+                {...register("courseExperience", { required: true })}
+                className="form-style resize-x-none min-h-[130px] w-full"
+              />
+              {errors.courseExperience && (
+                <span className="ml-2 text-xs tracking-wide text-pink-200">
+                  Please Add Your Experience
+                </span>
+              )}
             </div>
-
-            <GiveRating  setrating={setrating} />
-
-            <div className='w-[90%]'>
-                <label htmlFor="review">Add Your Experience</label>
-                <textarea 
-                rows={6}
-                placeholder='Write your review here...' className='rounded-sm bg-richblack-700 focus:outline-none placeholder:text-richblack-500 text-white p-2 w-full ' id='review' onChange={changeHandler} />
-            </div>
-
-            <div className="mt-2 flex w-11/12 justify-end gap-x-2">
+            <div className="mt-6 flex w-11/12 justify-end gap-x-2">
               <button
-              type='button'
                 onClick={() => setReviewModal(false)}
                 className={`flex cursor-pointer items-center gap-x-2 rounded-md bg-richblack-300 py-[8px] px-[20px] font-semibold text-richblack-900`}
               >
                 Cancel
               </button>
-              <button
-              type='submit'
-              onClick={submitHandler}
-              className={`flex cursor-pointer items-center gap-x-2 rounded-md bg-yellow-100 py-[8px] px-[20px] font-semibold text-richblack-900`}
-              >
-                save
-              </button>
-             </div>
-
+              <IconBtn text="Save" />
             </div>
-
+          </form>
         </div>
-
+      </div>
     </div>
   )
 }
-
-export default CourseReviewModal

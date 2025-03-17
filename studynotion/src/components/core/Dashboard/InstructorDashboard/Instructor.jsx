@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { getAllCoursesOfInstructor } from '../../../../services/operations/courseDetailsAPI';
+import { fetchInstructorCourses} from '../../../../services/operations/courseDetailsAPI';
 import { getInstructorData } from '../../../../services/operations/profileAPI';
 import { useSelector } from 'react-redux';
 import InstructorChart from './InstructorChart';
@@ -20,7 +20,7 @@ const Instructor = () => {
             try{
                 const instructorApiData = await getInstructorData(token);
 
-                const instructorAllCourses = await getAllCoursesOfInstructor(token);
+                const instructorAllCourses = await fetchInstructorCourses(token);
 
                 console.log('instructorApiData:- ', instructorApiData);
 

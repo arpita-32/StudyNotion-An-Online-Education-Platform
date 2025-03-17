@@ -1,6 +1,7 @@
-import { useSelector } from "react-redux"
+import { useDispatch, useSelector } from "react-redux"
 import { Table, Tbody, Td, Th, Thead, Tr } from "react-super-responsive-table"
 
+import { setCourse, setEditCourse } from "../../../../slices/courseSlice"
 import "react-super-responsive-table/dist/SuperResponsiveTableStyle.css"
 import { useState } from "react"
 import { FaCheck } from "react-icons/fa"
@@ -9,17 +10,16 @@ import { HiClock } from "react-icons/hi"
 import { RiDeleteBin6Line } from "react-icons/ri"
 import { useNavigate } from "react-router-dom"
 
-import dateFormat from "dateformat"
+import { formatDate } from "../../../../services/formatDate"
 import {
   deleteCourse,
-  getAllCoursesOfInstructor,
+  fetchInstructorCourses,
 } from "../../../../services/operations/courseDetailsAPI"
 import { COURSE_STATUS } from "../../../../utils/constants"
 import ConfirmationModal from "../../../common/ConfirmationModal"
 
-
-export default function CoursesTable({courses,setCourses}) {
-
+export default function CoursesTable({ courses, setCourses }) {
+  const dispatch = useDispatch()
   const navigate = useNavigate()
   const { token } = useSelector((state) => state.auth)
   const [loading, setLoading] = useState(false)
@@ -28,8 +28,8 @@ export default function CoursesTable({courses,setCourses}) {
 
   const handleCourseDelete = async (courseId) => {
     setLoading(true)
-    await deleteCourse( courseId , token)
-    const result = await getAllCoursesOfInstructor(token)
+    await deleteCourse({ courseId: courseId }, token)
+    const result = await fetchInstructorCourses(token)
     if (result) {
       setCourses(result)
     }
@@ -41,7 +41,7 @@ export default function CoursesTable({courses,setCourses}) {
 
   return (
     <>
-      <Table className="rounded-2xl border border-richblack-800  ">
+      <Table className="rounded-xl border border-richblack-800 ">
         <Thead>
           <Tr className="flex gap-x-10 rounded-t-md border-b border-b-richblack-800 px-6 py-2">
             <Th className="flex-1 text-left text-sm font-medium uppercase text-richblack-100">
@@ -92,7 +92,7 @@ export default function CoursesTable({courses,setCourses}) {
                         : course.courseDescription}
                     </p>
                     <p className="text-[12px] text-white">
-                      Created: {dateFormat(course.createdAt, " mmmm dS, yyyy, h:MM TT")}
+                      Created: {formatDate(course.createdAt)}
                     </p>
                     {course.status === COURSE_STATUS.DRAFT ? (
                       <p className="flex w-fit flex-row items-center gap-2 rounded-full bg-richblack-700 px-2 py-[2px] text-[12px] font-medium text-pink-100">
@@ -129,7 +129,19 @@ export default function CoursesTable({courses,setCourses}) {
                   <button
                     disabled={loading}
                     onClick={() => {
-                      setConfirmationModal(true)
+                      setConfirmationModal({
+                        text1: "Do you want to delete this course?",
+                        text2:
+                          "All the data related to this course will be deleted",
+                        btn1Text: !loading ? "Delete" : "Loading...  ",
+                        btn2Text: "Cancel",
+                        btn1Handler: !loading
+                          ? () => handleCourseDelete(course._id)
+                          : () => {},
+                        btn2Handler: !loading
+                          ? () => setConfirmationModal(null)
+                          : () => {},
+                      })
                     }}
                     title="Delete"
                     className="px-1 transition-all duration-200 hover:scale-110 hover:text-[#ff0000]"
@@ -137,29 +149,12 @@ export default function CoursesTable({courses,setCourses}) {
                     <RiDeleteBin6Line size={20} />
                   </button>
                 </Td>
-
-                {confirmationModal && <ConfirmationModal 
-         text1= {"Do you want to delete this course?"}
-         text2=
-           {"All the data related to this course will be deleted"}
-         btn1Text= {!loading ? "Delete" : "Loading...  "}
-         btn2Text= {"Cancel"}
-         btn1Handler= {!loading
-           ? () => handleCourseDelete(course._id)
-           : () => {}}
-         btn2Handler= {!loading
-           ? () => setConfirmationModal(null)
-           : () => {}} 
-         setshowModal = {() => {setConfirmationModal(null)}}
-        />}
-
-
               </Tr>
             ))
           )}
         </Tbody>
       </Table>
-
+      {confirmationModal && <ConfirmationModal modalData={confirmationModal} />}
     </>
   )
 }
