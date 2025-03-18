@@ -9,7 +9,8 @@ import { FiEdit2 } from "react-icons/fi"
 import { HiClock } from "react-icons/hi"
 import { RiDeleteBin6Line } from "react-icons/ri"
 import { useNavigate } from "react-router-dom"
-
+import { createSubSection } from "../../../../services/operations/courseDetailsAPI"
+import { useEffect } from "react"
 import { formatDate } from "../../../../services/formatDate"
 import {
   deleteCourse,
@@ -18,13 +19,14 @@ import {
 import { COURSE_STATUS } from "../../../../utils/constants"
 import ConfirmationModal from "../../../common/ConfirmationModal"
 
-export default function CoursesTable({ courses, setCourses }) {
+export default function CoursesTable({ courses, setCourses}) {
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const { token } = useSelector((state) => state.auth)
   const [loading, setLoading] = useState(false)
   const [confirmationModal, setConfirmationModal] = useState(null)
   const TRUNCATE_LENGTH = 30
+  const [timeDuration, setTimeDuration] = useState(null)
 
   const handleCourseDelete = async (courseId) => {
     setLoading(true)
@@ -38,6 +40,18 @@ export default function CoursesTable({ courses, setCourses }) {
   }
 
   // console.log("All Course ", courses)
+
+/*   
+  const getTimeDuration = async() => {
+    const timeDuration = await createSubSection();
+    setTimeDuration(timeDuration)
+
+  }
+
+  useEffect(() =>{
+      getTimeDuration();
+  }, [])
+ */
 
   return (
     <>
@@ -110,7 +124,14 @@ export default function CoursesTable({ courses, setCourses }) {
                   </div>
                 </Td>
                 <Td className="text-sm font-medium text-richblack-100">
-                  2hr 30min
+                    2hr 30min
+         {/*       {
+                course1.map((allCourse, index)=> {
+                    <div key= {index}>
+                        {allCourse.totalDuration}
+                    </div>
+                })
+               } */}
                 </Td>
                 <Td className="text-sm font-medium text-richblack-100">
                   ₹{course.price}
