@@ -15,7 +15,6 @@ function LoginForm() {
 
   const [showPassword, setShowPassword] = useState(false)
 
-  const { email, password } = formData
 
   const handleOnChange = (e) => {
     setFormData((prevData) => ({
@@ -24,9 +23,13 @@ function LoginForm() {
     }))
   }
 
+  const { email, password } = formData
+
   const handleOnSubmit = (e) => {
+    
     e.preventDefault()
     dispatch(login(email, password, navigate))
+    console.log(email, password)
   }
 
   return (
@@ -93,4 +96,5 @@ function LoginForm() {
   )
 }
 
-export default LoginForm
+export default LoginForm 
+

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useDispatch, useSelector } from "react-redux"
 import { useNavigate } from "react-router-dom"
+import { setEditCourse } from "../../../../../slices/courseSlice"
 
 import { editCourseDetails } from "../../../../../services/operations/courseDetailsAPI"
 import { resetCourseState, setStep } from "../../../../../slices/courseSlice"
@@ -17,15 +18,20 @@ export default function PublishCourse() {
   const { course } = useSelector((state) => state.course)
   const [loading, setLoading] = useState(false)
 
+  const {step} = useSelector((state) => state.course)
+
   useEffect(() => {
     if (course?.status === COURSE_STATUS.PUBLISHED) {
       setValue("public", true)
     }
   }, [])
 
-  const goBack = () => {
-    dispatch(setStep(2))
-  }
+  const goToBackStep = () =>{
+    const prevStep = step - 1
+    dispatch(setStep(prevStep))
+    //dispatch(setStep(2))
+    dispatch(setEditCourse(true))
+}
 
   const goToCourses = () => {
     dispatch(resetCourseState())
@@ -44,24 +50,30 @@ export default function PublishCourse() {
       goToCourses()
       return
     }
+
     const formData = new FormData()
     formData.append("courseId", course._id)
+
     const courseStatus = getValues("public")
       ? COURSE_STATUS.PUBLISHED
       : COURSE_STATUS.DRAFT
     formData.append("status", courseStatus)
     setLoading(true)
+
     const result = await editCourseDetails(formData, token)
     if (result) {
       goToCourses()
     }
+
     setLoading(false)
   }
+
 
   const onSubmit = (data) => {
     // console.log(data)
     handleCoursePublish()
   }
+  
 
   return (
     <div className="rounded-md border-[1px] border-richblack-700 bg-richblack-800 p-6">
@@ -89,7 +101,7 @@ export default function PublishCourse() {
           <button
             disabled={loading}
             type="button"
-            onClick={goBack}
+            onClick={goToBackStep}
             className="flex cursor-pointer items-center gap-x-2 rounded-md bg-richblack-300 py-[8px] px-[20px] font-semibold text-richblack-900"
           >
             Back

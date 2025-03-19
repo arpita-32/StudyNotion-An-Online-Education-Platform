@@ -1,6 +1,6 @@
 import { toast } from "react-hot-toast"
-
 import { setLoading, setToken } from "../../slices/authSlice"
+import { resetCart } from "../../slices/cartSlice"
 import { setUser } from "../../slices/profileSlice"
 import { apiConnector } from "../apiconnector"
 import { endpoints } from "../api"
@@ -12,50 +12,48 @@ const {
   LOGIN_API,
   RESETPASSTOKEN_API,
   RESETPASSWORD_API,
-} = endpoints;
+} = endpoints
 
-export function sendOtp(email, navigate) {
-  return async (dispatch) => {
-    const toastId = toast.loading("Loading...")
-    dispatch(setLoading(true))
-    try {
-      const response = await apiConnector("POST", SENDOTP_API, {
-        email,
-      })
-      console.log("SENDOTP API RESPONSE............", response)
+export function sendOtp(email, navigate){
 
-      console.log(response.data.success)
+    return async(dispatch) =>{
+        dispatch(setLoading(true))
+        try{
+         const response = await apiConnector("POST", SENDOTP_API, {email, checkUserPresent: true})
+         console.log("SEND API RESPONSE.....", response)
 
-      if (!response.data.success) {
-        throw new Error(response.data.message)
-      }
+         console.log(response.data.success)
 
-      toast.success("OTP Sent Successfully")
-      navigate("/verify-email") 
-    } catch (error) {
-      console.log("SENDOTP API ERROR............", error)
-      toast.error("Could Not Send OTP")
+         if(!response.data.success){
+            throw new Error(response.data.message)
+         }
+
+         toast.success("OTP Sent Successfully")
+         navigate("/verify-email")
+        }
+        catch(error){
+          console.log("SEND OTP API ERROR.....", error)
+          toast.error("Could not send OTP")
+        }
+
+        dispatch(setLoading(false))
     }
-    dispatch(setLoading(false))
-    toast.dismiss(toastId)
-  }
 }
 
 
 export function signUp(
+  accountType,
   firstName,
   lastName,
   email,
   password,
   confirmPassword,
-  accountType,
   otp,
   navigate
 ) {
   return async (dispatch) => {
     const toastId = toast.loading("Loading...")
-    dispatch(setLoading(true));
-
+    dispatch(setLoading(true))
     try {
       const response = await apiConnector("POST", SIGNUP_API, {
         accountType,
@@ -75,15 +73,15 @@ export function signUp(
       toast.success("Signup Successful")
       navigate("/login")
     } catch (error) {
-      console.log("SIGNUP API ERROR............", error.response ? error.response.data : error.message);
-
+      console.log("SIGNUP API ERROR............", error)
       toast.error("Signup Failed")
-      navigate("/signup")
+     navigate("/signup")
     }
     dispatch(setLoading(false))
     toast.dismiss(toastId)
   }
 }
+
 
 export function login(email, password, navigate) {
   return async (dispatch) => {
@@ -101,19 +99,24 @@ export function login(email, password, navigate) {
         throw new Error(response.data.message)
       }
 
-      toast.success("Login Successful");
-      dispatch(setToken(response.data.token))
-      const userImage = response.data?.user?.image
+      toast.success("Login Successful")
+  dispatch(setToken(response.data.token))
+
+        const userImage = response.data?.user?.image
         ? response.data.user.image
-        : `https://api.dicebear.com/9.x/initials/svg?radius=50 seed=${response.data.user.firstName} ${response.data.user.lastName}`
-      dispatch(setUser({ ...response.data.user, image: userImage }))
+        : `https://api.dicebear.com/5.x/initials/svg?seed=${response.data.user.firstName} ${response.data.user.lastName}`
+        
+      dispatch(setUser({ ...response.data.user, image:userImage }))
       
       localStorage.setItem("token", JSON.stringify(response.data.token))
-      localStorage.setItem("user", JSON.stringify(response.data.user))
-      navigate("/dashboard/my-profile")
+      localStorage.setItem("user", JSON.stringify({ ...response.data.user, image: userImage }));
+
+
+
+       navigate("/dashboard/my-profile")
     } catch (error) {
       console.log("LOGIN API ERROR............", error)
-      toast.error("Login Failed");
+      toast.error("Login Failed")
     }
     dispatch(setLoading(false))
     toast.dismiss(toastId)
@@ -124,7 +127,7 @@ export function logout(navigate) {
   return (dispatch) => {
     dispatch(setToken(null))
     dispatch(setUser(null))
-    // dispatch(resetCart()) 
+    dispatch(resetCart())
     localStorage.removeItem("token")
     localStorage.removeItem("user")
     toast.success("Logged Out")
@@ -138,7 +141,7 @@ export function getPasswordResetToken(email , setEmailSent) {
   return async(dispatch) => {
     dispatch(setLoading(true));
     try{
-      const response = await apiConnector("POST", RESETPASSTOKEN_API, {email,})
+      const response = await apiConnector("POST", RESETPASSTOKEN_API, {email})
 
       console.log("RESET PASSWORD TOKEN RESPONSE....", response);
 
@@ -158,71 +161,38 @@ export function getPasswordResetToken(email , setEmailSent) {
 }
 
 
-//function for making a call to backend for resetting the password ...
-//these are the functions returning a function
-export function resetPassword(password,confirmPassword,token,setresetPasswordDone,setemail){
-  return async(dispatch) => {
-    console.log('the token of this page is:- ',token);
-    dispatch(setLoading(true));
-    const toastid = toast.loading('Loading....')
-    try{
-      const response = await apiConnector("POST", RESETPASSWORD_API, {password, confirmPassword, token});
 
-      console.log('reset password response', response);
-
-      if(!response.data.success){
-          throw new Error(response.data.message);
-      }
-
-      dispatch(setLoading(false));
-      toast.success('Password reset successful');
-      setresetPasswordDone(true);
-      setemail(response.data.data.email);
-      toast.dismiss(toastid);
-    }catch(err){
-      toast.dismiss(toastid);
-      toast.error('Error reset password');
-      console.log('error occured while reseting the password', err.message);
-      console.error(err.message);
-      
-
-    }
-  }
-}
+export function resetPassword(password, confirmPassword, token, navigate) {
 
 
-//THIS IS THE FUNCTION WHICH WILL BE USED FOR CHANGING PASSWORD AND IT WILL BE USED IN THE CHNAGE PASSWORD COMPONENET OF THE SETTING COMPONENET OF DASHBOARD/MY-PROFILE PAGE.......
+    return async (dispatch) => {
+        dispatch(setLoading(true));
+        try {
+            const response = await apiConnector("POST", RESETPASSWORD_API, {
+                password,
+                confirmPassword,
+                token
+            });
 
-export function changePassword(token,formdata) {
-  return async (dispatch) => {
-    const toastId = toast.loading('Password change in Progress');
-    try{
+            console.log("RESET PASSWORD RESPONSE...", response);
 
-      const response = await apiConnector('POST', endpoints.CHANGEPASSWORD_API, formdata,
-        //passing token in header as this route of server is auth protected means this call will first got o auth and then to this api route
-        //ANOTHER IMP THING IS HEADER IS JSON SO PASS IT IN JSON FORMAT
-        {
-           "Content-Type":"multipart/form-data",
-           "Authorization": `Bearer ${token}`
-        }  
-      )
+            if (!response.data.success) {
+                throw new Error(response.data.message);
+            }
 
-        //cheking wheather the call was succesfull or not 
-        //if not then directly throw an error
-        if(!response.data.success){
-           throw new Error(response.data.message);
+            toast.success("Password has been reset successfully");
+            navigate("/login")
+
+        } catch (error) {
+            console.log("FAILED TO RESET PASSWORD", error);
+            toast.error("Unable to reset Password");
+             
+            if(error === true) {
+              navigate("/update-password/:id")
+            }
+          
         }
-
-        //else
-        toast.dismiss(toastId);
-        toast.success('Password changed successfully');
-    
-
-    }catch(err){
-      console.log('error occured while connecting to the backend in changepassword function in operations folder:- ',err.message);
-      console.error(err.message);
-      toast.dismiss(toastId);
-      toast.error('Error in changing password');
+         
+        dispatch(setLoading(false));
     }
-  }
 }

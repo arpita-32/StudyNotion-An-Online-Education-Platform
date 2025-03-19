@@ -11,9 +11,9 @@ var _require = require("../controllers/Course"),
     getAllCourses = _require.getAllCourses,
     getCourseDetails = _require.getCourseDetails,
     getFullCourseDetails = _require.getFullCourseDetails,
-    editCourse = _require.editCourse,
-    getInstructorCourses = _require.getInstructorCourses,
-    deleteCourse = _require.deleteCourse; // Categories Controllers Import
+    editCourseDetails = _require.editCourseDetails,
+    deleteCourse = _require.deleteCourse,
+    fetchInstructorCourses = _require.fetchInstructorCourses; // Categories Controllers Import
 
 
 var _require2 = require("../controllers/Category"),
@@ -73,9 +73,9 @@ router.post("/getCourseDetails", getCourseDetails); // Get Details for a Specifi
 
 router.post("/getFullCourseDetails", auth, getFullCourseDetails); // Edit Course routes
 
-router.post("/editCourse", auth, isInstructor, editCourse); // Get all Courses Under a Specific Instructor
+router.post("/editCourseDetails", auth, isInstructor, editCourseDetails); // Get all Courses Under a Specific Instructor
 
-router.get("/getInstructorCourses", auth, isInstructor, getInstructorCourses); // Delete a Course
+router.get("/fetchInstructorCourses", auth, isInstructor, fetchInstructorCourses); // Delete a Course
 
 router["delete"]("/deleteCourse", deleteCourse);
 router.post("/updateCourseProgress", auth, isStudent, updateCourseProgress); // ********************************************************************************************************

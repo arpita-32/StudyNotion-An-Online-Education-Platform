@@ -4,7 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.settingsEndpoints = exports.contactusEndpoint = exports.catalogData = exports.categories = exports.ratingsEndpoints = exports.courseEndpoints = exports.studentEndpoints = exports.profileEndpoints = exports.endpoints = void 0;
-var BASE_URL = "http://localhost:4000/api/v1"; // AUTH ENDPOINTS
+var BASE_URL = process.env.REACT_APP_BASE_URL; // AUTH ENDPOINTS
 
 var endpoints = {
   SENDOTP_API: BASE_URL + "/auth/sendotp",
@@ -39,7 +39,7 @@ var courseEndpoints = {
   CREATE_SUBSECTION_API: BASE_URL + "/course/addSubSection",
   UPDATE_SECTION_API: BASE_URL + "/course/updateSection",
   UPDATE_SUBSECTION_API: BASE_URL + "/course/updateSubSection",
-  GET_ALL_INSTRUCTOR_COURSES_API: BASE_URL + "/course/fetchInstructorCourses",
+  GET_ALL_INSTRUCTOR_COURSES_API: BASE_URL + "/course/getInstructorCourses",
   DELETE_SECTION_API: BASE_URL + "/course/deleteSection",
   DELETE_SUBSECTION_API: BASE_URL + "/course/deleteSubSection",
   DELETE_COURSE_API: BASE_URL + "/course/deleteCourse",

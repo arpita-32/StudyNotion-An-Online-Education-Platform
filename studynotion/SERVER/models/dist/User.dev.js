@@ -1,8 +1,11 @@
 "use strict";
 
-var mongoose = require("mongoose");
+// Import the Mongoose library
+var mongoose = require("mongoose"); // Define the user schema using the Mongoose Schema constructor
+
 
 var userSchema = new mongoose.Schema({
+  // Define the name field with type String, required, and trimmed
   firstName: {
     type: String,
     required: true,
@@ -13,19 +16,30 @@ var userSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
+  // Define the email field with type String, required, and trimmed
   email: {
     type: String,
     required: true,
     trim: true
   },
+  // Define the password field with type String and required
   password: {
     type: String,
     required: true
   },
+  // Define the role field with type String and enum values of "Admin", "Student", or "Visitor"
   accountType: {
     type: String,
     "enum": ["Admin", "Student", "Instructor"],
     required: true
+  },
+  active: {
+    type: Boolean,
+    "default": true
+  },
+  approved: {
+    type: Boolean,
+    "default": true
   },
   additionalDetails: {
     type: mongoose.Schema.Types.ObjectId,
@@ -36,22 +50,24 @@ var userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Course"
   }],
-  image: {
-    type: String,
-    required: true
-  },
   token: {
     type: String
   },
   resetPasswordExpires: {
     type: Date
   },
+  image: {
+    type: String //required: true,
+
+  },
   courseProgress: [{
     type: mongoose.Schema.Types.ObjectId,
-    ref: "CourseProgress"
-  }]
+    ref: "courseProgress"
+  }] // Add timestamps for when the document is created and last modified
+
 }, {
   timestamps: true
-});
-module.exports = mongoose.model("User", userSchema);
+}); // Export the Mongoose model for the user schema, using the name "user"
+
+module.exports = mongoose.model("user", userSchema);
 //# sourceMappingURL=User.dev.js.map
