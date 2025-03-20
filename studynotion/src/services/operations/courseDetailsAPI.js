@@ -152,32 +152,25 @@ export const createSection = async (data, token) => {
 
 // create a subsection
 export const createSubSection = async (data, token) => {
-    let result = null;
-    const toastId = toast.loading("Loading...");
-    try {
-      const response = await apiConnector("POST", CREATE_SUBSECTION_API, data, {
-        "Content-Type": "multipart/form-data",
-        Authorization: `Bearer ${token}`,
-      });
-      
-      console.log("CREATE SUB-SECTION API RESPONSE:", response);
-      
-      if (!response?.data?.success) {
-        throw new Error(response?.data?.message || "Could Not Add Lecture");
-      }
-      
-      toast.success("Lecture Added");
-      result = response?.data?.data;
-    } catch (error) {
-      console.log("CREATE SUB-SECTION API ERROR:", error);
-      // Check if error has a response from the server
-      const errorMessage = error.response?.data?.message || error.message || "Failed to add lecture";
-      toast.error(errorMessage);
-    } finally {
-      toast.dismiss(toastId);
+  let result = null
+  const toastId = toast.loading("Loading...")
+  try {
+    const response = await apiConnector("POST", CREATE_SUBSECTION_API, data, {
+      Authorization: `Bearer ${token}`,
+    })
+    console.log("CREATE SUB-SECTION API RESPONSE............", response)
+    if (!response?.data?.success) {
+      throw new Error("Could Not Add Lecture")
     }
-    return result;
-  };
+    toast.success("Lecture Added")
+    result = response?.data?.data
+  } catch (error) {
+    console.log("CREATE SUB-SECTION API ERROR............", error)
+    toast.error(error.message)
+  }
+  toast.dismiss(toastId)
+  return result
+}
 
 // update a section
 export const updateSection = async (data, token) => {
@@ -203,32 +196,25 @@ export const updateSection = async (data, token) => {
 
 // update a subsection
 export const updateSubSection = async (data, token) => {
-    let result = null;
-    const toastId = toast.loading("Loading...");
-    try {
-      const response = await apiConnector("POST", UPDATE_SUBSECTION_API, data, {
-        "Content-Type": "multipart/form-data",
-        Authorization: `Bearer ${token}`,
-      });
-      
-      console.log("UPDATE SUB-SECTION API RESPONSE:", response);
-      
-      if (!response?.data?.success) {
-        throw new Error(response?.data?.message || "Could Not Update Lecture");
-      }
-      
-      toast.success("Lecture Updated");
-      result = response?.data?.data;
-    } catch (error) {
-      console.log("UPDATE SUB-SECTION API ERROR:", error);
-      // Check if error has a response from the server
-      const errorMessage = error.response?.data?.message || error.message || "Failed to update lecture";
-      toast.error(errorMessage);
-    } finally {
-      toast.dismiss(toastId);
+  let result = null
+  const toastId = toast.loading("Loading...")
+  try {
+    const response = await apiConnector("POST", UPDATE_SUBSECTION_API, data, {
+      Authorization: `Bearer ${token}`,
+    })
+    console.log("UPDATE SUB-SECTION API RESPONSE............", response)
+    if (!response?.data?.success) {
+      throw new Error("Could Not Update Lecture")
     }
-    return result;
-  };
+    toast.success("Lecture Updated")
+    result = response?.data?.data
+  } catch (error) {
+    console.log("UPDATE SUB-SECTION API ERROR............", error)
+    toast.error(error.message)
+  }
+  toast.dismiss(toastId)
+  return result
+}
 
 // delete a section
 export const deleteSection = async (data, token) => {
@@ -299,7 +285,6 @@ export const fetchInstructorCourses = async (token) => {
   return result
 }
 
-// delete a course
 export const deleteCourse = async (data, token) => {
   const toastId = toast.loading("Loading...")
   try {
@@ -314,8 +299,10 @@ export const deleteCourse = async (data, token) => {
   } catch (error) {
     console.log("DELETE COURSE API ERROR............", error)
     toast.error(error.message)
+    throw error
+  } finally {
+    toast.dismiss(toastId)
   }
-  toast.dismiss(toastId)
 }
 
 // get full details of a course

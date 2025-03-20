@@ -21,7 +21,12 @@ database.connect();
 //middlewares
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors()); 
+app.use(
+	cors({
+		origin:"http://localhost:3000",
+		credentials:true,
+	})
+)
 
 app.use(
 	fileUpload({
@@ -51,3 +56,5 @@ app.get("/", (req, res) => {
 app.listen(PORT, () => {
 	console.log(`App is running at ${PORT}`)
 })
+
+module.exports = app;

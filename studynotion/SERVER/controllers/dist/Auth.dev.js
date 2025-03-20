@@ -12,7 +12,7 @@ var otpGenerator = require("otp-generator");
 
 var mailSender = require("../utils/mailSender");
 
-var _require = require("../mail/templates/passwordUpdate"),
+var _require = require("../mail/passwordUpdate"),
     passwordUpdated = _require.passwordUpdated;
 
 var Profile = require("../models/Profile");

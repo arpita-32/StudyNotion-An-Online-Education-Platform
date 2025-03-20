@@ -5,7 +5,9 @@ var RatingAndReview = require("../models/RatingAndReview");
 var Course = require("../models/Course");
 
 var _require = require("mongoose"),
-    mongoose = _require["default"];
+    mongo = _require.mongo,
+    mongoose = _require["default"]; //createRating
+
 
 exports.createRating = function _callee(req, res) {
   var userId, _req$body, rating, review, courseId, courseDetails, alreadyReviewed, ratingReview, updatedCourseDetails;
@@ -15,13 +17,16 @@ exports.createRating = function _callee(req, res) {
       switch (_context.prev = _context.next) {
         case 0:
           _context.prev = 0;
-          userId = req.user.id;
-          _req$body = req.body, rating = _req$body.rating, review = _req$body.review, courseId = _req$body.courseId;
+          //get user id
+          userId = req.user.id; //fetchdata from req body
+
+          _req$body = req.body, rating = _req$body.rating, review = _req$body.review, courseId = _req$body.courseId; //check if user is enrolled or not
+
           _context.next = 5;
           return regeneratorRuntime.awrap(Course.findOne({
             _id: courseId,
             studentsEnrolled: {
-              $eleMatch: {
+              $elemMatch: {
                 $eq: userId
               }
             }
@@ -29,27 +34,39 @@ exports.createRating = function _callee(req, res) {
 
         case 5:
           courseDetails = _context.sent;
-          _context.next = 8;
+
+          if (courseDetails) {
+            _context.next = 8;
+            break;
+          }
+
+          return _context.abrupt("return", res.status(404).json({
+            success: false,
+            message: 'Student is not enrolled in the course'
+          }));
+
+        case 8:
+          _context.next = 10;
           return regeneratorRuntime.awrap(RatingAndReview.findOne({
             user: userId,
             course: courseId
           }));
 
-        case 8:
+        case 10:
           alreadyReviewed = _context.sent;
 
-          if (alreadyReviewed) {
-            _context.next = 11;
+          if (!alreadyReviewed) {
+            _context.next = 13;
             break;
           }
 
           return _context.abrupt("return", res.status(403).json({
             success: false,
-            message: 'course is already reviewed by the user'
+            message: 'Course is already reviewed by the user'
           }));
 
-        case 11:
-          _context.next = 13;
+        case 13:
+          _context.next = 15;
           return regeneratorRuntime.awrap(RatingAndReview.create({
             rating: rating,
             review: review,
@@ -57,9 +74,9 @@ exports.createRating = function _callee(req, res) {
             user: userId
           }));
 
-        case 13:
+        case 15:
           ratingReview = _context.sent;
-          _context.next = 16;
+          _context.next = 18;
           return regeneratorRuntime.awrap(Course.findByIdAndUpdate({
             _id: courseId
           }, {
@@ -70,17 +87,18 @@ exports.createRating = function _callee(req, res) {
             "new": true
           }));
 
-        case 16:
+        case 18:
           updatedCourseDetails = _context.sent;
-          console.log(updatedCourseDetails);
+          console.log(updatedCourseDetails); //return response
+
           return _context.abrupt("return", res.status(200).json({
             success: true,
-            message: "rating and review created successfully",
+            message: "Rating and Review created Successfully",
             ratingReview: ratingReview
           }));
 
-        case 21:
-          _context.prev = 21;
+        case 23:
+          _context.prev = 23;
           _context.t0 = _context["catch"](0);
           console.log(_context.t0);
           return _context.abrupt("return", res.status(500).json({
@@ -88,13 +106,14 @@ exports.createRating = function _callee(req, res) {
             message: _context.t0.message
           }));
 
-        case 25:
+        case 27:
         case "end":
           return _context.stop();
       }
     }
-  }, null, null, [[0, 21]]);
-};
+  }, null, null, [[0, 23]]);
+}; //getAverageRating
+
 
 exports.getAverageRating = function _callee2(req, res) {
   var courseId, result;
@@ -103,7 +122,9 @@ exports.getAverageRating = function _callee2(req, res) {
       switch (_context2.prev = _context2.next) {
         case 0:
           _context2.prev = 0;
-          courseId = req.body.courseId;
+          //get course ID
+          courseId = req.body.courseId; //calculate avg rating
+
           _context2.next = 4;
           return regeneratorRuntime.awrap(RatingAndReview.aggregate([{
             $match: {
@@ -134,7 +155,7 @@ exports.getAverageRating = function _callee2(req, res) {
         case 7:
           return _context2.abrupt("return", res.status(200).json({
             success: true,
-            message: 'Average rating is 0 ,till now',
+            message: 'Average Rating is 0, no ratings given till now',
             averageRating: 0
           }));
 
@@ -153,7 +174,8 @@ exports.getAverageRating = function _callee2(req, res) {
       }
     }
   }, null, null, [[0, 10]]);
-};
+}; //getAllRatingAndReviews
+
 
 exports.getAllRating = function _callee3(req, res) {
   var allReviews;
@@ -177,7 +199,7 @@ exports.getAllRating = function _callee3(req, res) {
           allReviews = _context3.sent;
           return _context3.abrupt("return", res.status(200).json({
             success: true,
-            message: 'All reviews fetched successfully',
+            message: "All reviews fetched successfully",
             data: allReviews
           }));
 

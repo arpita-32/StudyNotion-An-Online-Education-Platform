@@ -415,7 +415,7 @@ exports.getFullCourseDetails = async (req, res) => {
 }
 
 // Get a list of Course for a given Instructor
-exports.fetchInstructorCourses = async (req, res) => {
+exports.getInstructorCourses = async (req, res) => {
   try {
     // Get the instructor ID from the authenticated user or request body
     const instructorId = req.user.id
@@ -451,7 +451,7 @@ exports.deleteCourse = async (req, res) => {
     }
 
     // Unenroll students from the course
-    const studentsEnrolled = course.studentsEnroled
+    const studentsEnrolled = course.studentsEnrolled
     for (const studentId of studentsEnrolled) {
       await User.findByIdAndUpdate(studentId, {
         $pull: { courses: courseId },
