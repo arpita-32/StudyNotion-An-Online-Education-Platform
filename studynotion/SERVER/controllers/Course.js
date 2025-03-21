@@ -283,7 +283,16 @@ exports.getAllCourses = async (req, res) => {
 // }
 exports.getCourseDetails = async (req, res) => {
   try {
-    const { courseId } = req.body
+    const { courseId } = req.body;
+    
+    // Add validation for courseId
+    if (!courseId) {
+      return res.status(400).json({
+        success: false,
+        message: "Course ID is required",
+      });
+    }
+
     const courseDetails = await Course.findOne({
       _id: courseId,
     })
@@ -302,31 +311,26 @@ exports.getCourseDetails = async (req, res) => {
           select: "-videoUrl",
         },
       })
-      .exec()
+      .exec();
 
+    // Changed this condition to check only if courseDetails exists
     if (!courseDetails) {
-      return res.status(400).json({
+      return res.status(404).json({
         success: false,
         message: `Could not find course with id: ${courseId}`,
-      })
+      });
     }
 
-    // if (courseDetails.status === "Draft") {
-    //   return res.status(403).json({
-    //     success: false,
-    //     message: `Accessing a draft course is forbidden`,
-    //   });
-    // }
-
-    let totalDurationInSeconds = 0
+    // Calculate total duration
+    let totalDurationInSeconds = 0;
     courseDetails.courseContent.forEach((content) => {
       content.subSection.forEach((subSection) => {
-        const timeDurationInSeconds = parseInt(subSection.timeDuration)
-        totalDurationInSeconds += timeDurationInSeconds
-      })
-    })
+        const timeDurationInSeconds = parseInt(subSection.timeDuration);
+        totalDurationInSeconds += timeDurationInSeconds;
+      });
+    });
 
-    const totalDuration = convertSecondsToDuration(totalDurationInSeconds)
+    const totalDuration = convertSecondsToDuration(totalDurationInSeconds);
 
     return res.status(200).json({
       success: true,
@@ -334,12 +338,14 @@ exports.getCourseDetails = async (req, res) => {
         courseDetails,
         totalDuration,
       },
-    })
+    });
   } catch (error) {
+    console.error("Error in getCourseDetails:", error);
     return res.status(500).json({
       success: false,
-      message: error.message,
-    })
+      message: "Internal server error",
+      error: error.message,
+    });
   }
 }
 exports.getFullCourseDetails = async (req, res) => {

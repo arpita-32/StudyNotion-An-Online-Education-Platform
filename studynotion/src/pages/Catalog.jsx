@@ -27,7 +27,7 @@ const Catalog = () => {
     },[catalogName]);
 
     useEffect(() => {
-        const getCategoryDetails = async() => {
+        const CategoryPageDetails = async() => {
             try{
                 const res = await getCatalogData(categoryId);
                 console.log("PRinting res: ", res);
@@ -38,7 +38,7 @@ const Catalog = () => {
             }
         }
         if(categoryId) {
-            getCategoryDetails();
+          CategoryPageDetails();
         }
         
     },[categoryId]);

@@ -60,7 +60,7 @@ var categories = {
 
 exports.categories = categories;
 var catalogData = {
-  CATALOGPAGEDATA_API: BASE_URL + "/course/getCategoryPageDetails"
+  CATALOGPAGEDATA_API: BASE_URL + "/course/CategoryPageDetails"
 }; // CONTACT-US API
 
 exports.catalogData = catalogData;

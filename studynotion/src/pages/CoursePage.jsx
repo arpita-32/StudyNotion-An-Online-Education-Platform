@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react"
+
+import { useDispatch, useSelector } from "react-redux"
+import { useNavigate, useParams } from "react-router-dom"
 import { BiInfoCircle } from "react-icons/bi"
 import { HiOutlineGlobeAlt } from "react-icons/hi"
 import { ReactMarkdown } from "react-markdown/lib/react-markdown"
-import { useDispatch, useSelector } from "react-redux"
-import { useNavigate, useParams } from "react-router-dom"
 
 import { loadStripe } from '@stripe/stripe-js'
 import ConfirmationModal from "../components/common/ConfirmationModal"
@@ -12,7 +13,7 @@ import RatingStars from "../components/common/RatingStars"
 import CourseAccordionBar from "../components/core/CoursePage/CourseAccordionBar"
 import CourseBuyCard from "../components/core/CoursePage/CourseBuyCard"
 import { formatDate } from "../services/formatDate"
-import { fetchCourseDetails } from "../services/operations/courseDetailsAPI"
+import { getCourseDetails } from "../services/operations/courseDetailsAPI"
 import GetAvgRating from "../utils/avgRating"
 import Error from "./Error"
 
@@ -36,7 +37,7 @@ function CoursePage() {
     // Calling fetchCourseDetails fucntion to fetch the details
     ;(async () => {
       try {
-        const res = await fetchCourseDetails(courseId)
+        const res = await getCourseDetails(courseId)
         // console.log("course details res: ", res)
         setResponse(res)
       } catch (error) {
@@ -213,11 +214,11 @@ useEffect(() => {
           </div>
           {/* Courses Card */}
           <div className="right-[1rem] top-[60px] mx-auto hidden min-h-[600px] w-1/3 max-w-[410px] translate-y-24 md:translate-y-0 lg:absolute  lg:block">
-          <CourseBuyCard
-  course={response?.data?.courseDetails}
-  setConfirmationModal={setConfirmationModal}
-  handleBuyCourse={handleBuyCourse}
-/>
+            <CourseBuyCard
+              course={response?.data?.courseDetails}
+              setConfirmationModal={setConfirmationModal}
+              handleBuyCourse={handleBuyCourse}
+            />
           </div>
         </div>
       </div>
@@ -294,6 +295,6 @@ useEffect(() => {
       {confirmationModal && <ConfirmationModal modalData={confirmationModal} />}
     </>
   )
-}
+};
 
 export default CoursePage

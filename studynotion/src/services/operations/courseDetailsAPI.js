@@ -41,30 +41,42 @@ export const getAllCourses = async () => {
   return result
 }
 
-export const fetchCourseDetails = async (courseId) => {
+export const getCourseDetails = async (courseId) => {
   const toastId = toast.loading("Loading...")
-  //   dispatch(setLoading(true));
   let result = null
   try {
+    if (!courseId) {
+      throw new Error("Course ID is required")
+    }
+    
+    console.log("Requesting course details for courseId:", courseId)
+    
     const response = await apiConnector("POST", COURSE_DETAILS_API, {
       courseId,
     })
-    console.log("COURSE_DETAILS_API API RESPONSE............", response)
+    
+    console.log("COURSE_DETAILS_API API RESPONSE:", response)
 
     if (!response.data.success) {
       throw new Error(response.data.message)
     }
     result = response.data
   } catch (error) {
-    console.log("COURSE_DETAILS_API API ERROR............", error)
-    result = error.response.data
-    // toast.error(error.response.data.message);
+    console.error("COURSE_DETAILS_API API ERROR:", error)
+    // Check if error response exists before accessing data
+    if (error.response && error.response.data) {
+      result = error.response.data
+      toast.error(error.response.data.message)
+    } else {
+      // Handle case where error doesn't have response data
+      result = { success: false, message: error.message }
+      toast.error(error.message)
+    }
+  } finally {
+    toast.dismiss(toastId)
   }
-  toast.dismiss(toastId)
-  //   dispatch(setLoading(false));
   return result
 }
-
 // fetching the available course categories
 export const fetchCourseCategories = async () => {
   let result = []

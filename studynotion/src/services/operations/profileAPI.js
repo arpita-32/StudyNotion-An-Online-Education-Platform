@@ -79,7 +79,7 @@ export function getUserDetails(token, navigate) {
   }
 }
 
-export async function getUserEnrolledCourses(token) {
+export async function getEnrolledCourses(token) {
   //const toastId = toast.loading("Loading...")
   let result = []
   try {

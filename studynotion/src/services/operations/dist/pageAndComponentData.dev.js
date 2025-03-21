@@ -21,44 +21,86 @@ var getCatalogData = function getCatalogData(categoryId) {
         case 0:
           toastId = _reactHotToast["default"].loading('Loading...');
           _context.prev = 1;
-          _context.next = 4;
+
+          if (categoryId) {
+            _context.next = 5;
+            break;
+          }
+
+          _reactHotToast["default"].error("Category ID is required");
+
+          return _context.abrupt("return", null);
+
+        case 5:
+          console.log("Fetching catalog data for category ID:", categoryId);
+          _context.next = 8;
           return regeneratorRuntime.awrap((0, _apiconnector.apiConnector)('POST', _api.catalogData.CATALOGPAGEDATA_API, {
             categoryId: categoryId
           }));
 
-        case 4:
+        case 8:
           response = _context.sent;
-          console.log('response from the category page detail api:- ', response);
+          console.log('API Response Status:', response.status); // Check if the response contains data
 
-          if (response.data.success) {
-            _context.next = 8;
+          if (!(!response || !response.data)) {
+            _context.next = 12;
             break;
           }
 
-          throw new Error(response.data.message);
+          throw new Error("Empty response received from the server");
 
-        case 8:
-          return _context.abrupt("return", response.data.data);
+        case 12:
+          console.log('Response from the category page detail API:', response.data);
 
-        case 11:
-          _context.prev = 11;
-          _context.t0 = _context["catch"](1);
-          console.log('error occured while getting category page details : - (for detail error see the network tab in console)', _context.t0.message);
-          console.error(_context.t0.message);
+          if (response.data.success) {
+            _context.next = 15;
+            break;
+          }
+
+          throw new Error(response.data.message || "Failed to fetch catalog data");
 
         case 15:
-          _context.prev = 15;
+          return _context.abrupt("return", response.data.data);
+
+        case 18:
+          _context.prev = 18;
+          _context.t0 = _context["catch"](1);
+          console.error("Error in getCatalogData function:", _context.t0); // More detailed error logging
+
+          if (_context.t0.response) {
+            // The request was made and the server responded with a status code
+            // that falls out of the range of 2xx
+            console.error("Server responded with error:", _context.t0.response.status);
+            console.error("Error data:", _context.t0.response.data);
+
+            _reactHotToast["default"].error(_context.t0.response.data.message || "Server error occurred");
+          } else if (_context.t0.request) {
+            // The request was made but no response was received
+            console.error("No response received from server");
+
+            _reactHotToast["default"].error("No response from server. Please check your connection.");
+          } else {
+            // Something happened in setting up the request that triggered an Error
+            console.error("Error setting up request:", _context.t0.message);
+
+            _reactHotToast["default"].error("Error setting up request: " + _context.t0.message);
+          }
+
+          return _context.abrupt("return", null);
+
+        case 23:
+          _context.prev = 23;
 
           _reactHotToast["default"].dismiss(toastId);
 
-          return _context.finish(15);
+          return _context.finish(23);
 
-        case 18:
+        case 26:
         case "end":
           return _context.stop();
       }
     }
-  }, null, null, [[1, 11, 15, 18]]);
+  }, null, null, [[1, 18, 23, 26]]);
 };
 
 exports.getCatalogData = getCatalogData;
