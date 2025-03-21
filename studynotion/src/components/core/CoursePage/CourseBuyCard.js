@@ -1,96 +1,98 @@
 import React from 'react';
-import { BsFillCaretRightFill } from 'react-icons/bs';
+import { MdArrowRight } from "react-icons/md";
 import { FaShareSquare } from 'react-icons/fa';
 import copy from 'copy-to-clipboard';
 import { toast } from 'react-hot-toast';
+import { addToCart } from '../../../slices/cartSlice';
+import { useSelector, useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 
+const CourseBuyCard = ({ course, setConfirmationModal, handleBuyCourse }) => {
+  // Access user and token from the Redux store
+  const { user } = useSelector((state) => state.profile); // Ensure this matches your Redux state structure
+  const { token } = useSelector((state) => state.auth); // Ensure this matches your Redux state structure
+  const { cart } = useSelector((state) => state.cart); // Ensure this matches your Redux state structure
 
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
-function CourseBuyCard({ course, setConfirmationModal, handleBuyCourse }) {
-  const handleShare = () => {
-    if (navigator.share) {
-      navigator.share({
-        title: course.courseName,
-        url: window.location.href,
-      });
+  // Add to cart handler
+  const addToCartHandler = () => {
+    if (user && user.accountType === 'Student') {
+      dispatch(addToCart(course));
+      toast.success('Course added to cart!');
     } else {
-      copy(window.location.href);
-      toast.success('Link copied to clipboard!');
+      toast.error('Only students are allowed to buy courses');
     }
   };
 
-  const handleAddToCart = () => {
-    setConfirmationModal({
-      text1: "You are not logged in!",
-      text2: "Please login to add to cart",
-      btn1Text: "Login",
-      btn2Text: "Cancel",
-      btn1Handler: () => window.location.href = "/login",
-      btn2Handler: () => setConfirmationModal(null),
-    });
+  // Share course handler
+  const handleShare = () => {
+    const courseLink = window.location.href;
+    copy(courseLink);
+    toast.success('Course link copied to clipboard!');
   };
 
   return (
-    <div className="flex flex-col gap-4 rounded-md bg-white p-4 shadow-lg">
-      {/* Course Image */}
-      <img
-        src={course.thumbnail}
-        alt={course.courseName}
-        className="h-48 w-full rounded-lg object-cover"
-      />
-
-      <div className="px-4">
-        <div className="space-x-3 pb-4 text-3xl font-semibold">
-          Rs. {course.price}
-        </div>
-        
-        
-        
-        <div className="flex flex-col gap-4">
-          <button
-            className="w-full rounded-md bg-blue-600 py-2 px-4 text-white hover:bg-blue-700 transition"
-            onClick={handleBuyCourse}
-          >
-            Buy Now
-          </button>
-          
-          <button 
-            onClick={handleAddToCart}
-            className="w-full rounded-md border-2 border-blue-600 py-2 px-4 text-blue-600 hover:bg-blue-50 transition"
-          >
-            Add to Cart
-          </button>
-        </div>
-
-        <p className="pb-3 pt-6 text-center text-sm text-gray-600">
-          30-Day Money-Back Guarantee
-        </p>
-
-        <div>
-          <p className="my-2 text-xl font-semibold">
-            This Course Includes:
-          </p>
-          <div className="flex flex-col gap-3 text-sm text-gray-600">
-            {course.instructions?.map((item, i) => (
-              <p className="flex items-center gap-2" key={i}>
-                <BsFillCaretRightFill className="text-blue-600" />
-                <span>{item}</span>
-              </p>
-            ))}
-          </div>
-        </div>
-
-        <div className="text-center">
-          <button
-            className="mx-auto flex items-center gap-2 py-6 text-blue-600 hover:text-blue-700"
-            onClick={handleShare}
-          >
-            <FaShareSquare size={15} /> Share
-          </button>
-        </div>
+    <div className='text-white flex flex-col gap-2'>
+      <div className='flex flex-col gap-2'>
+        <img src={course?.thumbnail} alt='courseImg' className='rounded-lg' />
+        <h1 className='self-start text-2xl font-bold'>{`Rs. ${course?.price}`}</h1>
       </div>
+      <div className='flex flex-col gap-3'>
+        <button
+          className='bg-yellow-50 w-full text-black py-2 px-4 rounded-md'
+          onClick={
+            user && course?.studentsEnrolled?.includes(user?._id)
+              ? () => navigate('/dashboard/enrolled-courses')
+              : handleBuyCourse
+          }
+        >
+          {user && course?.studentsEnrolled?.includes(user?._id)
+            ? 'Go to Course'
+            : 'Buy Now'}
+        </button>
+        {user && course?.studentsEnrolled?.includes(user?._id) ? null : (
+          cart?.find((courseInCart) => courseInCart?._id === course?._id) ? (
+            <button
+              onClick={() => navigate('/dashboard/cart')}
+              className='bg-richblack-800 rounded-md w-full px-3 py-2'
+            >
+              View in Cart
+            </button>
+          ) : (
+            <button
+              onClick={addToCartHandler}
+              className='bg-richblack-800 rounded-md w-full px-3 py-2'
+            >
+              Add to Cart
+            </button>
+          )
+        )}
+      </div>
+      <p className='self-center text-richblack-300'>30 Days Money Back Guarantee</p>
+      <div>
+        <h2 className='text-lg'>This Course Includes:- </h2>
+        <ul className='text-caribbeangreen-200 flex flex-col gap-2'>
+          <li className='flex gap-1 items-center'>
+            <MdArrowRight />
+            <span>8 hours of lectures</span>
+          </li>
+          <li className='flex gap-1 items-center'>
+            <MdArrowRight />
+            <span>End to end projects</span>
+          </li>
+        </ul>
+      </div>
+      <button
+        className='mt-3 flex gap-3 items-center text-yellow-100 justify-center'
+        onClick={handleShare}
+      >
+        <FaShareSquare />
+        <span>Share</span>
+      </button>
     </div>
   );
-}
+};
 
 export default CourseBuyCard;

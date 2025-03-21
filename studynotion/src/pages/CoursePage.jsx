@@ -1,93 +1,114 @@
-import React, { useEffect, useState } from "react"
-
-import { useDispatch, useSelector } from "react-redux"
-import { useNavigate, useParams } from "react-router-dom"
-import { BiInfoCircle } from "react-icons/bi"
-import { HiOutlineGlobeAlt } from "react-icons/hi"
-import { ReactMarkdown } from "react-markdown/lib/react-markdown"
-
-import { loadStripe } from '@stripe/stripe-js'
-import ConfirmationModal from "../components/common/ConfirmationModal"
-import Footer from "../components/common/Footer"
-import RatingStars from "../components/common/RatingStars"
-import CourseAccordionBar from "../components/core/CoursePage/CourseAccordionBar"
-import CourseBuyCard from "../components/core/CoursePage/CourseBuyCard"
-import { formatDate } from "../services/formatDate"
-import { getCourseDetails } from "../services/operations/courseDetailsAPI"
-import GetAvgRating from "../utils/avgRating"
-import Error from "./Error"
-
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate, useParams } from "react-router-dom";
+import { BiInfoCircle } from "react-icons/bi";
+import { HiOutlineGlobeAlt } from "react-icons/hi";
+import { ReactMarkdown } from "react-markdown/lib/react-markdown";
+import { loadStripe } from '@stripe/stripe-js';
+import ConfirmationModal from "../components/common/ConfirmationModal";
+import Footer from "../components/common/Footer";
+import RatingStars from "../components/common/RatingStars";
+import CourseAccordionBar from "../components/core/CoursePage/CourseAccordionBar";
+import CourseBuyCard from "../components/core/CoursePage/CourseBuyCard";
+import { formatDate } from "../services/formatDate";
+import { getCourseDetails } from "../services/operations/courseDetailsAPI";
+import GetAvgRating from "../utils/avgRating";
+import Error from "./Error";
 
 function CoursePage() {
-  const { user } = useSelector((state) => state.profile)
-  const { token } = useSelector((state) => state.auth)
-  const { loading } = useSelector((state) => state.profile)
-  const { paymentLoading } = useSelector((state) => state.course)
-  const dispatch = useDispatch()
-  const navigate = useNavigate()
+  const { user } = useSelector((state) => state.profile);
+  const { token } = useSelector((state) => state.auth);
+  const { loading } = useSelector((state) => state.profile);
+  const { paymentLoading } = useSelector((state) => state.course);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   // Getting courseId from url parameter
-  const { courseId } = useParams()
-  // console.log(`course id: ${courseId}`)
+  const { courseId } = useParams();
+  const [response, setResponse] = useState(null);
+  const [confirmationModal, setConfirmationModal] = useState(null);
 
-  // Declear a state to save the course details
-  const [response, setResponse] = useState(null)
-  const [confirmationModal, setConfirmationModal] = useState(null)
   useEffect(() => {
-    // Calling fetchCourseDetails fucntion to fetch the details
-    ;(async () => {
+    (async () => {
       try {
-        const res = await getCourseDetails(courseId)
-        // console.log("course details res: ", res)
-        setResponse(res)
+        const res = await getCourseDetails(courseId);
+        setResponse(res);
       } catch (error) {
-        console.log("Could not fetch Course Details")
+        console.log("Could not fetch Course Details");
       }
-    })()
-  }, [courseId])
+    })();
+  }, [courseId]);
 
-  // console.log("response: ", response)
-
-  // Calculating Avg Review count
   const [avgReviewCount, setAvgReviewCount] = useState(0);
 
-useEffect(() => {
-  const count = GetAvgRating(response?.data?.courseDetails.ratingAndReviews);
-  setAvgReviewCount(count || 0); // Default to 0 if count is undefined or null
-}, [response]);
-  // console.log("avgReviewCount: ", avgReviewCount)
+  useEffect(() => {
+    const count = GetAvgRating(response?.data?.courseDetails.ratingAndReviews);
+    setAvgReviewCount(count || 0);
+  }, [response]);
 
-  // // Collapse all
-  // const [collapse, setCollapse] = useState("")
-  const [isActive, setIsActive] = useState(Array(0))
+  const [isActive, setIsActive] = useState(Array(0));
   const handleActive = (id) => {
-    // console.log("called", id)
     setIsActive(
       !isActive.includes(id)
         ? isActive.concat([id])
         : isActive.filter((e) => e != id)
-    )
-  }
+    );
+  };
 
-  // Total number of lectures
-  const [totalNoOfLectures, setTotalNoOfLectures] = useState(0)
+  const [totalNoOfLectures, setTotalNoOfLectures] = useState(0);
   useEffect(() => {
-    let lectures = 0
+    let lectures = 0;
     response?.data?.courseDetails?.courseContent?.forEach((sec) => {
-      lectures += sec.subSection.length || 0
-    })
-    setTotalNoOfLectures(lectures)
-  }, [response])
+      lectures += sec.subSection.length || 0;
+    });
+    setTotalNoOfLectures(lectures);
+  }, [response]);
+
+  const handleBuyCourse = async () => {
+    if (!response || !response.data) {
+      console.error("Course details not available");
+      return;
+    }
+
+    if (token && user.accountType === 'Student') {
+      const stripe = await loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
+      const body = {
+        products: [{ ...response.data.courseDetails }],
+        userId: user._id,
+      };
+      const headers = {
+        "Content-Type": "application/json",
+      };
+      const paymentResponse = await fetch(`${process.env.REACT_APP_BASE_URL}/payment/create-checkout-session`, {
+        method: "POST",
+        headers: headers,
+        body: JSON.stringify(body),
+      });
+      if (!paymentResponse.ok) {
+        console.error("Payment request failed:", paymentResponse.statusText);
+        return;
+      }
+      const session = await paymentResponse.json();
+      const result = await stripe.redirectToCheckout({
+        sessionId: session.id,
+      });
+      if (result.error) {
+        console.error("Stripe redirect error:", result.error);
+      }
+    } else {
+      setConfirmationModal(true);
+    }
+  };
 
   if (loading || !response) {
     return (
       <div className="grid min-h-[calc(100vh-3.5rem)] place-items-center">
         <div className="spinner"></div>
       </div>
-    )
+    );
   }
   if (!response.success) {
-    return <Error />
+    return <Error />;
   }
 
   const {
@@ -102,60 +123,7 @@ useEffect(() => {
     instructor,
     studentsEnrolled,
     createdAt,
-  } = response.data?.courseDetails
-
-  const handleBuyCourse = async () => {
-    if (!response || !response.data) {
-      console.error("Course details not available");
-      return;
-    }
-  
-    if (token && user.accountType === 'Student') {
-      const stripe = await loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
-  
-      const body = {
-        products: [{ ...response.data.courseDetails }],
-        userId: user._id,
-      };
-  
-      const headers = {
-        "Content-Type": "application/json",
-      };
-  
-      console.log("Sending payment request...");
-      const paymentResponse = await fetch(`${process.env.REACT_APP_BASE_URL}/payment/create-checkout-session`, {
-        method: "POST",
-        headers: headers,
-        body: JSON.stringify(body),
-      });
-  
-      if (!paymentResponse.ok) {
-        console.error("Payment request failed:", paymentResponse.statusText);
-        return;
-      }
-  
-      const session = await paymentResponse.json();
-      console.log("Received session:", session);
-  
-      const result = await stripe.redirectToCheckout({
-        sessionId: session.id,
-      });
-  
-      if (result.error) {
-        console.error("Stripe redirect error:", result.error);
-      }
-    } else {
-      setConfirmationModal(true);
-    }
-  };
-  if (paymentLoading) {
-    // console.log("payment loading")
-    return (
-      <div className="grid min-h-[calc(100vh-3.5rem)] place-items-center">
-        <div className="spinner"></div>
-      </div>
-    )
-  }
+  } = response.data?.courseDetails;
 
   return (
     <>
@@ -294,7 +262,7 @@ useEffect(() => {
       <Footer />
       {confirmationModal && <ConfirmationModal modalData={confirmationModal} />}
     </>
-  )
-};
+  );
+}
 
-export default CoursePage
+export default CoursePage;

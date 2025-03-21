@@ -1,28 +1,31 @@
-import { useEffect, useState } from "react"
-import ProgressBar from "@ramonak/react-progress-bar"
-import { BiDotsVerticalRounded } from "react-icons/bi"
-import { useSelector } from "react-redux"
-import { useNavigate } from "react-router-dom"
+import { useEffect, useState, useCallback } from "react";
+import ProgressBar from "@ramonak/react-progress-bar";
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
-import { getEnrolledCoursess } from "../../../services/operations/profileAPI"
+import { getUserEnrolledCourses as fetchUserEnrolledCourses } from "../../../services/operations/profileAPI";
 
 export default function EnrolledCourses() {
-  const { token } = useSelector((state) => state.auth)
-  const navigate = useNavigate()
+  const { token } = useSelector((state) => state.auth);
+  const navigate = useNavigate();
 
-  const [enrolledCourses, setEnrolledCourses] = useState(null)
-  const getEnrolledCourses = async () => {
+  const [enrolledCourses, setEnrolledCourses] = useState(null);
+
+  // Fetch enrolled courses
+  const fetchEnrolledCourses = useCallback(async () => {
     try {
-      const res = await getEnrolledCourses(token);
-
+      const res = await fetchUserEnrolledCourses(token);
+      console.log("Enrolled Courses Response:", res);
       setEnrolledCourses(res);
     } catch (error) {
-      console.log("Could not fetch enrolled courses.")
+      console.log("Could not fetch enrolled courses.");
     }
-  };
+  }, [token]); // Add token as a dependency
+
+  // Fetch enrolled courses on component mount
   useEffect(() => {
-    getEnrolledCourses();
-  }, [])
+    fetchEnrolledCourses();
+  }, [fetchEnrolledCourses]);
 
   return (
     <>
@@ -57,7 +60,7 @@ export default function EnrolledCourses() {
                 onClick={() => {
                   navigate(
                     `/view-course/${course?._id}/section/${course.courseContent?.[0]?._id}/sub-section/${course.courseContent?.[0]?.subSection?.[0]?._id}`
-                  )
+                  );
                 }}
               >
                 <img
@@ -88,5 +91,5 @@ export default function EnrolledCourses() {
         </div>
       )}
     </>
-  )
+  );
 }

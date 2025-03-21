@@ -4,53 +4,7 @@ import { apiConnector } from "../apiconnector"
 import { profileEndpoints } from "../api"
 import { logout } from "./authAPI"
 
-const { GET_USER_DETAILS_API, GET_USER_ENROLLED_COURSES_API, GET_INSTRUCTOR_DATA_API, UPDATE_PROFILE_API ,} = profileEndpoints;
-
-export function updateProfile(token, data) {
-  return async (dispatch) => {
-    const toastId = toast.loading("Updating Profile...");
-    dispatch(setLoading(true));
-    try {
-      const response = await apiConnector("PUT", UPDATE_PROFILE_API, data, {
-        Authorization: `Bearer ${token}`,
-      });
-      console.log("UPDATE_PROFILE API RESPONSE:", response);
-      if (!response.data.success) {
-        throw new Error(response.data.message);
-      }
-      dispatch(setUser(response.data.data));
-      toast.success("Profile Updated Successfully");
-    } catch (error) {
-      console.log("UPDATE_PROFILE API ERROR:", error);
-      toast.error("Could Not Update Profile");
-    }
-    toast.dismiss(toastId);
-    dispatch(setLoading(false));
-  };
-}
-export function updateProfilePicture(token, formData) {
-  return async (dispatch) => {
-    const toastId = toast.loading("Updating Profile Picture...");
-    dispatch(setLoading(true));
-    try {
-      const response = await apiConnector("PUT", UPDATE_PROFILE_API, formData, {
-        Authorization: `Bearer ${token}`,
-      });
-      console.log("UPDATE_PROFILE_PICTURE API RESPONSE:", response);
-      if (!response.data.success) {
-        throw new Error(response.data.message);
-      }
-      dispatch(setUser(response.data.data));
-      toast.success("Profile Picture Updated Successfully");
-    } catch (error) {
-      console.log("UPDATE_PROFILE_PICTURE API ERROR:", error);
-      toast.error("Could Not Update Profile Picture");
-    }
-    toast.dismiss(toastId);
-    dispatch(setLoading(false));
-  };
-}
-
+const { GET_USER_DETAILS_API, GET_USER_ENROLLED_COURSES_API, GET_INSTRUCTOR_DATA_API } = profileEndpoints
 
 export function getUserDetails(token, navigate) {
   return async (dispatch) => {
@@ -79,11 +33,10 @@ export function getUserDetails(token, navigate) {
   }
 }
 
-export async function getEnrolledCourses(token) {
-  //const toastId = toast.loading("Loading...")
+export async function getUserEnrolledCourses(token) {
   let result = []
   try {
-    //console.log("BEFORE Calling BACKEND API FOR ENROLLED COURSES");
+    console.log("BEFORE Calling BACKEND API FOR ENROLLED COURSES")
     const response = await apiConnector(
       "GET",
       GET_USER_ENROLLED_COURSES_API,
@@ -92,23 +45,20 @@ export async function getEnrolledCourses(token) {
         Authorization: `Bearer ${token}`,
       }
     )
-  console.log("AFTER Calling BACKEND API FOR ENROLLED COURSES");
-  console.log(
-     "GET_USER_ENROLLED_COURSES_API API RESPONSE............",
-     response
+    console.log("AFTER Calling BACKEND API FOR ENROLLED COURSES")
+    console.log(
+      "GET_USER_ENROLLED_COURSES_API API RESPONSE............",
+      response
     )
 
     if (!response.data.success) {
       throw new Error(response.data.message)
     }
     result = response.data.data
-  }
-  
-  catch (error) {
+  } catch (error) {
     console.log("GET_USER_ENROLLED_COURSES_API API ERROR............", error)
     toast.error("Could Not Get Enrolled Courses")
   }
-  //toast.dismiss(toastId)
   return result
 }
 
