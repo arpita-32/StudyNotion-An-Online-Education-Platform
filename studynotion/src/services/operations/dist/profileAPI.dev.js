@@ -7,17 +7,17 @@ exports.updateProfilePicture = updateProfilePicture;
 exports.getUserEnrolledCourses = getUserEnrolledCourses;
 exports.getInstructorData = exports.deleteProfile = exports.updateProfile = void 0;
 
-var _reactHotToast = _interopRequireDefault(require("react-hot-toast"));
-
-var _api = require("../api");
+var _reactHotToast = require("react-hot-toast");
 
 var _profileSlice = require("../../slices/profileSlice");
 
-var _authSlice = require("../../slices/authSlice");
-
 var _apiconnector = require("../apiconnector");
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+var _authSlice = require("../../slices/authSlice");
+
+var _api = require("../api");
+
+var _authAPI = require("./authAPI");
 
 function updateProfilePicture(token, formData) {
   return function _callee(dispatch) {
@@ -26,10 +26,10 @@ function updateProfilePicture(token, formData) {
       while (1) {
         switch (_context.prev = _context.next) {
           case 0:
-            toastId = _reactHotToast["default"].loading('Loading...');
+            toastId = _reactHotToast.toast.loading('Loading...');
             _context.prev = 1;
             _context.next = 4;
-            return regeneratorRuntime.awrap((0, _apiconnector.apiConnector)("PUT", _api.profile.UPDATE_DISPLAY_PICTURE, formData, {
+            return regeneratorRuntime.awrap((0, _apiconnector.apiConnector)("PUT", _api.profileEndpoints.UPDATE_DISPLAY_PICTURE, formData, {
               "Content-Type": "multipart/form-data",
               "Authorization": "Bearer ".concat(token) // Pass token in the Authorization header
 
@@ -44,7 +44,7 @@ function updateProfilePicture(token, formData) {
               break;
             }
 
-            _reactHotToast["default"].error('Error in uploading profile picture');
+            _reactHotToast.toast.error('Error in uploading profile picture');
 
             throw new Error(response.data.message);
 
@@ -53,9 +53,9 @@ function updateProfilePicture(token, formData) {
             dispatch((0, _profileSlice.setUser)(response.data.data));
             localStorage.setItem('user', JSON.stringify(response.data.data));
 
-            _reactHotToast["default"].dismiss(toastId);
+            _reactHotToast.toast.dismiss(toastId);
 
-            _reactHotToast["default"].success('Profile picture updated successfully');
+            _reactHotToast.toast.success('Profile picture updated successfully');
 
             _context.next = 21;
             break;
@@ -66,7 +66,7 @@ function updateProfilePicture(token, formData) {
             console.log('Error occurred while calling the backend for profile picture updation:', _context.t0.message);
             console.error(_context.t0.message);
 
-            _reactHotToast["default"].dismiss(toastId);
+            _reactHotToast.toast.dismiss(toastId);
 
           case 21:
           case "end":
@@ -84,10 +84,10 @@ var updateProfile = function updateProfile(token, data) {
       while (1) {
         switch (_context2.prev = _context2.next) {
           case 0:
-            toastId = _reactHotToast["default"].loading('Updating Profile');
+            toastId = _reactHotToast.toast.loading('Updating Profile');
             _context2.prev = 1;
             _context2.next = 4;
-            return regeneratorRuntime.awrap((0, _apiconnector.apiConnector)('PUT', _api.profile.UPDATE_PROFILE, data, //passing header which is generally in json format
+            return regeneratorRuntime.awrap((0, _apiconnector.apiConnector)('PUT', _api.profileEndpoints.UPDATE_PROFILE, data, //passing header which is generally in json format
             {
               "Content-Type": "multipart/form-data",
               "Authorization": "Bearer ".concat(token) // Pass token in the Authorization header
@@ -102,9 +102,9 @@ var updateProfile = function updateProfile(token, data) {
               break;
             }
 
-            _reactHotToast["default"].dismiss(toastId);
+            _reactHotToast.toast.dismiss(toastId);
 
-            _reactHotToast["default"].error('error updating profile');
+            _reactHotToast.toast.error('error updating profile');
 
             throw new Error(response.data.message);
 
@@ -114,9 +114,9 @@ var updateProfile = function updateProfile(token, data) {
             dispatch((0, _profileSlice.setUser)(response.data.updatedUserDetails));
             localStorage.setItem('user', JSON.stringify(response.data.updatedUserDetails));
 
-            _reactHotToast["default"].dismiss(toastId);
+            _reactHotToast.toast.dismiss(toastId);
 
-            _reactHotToast["default"].success('profile updated');
+            _reactHotToast.toast.success('profile updated');
 
             _context2.next = 20;
             break;
@@ -146,10 +146,10 @@ var deleteProfile = function deleteProfile(token, navigate) {
       while (1) {
         switch (_context3.prev = _context3.next) {
           case 0:
-            toastId = _reactHotToast["default"].loading('Deleting Account');
+            toastId = _reactHotToast.toast.loading('Deleting Account');
             _context3.prev = 1;
             _context3.next = 4;
-            return regeneratorRuntime.awrap((0, _apiconnector.apiConnector)('DELETE', _api.profile.DELETE_ACCOUNT, //empty body
+            return regeneratorRuntime.awrap((0, _apiconnector.apiConnector)('DELETE', _api.profileEndpoints.DELETE_ACCOUNT, //empty body
             {}, //header having token
             {
               "Content-Type": "multipart/form-data",
@@ -173,9 +173,9 @@ var deleteProfile = function deleteProfile(token, navigate) {
             localStorage.removeItem('user');
             navigate('/');
 
-            _reactHotToast["default"].dismiss(toastId);
+            _reactHotToast.toast.dismiss(toastId);
 
-            _reactHotToast["default"].success('Profile deleted successfully');
+            _reactHotToast.toast.success('Profile deleted successfully');
 
             _context3.next = 22;
             break;
@@ -184,9 +184,9 @@ var deleteProfile = function deleteProfile(token, navigate) {
             _context3.prev = 16;
             _context3.t0 = _context3["catch"](1);
 
-            _reactHotToast["default"].dismiss(toastId);
+            _reactHotToast.toast.dismiss(toastId);
 
-            _reactHotToast["default"].error('error deleting profile');
+            _reactHotToast.toast.error('error deleting profile');
 
             console.log('error occurred while deleting profile', _context3.t0.message);
             console.error(_context3.t0.message);
@@ -208,50 +208,72 @@ function getUserEnrolledCourses(token) {
     while (1) {
       switch (_context4.prev = _context4.next) {
         case 0:
-          toastId = _reactHotToast["default"].loading("Loading...");
+          toastId = _reactHotToast.toast.loading("Loading...");
           result = [];
           _context4.prev = 2;
-          console.log("BEFORE Calling BACKEND API FOR ENROLLED COURSES");
-          _context4.next = 6;
-          return regeneratorRuntime.awrap((0, _apiconnector.apiConnector)("GET", _api.profile.GET_ENROLLED_COURSES, {}, {
+
+          if (token) {
+            _context4.next = 5;
+            break;
+          }
+
+          throw new Error("No token provided");
+
+        case 5:
+          _context4.next = 7;
+          return regeneratorRuntime.awrap((0, _apiconnector.apiConnector)("GET", _api.profileEndpoints.GET_ENROLLED_COURSES, null, {
             'Authorization': "Bearer ".concat(token)
           }));
 
-        case 6:
+        case 7:
           response = _context4.sent;
-          console.log("AFTER Calling BACKEND API FOR ENROLLED COURSES");
-          console.log("GET_USER_ENROLLED_COURSES_API API RESPONSE............", response);
 
           if (response.data.success) {
-            _context4.next = 11;
+            _context4.next = 10;
             break;
           }
 
           throw new Error(response.data.message);
 
-        case 11:
+        case 10:
           result = response.data.data;
-          _context4.next = 18;
+          _context4.next = 20;
           break;
 
-        case 14:
-          _context4.prev = 14;
+        case 13:
+          _context4.prev = 13;
           _context4.t0 = _context4["catch"](2);
-          console.log("GET_USER_ENROLLED_COURSES_API API ERROR............", _context4.t0.message);
+          console.log("GET_USER_ENROLLED_COURSES_API ERROR:", _context4.t0);
 
-          _reactHotToast["default"].error("Could Not Get Enrolled Courses");
+          if (!isTokenExpired(_context4.t0)) {
+            _context4.next = 19;
+            break;
+          }
 
-        case 18:
-          _reactHotToast["default"].dismiss(toastId);
+          _reactHotToast.toast.error("Session expired. Please login again"); // Dispatch logout action or redirect to login
 
-          return _context4.abrupt("return", result);
+
+          return _context4.abrupt("return", null);
+
+        case 19:
+          _reactHotToast.toast.error(_context4.t0.message || "Could Not Get Enrolled Courses");
 
         case 20:
+          _context4.prev = 20;
+
+          _reactHotToast.toast.dismiss(toastId);
+
+          return _context4.finish(20);
+
+        case 23:
+          return _context4.abrupt("return", result);
+
+        case 24:
         case "end":
           return _context4.stop();
       }
     }
-  }, null, null, [[2, 14]]);
+  }, null, null, [[2, 13, 20, 23]]);
 }
 
 var getInstructorData = function getInstructorData(token) {
@@ -262,7 +284,7 @@ var getInstructorData = function getInstructorData(token) {
         case 0:
           _context5.prev = 0;
           _context5.next = 3;
-          return regeneratorRuntime.awrap((0, _apiconnector.apiConnector)('GET', _api.profile.INSTRUCTOR_DASHBOARD, null, {
+          return regeneratorRuntime.awrap((0, _apiconnector.apiConnector)('GET', _api.profileEndpoints.INSTRUCTOR_DASHBOARD, null, {
             'Authorization': "Bearer ".concat(token)
           }));
 
@@ -285,7 +307,7 @@ var getInstructorData = function getInstructorData(token) {
           _context5.t0 = _context5["catch"](0);
           console.log('GET_INSTRUCTOR_DATA ERROR:- ', _context5.t0.message);
 
-          _reactHotToast["default"].error('Failed to fetch instructor data');
+          _reactHotToast.toast.error('Failed to fetch instructor data');
 
         case 14:
         case "end":

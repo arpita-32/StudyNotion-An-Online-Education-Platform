@@ -13,7 +13,7 @@ var _require2 = require("../controllers/Profile"),
     updateProfile = _require2.updateProfile,
     getAllUserDetails = _require2.getAllUserDetails,
     updateDisplayPicture = _require2.updateDisplayPicture,
-    getUserEnrolledCourses = _require2.getUserEnrolledCourses,
+    getEnrolledCourses = _require2.getEnrolledCourses,
     instructorDashboard = _require2.instructorDashboard; // ********************************************************************************************************
 //                                      Profile routes
 // ********************************************************************************************************
@@ -24,7 +24,7 @@ router["delete"]("/deleteProfile", auth, deleteAccount);
 router.put("/updateProfile", auth, updateProfile);
 router.get("/getUserDetails", auth, getAllUserDetails); // Get Enrolled Courses
 
-router.get("/getUserEnrolledCourses", auth, getUserEnrolledCourses);
+router.get("/getEnrolledCourses", auth, getEnrolledCourses);
 router.put("/updateDisplayPicture", auth, updateDisplayPicture);
 router.get("/instructorDashboard", auth, isInstructor, instructorDashboard);
 module.exports = router;

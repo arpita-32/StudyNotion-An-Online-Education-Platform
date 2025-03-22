@@ -1,215 +1,204 @@
 "use strict";
 
-// Importing required modules
-var jwt = require("jsonwebtoken");
+require('dotenv').config();
 
-var dotenv = require("dotenv");
-
-var User = require("../models/User"); // Configuring dotenv to load environment variables from .env file
+var jwt = require('jsonwebtoken'); // Auth middleware
 
 
-dotenv.config(); // This function is used as middleware to authenticate user requests
-
-exports.auth = function _callee(req, res, next) {
-  var token, decode;
+exports.auth = function _callee(req, resp, next) {
+  var authHeader, token, decoded;
   return regeneratorRuntime.async(function _callee$(_context) {
     while (1) {
       switch (_context.prev = _context.next) {
         case 0:
           _context.prev = 0;
-          // Extracting JWT from request cookies, body or header
-          token = req.cookies.token || req.body.token || req.header("Authorization").replace("Bearer ", ""); // If JWT is missing, return 401 Unauthorized response
+          // Extract token from request
+          authHeader = req.header('Authorization');
+          token = req.cookies.mycookie || req.body.token || authHeader && authHeader.replace('Bearer ', '');
 
           if (token) {
-            _context.next = 4;
+            _context.next = 5;
             break;
           }
 
-          return _context.abrupt("return", res.status(401).json({
+          return _context.abrupt("return", resp.status(401).json({
             success: false,
-            message: "Token Missing"
+            message: 'Authorization failed: No token provided'
           }));
 
-        case 4:
-          _context.prev = 4;
-          _context.next = 7;
-          return regeneratorRuntime.awrap(jwt.verify(token, process.env.JWT_SECRET));
-
-        case 7:
-          decode = _context.sent;
-          console.log(decode); // Storing the decoded JWT payload in the request object for further use
-
-          req.user = decode;
-          _context.next = 15;
+        case 5:
+          _context.prev = 5;
+          // Verify token
+          decoded = jwt.verify(token, process.env.JWT_SECRET);
+          req.user = decoded;
+          next();
+          _context.next = 16;
           break;
 
-        case 12:
-          _context.prev = 12;
-          _context.t0 = _context["catch"](4);
-          return _context.abrupt("return", res.status(401).json({
+        case 11:
+          _context.prev = 11;
+          _context.t0 = _context["catch"](5);
+
+          if (!(_context.t0.name === 'TokenExpiredError')) {
+            _context.next = 15;
+            break;
+          }
+
+          return _context.abrupt("return", resp.status(401).json({
             success: false,
-            message: "token is invalid"
+            message: 'Token expired'
           }));
 
         case 15:
-          // If JWT is valid, move on to the next middleware or request handler
-          next();
-          _context.next = 21;
+          return _context.abrupt("return", resp.status(401).json({
+            success: false,
+            message: 'Invalid token'
+          }));
+
+        case 16:
+          _context.next = 22;
           break;
 
         case 18:
           _context.prev = 18;
           _context.t1 = _context["catch"](0);
-          return _context.abrupt("return", res.status(401).json({
+          console.error('Auth Middleware Error:', _context.t1);
+          return _context.abrupt("return", resp.status(500).json({
             success: false,
-            message: "Something Went Wrong While Validating the Token"
+            message: 'Internal server error'
           }));
 
-        case 21:
+        case 22:
         case "end":
           return _context.stop();
       }
     }
-  }, null, null, [[0, 18], [4, 12]]);
-};
+  }, null, null, [[0, 18], [5, 11]]);
+}; // isStudent middleware
 
-exports.isStudent = function _callee2(req, res, next) {
-  var userDetails;
+
+exports.isStudent = function _callee2(req, resp, next) {
+  var accountType;
   return regeneratorRuntime.async(function _callee2$(_context2) {
     while (1) {
       switch (_context2.prev = _context2.next) {
         case 0:
           _context2.prev = 0;
-          _context2.next = 3;
-          return regeneratorRuntime.awrap(User.findOne({
-            email: req.user.email
-          }));
+          accountType = req.user.accountType;
 
-        case 3:
-          userDetails = _context2.sent;
-
-          if (!(userDetails.accountType !== "Student")) {
-            _context2.next = 6;
+          if (!(accountType !== 'Student')) {
+            _context2.next = 4;
             break;
           }
 
-          return _context2.abrupt("return", res.status(401).json({
+          return _context2.abrupt("return", resp.status(403).json({
             success: false,
-            message: "This is a Protected Route for Students"
+            message: 'Access denied: Student access required'
           }));
 
-        case 6:
+        case 4:
           next();
-          _context2.next = 12;
+          _context2.next = 11;
           break;
 
-        case 9:
-          _context2.prev = 9;
+        case 7:
+          _context2.prev = 7;
           _context2.t0 = _context2["catch"](0);
-          return _context2.abrupt("return", res.status(500).json({
+          console.error('isStudent Middleware Error:', _context2.t0);
+          return _context2.abrupt("return", resp.status(500).json({
             success: false,
-            message: "User Role Can't be Verified"
+            message: 'Internal server error'
           }));
 
-        case 12:
+        case 11:
         case "end":
           return _context2.stop();
       }
     }
-  }, null, null, [[0, 9]]);
-};
+  }, null, null, [[0, 7]]);
+}; // isInstructor middleware
 
-exports.isAdmin = function _callee3(req, res, next) {
-  var userDetails;
+
+exports.isInstructor = function _callee3(req, resp, next) {
+  var accountType;
   return regeneratorRuntime.async(function _callee3$(_context3) {
     while (1) {
       switch (_context3.prev = _context3.next) {
         case 0:
           _context3.prev = 0;
-          _context3.next = 3;
-          return regeneratorRuntime.awrap(User.findOne({
-            email: req.user.email
-          }));
+          accountType = req.user.accountType;
 
-        case 3:
-          userDetails = _context3.sent;
-
-          if (!(userDetails.accountType !== "Admin")) {
-            _context3.next = 6;
+          if (!(accountType !== 'Instructor')) {
+            _context3.next = 4;
             break;
           }
 
-          return _context3.abrupt("return", res.status(401).json({
+          return _context3.abrupt("return", resp.status(403).json({
             success: false,
-            message: "This is a Protected Route for Admin"
+            message: 'Access denied: Instructor access required'
           }));
 
-        case 6:
+        case 4:
           next();
-          _context3.next = 12;
+          _context3.next = 11;
           break;
 
-        case 9:
-          _context3.prev = 9;
+        case 7:
+          _context3.prev = 7;
           _context3.t0 = _context3["catch"](0);
-          return _context3.abrupt("return", res.status(500).json({
+          console.error('isInstructor Middleware Error:', _context3.t0);
+          return _context3.abrupt("return", resp.status(500).json({
             success: false,
-            message: "User Role Can't be Verified"
+            message: 'Internal server error'
           }));
 
-        case 12:
+        case 11:
         case "end":
           return _context3.stop();
       }
     }
-  }, null, null, [[0, 9]]);
-};
+  }, null, null, [[0, 7]]);
+}; // isAdmin middleware
 
-exports.isInstructor = function _callee4(req, res, next) {
-  var userDetails;
+
+exports.isAdmin = function _callee4(req, resp, next) {
+  var accountType;
   return regeneratorRuntime.async(function _callee4$(_context4) {
     while (1) {
       switch (_context4.prev = _context4.next) {
         case 0:
           _context4.prev = 0;
-          _context4.next = 3;
-          return regeneratorRuntime.awrap(User.findOne({
-            email: req.user.email
-          }));
+          accountType = req.user.accountType;
 
-        case 3:
-          userDetails = _context4.sent;
-          console.log(userDetails);
-          console.log(userDetails.accountType);
-
-          if (!(userDetails.accountType !== "Instructor")) {
-            _context4.next = 8;
+          if (!(accountType !== 'Admin')) {
+            _context4.next = 4;
             break;
           }
 
-          return _context4.abrupt("return", res.status(401).json({
+          return _context4.abrupt("return", resp.status(403).json({
             success: false,
-            message: "This is a Protected Route for Instructor"
+            message: 'Access denied: Admin access required'
           }));
 
-        case 8:
+        case 4:
           next();
-          _context4.next = 14;
+          _context4.next = 11;
           break;
 
-        case 11:
-          _context4.prev = 11;
+        case 7:
+          _context4.prev = 7;
           _context4.t0 = _context4["catch"](0);
-          return _context4.abrupt("return", res.status(500).json({
+          console.error('isAdmin Middleware Error:', _context4.t0);
+          return _context4.abrupt("return", resp.status(500).json({
             success: false,
-            message: "User Role Can't be Verified"
+            message: 'Internal server error'
           }));
 
-        case 14:
+        case 11:
         case "end":
           return _context4.stop();
       }
     }
-  }, null, null, [[0, 11]]);
+  }, null, null, [[0, 7]]);
 };
 //# sourceMappingURL=auth.dev.js.map
