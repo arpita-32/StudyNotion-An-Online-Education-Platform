@@ -4,160 +4,83 @@ require('dotenv').config();
 
 var stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
-var _require = require('../mail/courseEnrollmentEmail'),
+var Course = require("../models/Course");
+
+var crypto = require("crypto");
+
+var User = require("../models/User");
+
+var mailSender = require("../utils/mailSender");
+
+var mongoose = require("mongoose");
+
+var _require = require("../mail/courseEnrollmentEmail"),
     courseEnrollmentEmail = _require.courseEnrollmentEmail;
 
-var Course = require('../models/Course');
+var _require2 = require("../mail/paymentSuccessEmail"),
+    paymentSuccessEmail = _require2.paymentSuccessEmail;
 
-var CourseProgress = require('../models/CourseProgress');
-
-var User = require('../models/User');
-
-var _require2 = require('../utils/mailSender'),
-    sendEmail = _require2.sendEmail;
+var CourseProgress = require("../models/CourseProgress");
 
 var userID, courses;
 
-exports.startPayment = function _callee(req, res) {
-  var _req$body, products, userId, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, product, lineItems, session;
-
+exports.startPayment = function _callee(req, resp) {
+  var products, userId, lineItem, session;
   return regeneratorRuntime.async(function _callee$(_context) {
     while (1) {
       switch (_context.prev = _context.next) {
         case 0:
           _context.prev = 0;
-          _req$body = req.body, products = _req$body.products, userId = _req$body.userId;
-          console.log("Received Products:", products);
-          console.log("Received User ID:", userId);
-
-          if (!(!products || products.length === 0)) {
-            _context.next = 6;
-            break;
-          }
-
-          return _context.abrupt("return", res.status(400).json({
-            success: false,
-            message: "No products provided for payment."
-          }));
-
-        case 6:
-          _iteratorNormalCompletion = true;
-          _didIteratorError = false;
-          _iteratorError = undefined;
-          _context.prev = 9;
-          _iterator = products[Symbol.iterator]();
-
-        case 11:
-          if (_iteratorNormalCompletion = (_step = _iterator.next()).done) {
-            _context.next = 19;
-            break;
-          }
-
-          product = _step.value;
-
-          if (!(typeof product.price !== 'number' || isNaN(product.price))) {
-            _context.next = 16;
-            break;
-          }
-
-          console.error("❌ Invalid product price:", product);
-          return _context.abrupt("return", res.status(400).json({
-            success: false,
-            message: "Invalid price for product: " + product.courseName
-          }));
-
-        case 16:
-          _iteratorNormalCompletion = true;
-          _context.next = 11;
-          break;
-
-        case 19:
-          _context.next = 25;
-          break;
-
-        case 21:
-          _context.prev = 21;
-          _context.t0 = _context["catch"](9);
-          _didIteratorError = true;
-          _iteratorError = _context.t0;
-
-        case 25:
-          _context.prev = 25;
-          _context.prev = 26;
-
-          if (!_iteratorNormalCompletion && _iterator["return"] != null) {
-            _iterator["return"]();
-          }
-
-        case 28:
-          _context.prev = 28;
-
-          if (!_didIteratorError) {
-            _context.next = 31;
-            break;
-          }
-
-          throw _iteratorError;
-
-        case 31:
-          return _context.finish(28);
-
-        case 32:
-          return _context.finish(25);
-
-        case 33:
-          lineItems = products.map(function (product) {
+          products = req.body.products;
+          courses = products;
+          userId = req.body.userId;
+          userID = userId;
+          lineItem = products.map(function (product) {
             return {
               price_data: {
-                currency: "inr",
+                currency: 'inr',
                 product_data: {
-                  name: product.courseName || "Unknown Course"
+                  name: product.courseName
                 },
-                unit_amount: Math.round(product.price * 100)
+                unit_amount: product.price * 100
               },
               quantity: 1
             };
           });
-          console.log("Generated Line Items:", lineItems);
-          _context.next = 37;
+          console.log("Generated Line Items:", lineItem);
+          _context.next = 9;
           return regeneratorRuntime.awrap(stripe.checkout.sessions.create({
-            mode: "payment",
-            payment_method_types: ["card"],
-            line_items: lineItems,
+            mode: 'payment',
+            payment_method_types: ['card'],
+            line_items: lineItem,
             success_url: "http://localhost:3000/login",
-            cancel_url: "http://localhost:3000/error",
-            metadata: {
-              userID: userId,
-              courses: JSON.stringify(products.map(function (p) {
-                return p.courseId;
-              }))
-            }
+            cancel_url: "http://localhost:3000/error"
           }));
 
-        case 37:
+        case 9:
           session = _context.sent;
-          console.log("✅ Stripe Checkout Session Created:", session);
-          res.json({
+          resp.json({
             id: session.id
           });
-          _context.next = 46;
+          _context.next = 18;
           break;
 
-        case 42:
-          _context.prev = 42;
-          _context.t1 = _context["catch"](0);
-          console.error("❌ Error in payment session creation:", _context.t1.message);
-          res.status(500).json({
+        case 13:
+          _context.prev = 13;
+          _context.t0 = _context["catch"](0);
+          console.log('error occured  while starting payment:- ', _context.t0.message);
+          console.error(_context.t0.message);
+          return _context.abrupt("return", resp.status(500).json({
             success: false,
-            message: _context.t1.message
-          });
+            message: _context.t0.message
+          }));
 
-        case 46:
+        case 18:
         case "end":
           return _context.stop();
       }
     }
-  }, null, null, [[0, 42], [9, 21, 25, 33], [26,, 28, 32]]);
+  }, null, null, [[0, 13]]);
 };
 
 exports.verifySignature = function _callee2(req, resp) {
@@ -189,7 +112,7 @@ exports.verifySignature = function _callee2(req, resp) {
           }
 
           _context2.next = 13;
-          return regeneratorRuntime.awrap(enrollStudent(userID, courses, resp));
+          return regeneratorRuntime.awrap(enrollStudents(userID, courses, resp));
 
         case 13:
           resp.json({
@@ -213,106 +136,200 @@ exports.verifySignature = function _callee2(req, resp) {
   }, null, null, [[1, 5]]);
 };
 
-var enrollStudent = function enrollStudent(userID, courses, resp) {
-  var user;
-  return regeneratorRuntime.async(function enrollStudent$(_context4) {
+exports.sendPaymentSuccessEmail = function _callee3(req, res) {
+  var _req$body, orderId, paymentId, amount, userId, enrolledStudent;
+
+  return regeneratorRuntime.async(function _callee3$(_context3) {
+    while (1) {
+      switch (_context3.prev = _context3.next) {
+        case 0:
+          _req$body = req.body, orderId = _req$body.orderId, paymentId = _req$body.paymentId, amount = _req$body.amount;
+          userId = req.user.id;
+
+          if (!(!orderId || !paymentId || !amount || !userId)) {
+            _context3.next = 4;
+            break;
+          }
+
+          return _context3.abrupt("return", res.status(400).json({
+            success: false,
+            message: "Please provide all the details"
+          }));
+
+        case 4:
+          _context3.prev = 4;
+          _context3.next = 7;
+          return regeneratorRuntime.awrap(User.findById(userId));
+
+        case 7:
+          enrolledStudent = _context3.sent;
+          _context3.next = 10;
+          return regeneratorRuntime.awrap(mailSender(enrolledStudent.email, "Payment Received", paymentSuccessEmail("".concat(enrolledStudent.firstName, " ").concat(enrolledStudent.lastName), amount / 100, orderId, paymentId)));
+
+        case 10:
+          _context3.next = 16;
+          break;
+
+        case 12:
+          _context3.prev = 12;
+          _context3.t0 = _context3["catch"](4);
+          console.log("error in sending mail", _context3.t0);
+          return _context3.abrupt("return", res.status(400).json({
+            success: false,
+            message: "Could not send email"
+          }));
+
+        case 16:
+        case "end":
+          return _context3.stop();
+      }
+    }
+  }, null, null, [[4, 12]]);
+};
+
+var enrollStudents = function enrollStudents(courses, userId, res) {
+  var _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, courseId, enrolledCourse, courseProgress, enrolledStudent, emailResponse;
+
+  return regeneratorRuntime.async(function enrollStudents$(_context4) {
     while (1) {
       switch (_context4.prev = _context4.next) {
         case 0:
-          console.log('userId is: -', userID);
-          console.log('courses are: -', courses);
-          _context4.prev = 2;
-          _context4.next = 5;
-          return regeneratorRuntime.awrap(User.findById(userID));
+          if (!(!courses || !userId)) {
+            _context4.next = 2;
+            break;
+          }
 
-        case 5:
-          user = _context4.sent;
-          courses.forEach(function _callee3(course) {
-            var updatedCourse, Progress, updatedUser, mailresponse;
-            return regeneratorRuntime.async(function _callee3$(_context3) {
-              while (1) {
-                switch (_context3.prev = _context3.next) {
-                  case 0:
-                    if (!course.studentsEnrolled.includes(user._id)) {
-                      _context3.next = 5;
-                      break;
-                    }
+          return _context4.abrupt("return", res.status(400).json({
+            success: false,
+            message: "Please Provide Course ID and User ID"
+          }));
 
-                    console.log("user is already enrolled in the course having coourseId : - ".concat(course._id));
-                    return _context3.abrupt("return");
+        case 2:
+          _iteratorNormalCompletion = true;
+          _didIteratorError = false;
+          _iteratorError = undefined;
+          _context4.prev = 5;
+          _iterator = courses[Symbol.iterator]();
 
-                  case 5:
-                    _context3.next = 7;
-                    return regeneratorRuntime.awrap(Course.findByIdAndUpdate(course._id, {
-                      $push: {
-                        studentsEnrolled: userID
-                      }
-                    }, {
-                      "new": true
-                    }));
+        case 7:
+          if (_iteratorNormalCompletion = (_step = _iterator.next()).done) {
+            _context4.next = 36;
+            break;
+          }
 
-                  case 7:
-                    updatedCourse = _context3.sent;
+          courseId = _step.value;
+          _context4.prev = 9;
+          _context4.next = 12;
+          return regeneratorRuntime.awrap(Course.findOneAndUpdate({
+            _id: courseId
+          }, {
+            $push: {
+              studentsEnrolled: userId
+            }
+          }, {
+            "new": true
+          }));
 
-                    if (!updatedCourse) {
-                      console.log('course not found');
-                    }
+        case 12:
+          enrolledCourse = _context4.sent;
 
-                    console.log('updated course after enrolling looks like:- ', updatedCourse);
-                    _context3.next = 12;
-                    return regeneratorRuntime.awrap(CourseProgress.create({
-                      courseID: updatedCourse._id,
-                      userId: userID,
-                      completedVideos: []
-                    }));
+          if (enrolledCourse) {
+            _context4.next = 15;
+            break;
+          }
 
-                  case 12:
-                    Progress = _context3.sent;
-                    _context3.next = 15;
-                    return regeneratorRuntime.awrap(User.findByIdAndUpdate(userID, {
-                      $push: {
-                        courses: course._id,
-                        courseProgress: Progress._id
-                      }
-                    }, {
-                      "new": true
-                    }));
+          return _context4.abrupt("return", res.status(500).json({
+            success: false,
+            error: "Course not found"
+          }));
 
-                  case 15:
-                    updatedUser = _context3.sent;
-                    console.log("Enrolled student: ", updatedUser); //sending mail to the user
+        case 15:
+          console.log("Updated course: ", enrolledCourse);
+          _context4.next = 18;
+          return regeneratorRuntime.awrap(CourseProgress.create({
+            courseID: courseId,
+            userId: userId,
+            completedVideos: []
+          }));
 
-                    _context3.next = 19;
-                    return regeneratorRuntime.awrap(sendEmail(updatedUser.email, 'Course Enrollment Confirmation', courseEnrollmentEmail(course.courseName, updatedUser.firstName)));
+        case 18:
+          courseProgress = _context4.sent;
+          _context4.next = 21;
+          return regeneratorRuntime.awrap(User.findByIdAndUpdate(userId, {
+            $push: {
+              courses: courseId,
+              courseProgress: courseProgress._id
+            }
+          }, {
+            "new": true
+          }));
 
-                  case 19:
-                    mailresponse = _context3.sent;
+        case 21:
+          enrolledStudent = _context4.sent;
+          console.log("Enrolled student: ", enrolledStudent); // Send an email notification to the enrolled student
 
-                    if (!mailresponse) {
-                      console.log('mail couldnot be sent');
-                    }
+          _context4.next = 25;
+          return regeneratorRuntime.awrap(mailSender(enrolledStudent.email, "Successfully Enrolled into ".concat(enrolledCourse.courseName), courseEnrollmentEmail(enrolledCourse.courseName, "".concat(enrolledStudent.firstName, " ").concat(enrolledStudent.lastName))));
 
-                  case 21:
-                  case "end":
-                    return _context3.stop();
-                }
-              }
-            });
-          });
-          _context4.next = 13;
+        case 25:
+          emailResponse = _context4.sent;
+          console.log("Email sent successfully: ", emailResponse.response);
+          _context4.next = 33;
           break;
 
-        case 9:
-          _context4.prev = 9;
-          _context4.t0 = _context4["catch"](2);
-          console.log('error occured while enrolling student in courses:- ', _context4.t0.message);
-          console.error(_context4.t0.message);
+        case 29:
+          _context4.prev = 29;
+          _context4.t0 = _context4["catch"](9);
+          console.log(_context4.t0);
+          return _context4.abrupt("return", res.status(400).json({
+            success: false,
+            error: _context4.t0.message
+          }));
 
-        case 13:
+        case 33:
+          _iteratorNormalCompletion = true;
+          _context4.next = 7;
+          break;
+
+        case 36:
+          _context4.next = 42;
+          break;
+
+        case 38:
+          _context4.prev = 38;
+          _context4.t1 = _context4["catch"](5);
+          _didIteratorError = true;
+          _iteratorError = _context4.t1;
+
+        case 42:
+          _context4.prev = 42;
+          _context4.prev = 43;
+
+          if (!_iteratorNormalCompletion && _iterator["return"] != null) {
+            _iterator["return"]();
+          }
+
+        case 45:
+          _context4.prev = 45;
+
+          if (!_didIteratorError) {
+            _context4.next = 48;
+            break;
+          }
+
+          throw _iteratorError;
+
+        case 48:
+          return _context4.finish(45);
+
+        case 49:
+          return _context4.finish(42);
+
+        case 50:
         case "end":
           return _context4.stop();
       }
     }
-  }, null, null, [[2, 9]]);
+  }, null, null, [[5, 38, 42, 50], [9, 29], [43,, 45, 49]]);
 };
 //# sourceMappingURL=Payment.dev.js.map

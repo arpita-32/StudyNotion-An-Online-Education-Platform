@@ -6,7 +6,8 @@ var express = require("express");
 var router = express.Router();
 
 var _require = require("../controllers/Payment"),
-    sendPaymentSuccessEmail = _require.sendPaymentSuccessEmail;
+    sendPaymentSuccessEmail = _require.sendPaymentSuccessEmail,
+    verifySignature = _require.verifySignature;
 
 var _require2 = require("../middlewares/auth"),
     auth = _require2.auth,
@@ -15,6 +16,8 @@ var _require2 = require("../middlewares/auth"),
 var _require3 = require("../controllers/Payment"),
     startPayment = _require3.startPayment;
 
+router.post("/verifySignature", auth, isStudent, verifySignature);
+router.post("/sendPaymentSuccessEmail", auth, isStudent, sendPaymentSuccessEmail);
 router.post('/create-checkout-session', startPayment);
 module.exports = router;
 //# sourceMappingURL=Payments.dev.js.map

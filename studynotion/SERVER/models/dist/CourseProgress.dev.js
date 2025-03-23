@@ -1,18 +1,21 @@
 "use strict";
 
-var mongoose = require("mongoose");
+var mongoose = require('mongoose');
 
-var courseProgress = new mongoose.Schema({
+var courseProgressSchema = new mongoose.Schema({
   courseID: {
-    type: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Course"
-    },
-    completedVideos: [{
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "SubSection"
-    }]
-  }
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Course'
+  },
+  //added later
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User"
+  },
+  completedVideos: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "SubSection"
+  }]
 });
-module.exports = mongoose.model("CourseProgress", courseProgress);
+module.exports = mongoose.model('Course-Progress', courseProgressSchema);
 //# sourceMappingURL=CourseProgress.dev.js.map
