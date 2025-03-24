@@ -1,14 +1,32 @@
-// Import the required modules
-const express = require("express")
-const router = express.Router()
-const { sendPaymentSuccessEmail, verifySignature } = require("../controllers/Payment")
+const express = require("express");
+const router = express.Router();
+const { 
+  createCheckoutSession,
+  handleStripeWebhook,
+  sendPaymentSuccessEmail
+} = require("../controllers/Payment");
 const { auth, isStudent } = require("../middlewares/auth");
-const { startPayment } = require("../controllers/Payment");
 
+// Stripe webhook endpoint (must be before body parser middleware)
+router.post(
+  "/stripe-webhook",
+  express.raw({ type: "application/json" }), // Needed for signature verification
+  handleStripeWebhook
+);
 
-router.post("/verifySignature",auth, isStudent, verifySignature)
-router.post("/sendPaymentSuccessEmail", auth, isStudent, sendPaymentSuccessEmail);
-router.post('/create-checkout-session', startPayment);
+// Protected routes (require authentication)
+router.post(
+  "/create-checkout-session",
+  auth,
+  isStudent,
+  createCheckoutSession
+);
 
+router.post(
+  "/send-payment-success-email",
+  auth,
+  isStudent,
+  sendPaymentSuccessEmail
+);
 
 module.exports = router;

@@ -9,20 +9,20 @@ export const endpoints = {
   RESETPASSWORD_API: BASE_URL + "/auth/reset-password",
 }
 
-// PROFILE ENDPOINTS
+// Make sure your endpoints are correctly defined
 export const profileEndpoints = {
   GET_USER_DETAILS_API: BASE_URL + "/profile/getUserDetails",
-  GET_ENROLLED_COURSES: BASE_URL + "/profile/getEnrolledCourses",
+  GET_USER_ENROLLED_COURSES_API: BASE_URL + "/profile/getEnrolledCourses",
   GET_INSTRUCTOR_DATA_API: BASE_URL + "/profile/instructorDashboard",
 }
 
 // STUDENTS ENDPOINTS
 export const studentEndpoints = {
-  COURSE_PAYMENT_API: BASE_URL + "/payment/capturePayment",
-  COURSE_VERIFY_API: BASE_URL + "/payment/verifyPayment",
-  SEND_PAYMENT_SUCCESS_EMAIL_API: BASE_URL + "/payment/sendPaymentSuccessEmail",
+  CREATE_STRIPE_CHECKOUT_SESSION: BASE_URL + "/payment/create-checkout-session",
+  VERIFY_STRIPE_PAYMENT: BASE_URL + "/payment/verify-stripe-payment",
+  SEND_PAYMENT_SUCCESS_EMAIL_API: BASE_URL + "/payment/send-payment-success-email",
+  STRIPE_WEBHOOK: BASE_URL + "/payment/stripe-webhook", // For backend use
 }
-
 // COURSE ENDPOINTS
 export const courseEndpoints = {
   GET_ALL_COURSE_API: BASE_URL + "/course/getAllCourses",

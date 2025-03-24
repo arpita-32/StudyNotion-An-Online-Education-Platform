@@ -1,193 +1,103 @@
 import { toast } from "react-hot-toast"
-import { setUser  } from "../../slices/profileSlice"
+import { setLoading, setUser } from "../../slices/profileSlice"
 import { apiConnector } from "../apiconnector"
-import { setToken } from "../../slices/authSlice";
 import { profileEndpoints } from "../api"
 import { logout } from "./authAPI"
 
-const isTokenExpired = (error) => {
-  return error.message?.toLowerCase().includes('jwt expired') || 
-         error.response?.data?.message?.toLowerCase().includes('jwt expired')
-}
-export function updateProfilePicture(token, formData) {
+const { GET_USER_DETAILS_API, GET_USER_ENROLLED_COURSES_API, GET_INSTRUCTOR_DATA_API } = profileEndpoints
+
+export function getUserDetails(token, navigate) {
   return async (dispatch) => {
-
-    const toastId = toast.loading('Loading...');
+    const toastId = toast.loading("Loading user details...");
+    dispatch(setLoading(true));
+    
     try {
-
-      // Make the API request with FormData
-      const response = await apiConnector(
-        "PUT",
-        profileEndpoints.UPDATE_DISPLAY_PICTURE,
-        formData,
-        {
-          "Content-Type": "multipart/form-data",
-          "Authorization": `Bearer ${token}`, // Pass token in the Authorization header
-        }
-      );
-
-      console.log('response', response);
-
-      if (!response.data.success) {
-        toast.error('Error in uploading profile picture');
-        throw new Error(response.data.message);
+      if (!token) {
+        throw new Error("Authentication token not found");
       }
 
-      console.log('New user details after updating the profile pic which will be set to user slice and  localstorage :', response.data.data);
-      dispatch(setUser(response.data.data));
-      localStorage.setItem('user', JSON.stringify(response.data.data));
-      toast.dismiss(toastId);
-      toast.success('Profile picture updated successfully');
+      const response = await apiConnector("GET", GET_USER_DETAILS_API, null, {
+        Authorization: `Bearer ${token}`,
+      });
 
-    } catch (err) {
-
-      console.log('Error occurred while calling the backend for profile picture updation:', err.message);
-      console.error(err.message);
-      toast.dismiss(toastId);
-
-    }
-  }
-}
-
-export const updateProfile = (token, data) => {
-
-  return async (dispatch) => {
-    const toastId = toast.loading('Updating Profile');
-    try {
-      const response = await apiConnector('PUT', profileEndpoints.UPDATE_PROFILE, data,
-        //passing header which is generally in json format
-        {
-          "Content-Type": "multipart/form-data",
-          "Authorization": `Bearer ${token}`, // Pass token in the Authorization header
-        }
-      )
-
-      if (!response.data.success) {
-        toast.dismiss(toastId);
-        toast.error('error updating profile');
-        throw new Error(response.data.message);
+      if (!response?.data?.success) {
+        throw new Error(response.data.message || "Failed to fetch user details");
       }
 
-      //else
-      console.log('updated user details after updating profile:- ', response.data.updatedUserDetails);
-      dispatch(setUser(response.data.updatedUserDetails));
-      localStorage.setItem('user', JSON.stringify(response.data.updatedUserDetails));
-      toast.dismiss(toastId);
-      toast.success('profile updated');
+      const userData = response.data.data;
+      const userImage = userData?.image 
+        ? userData.image
+        : `https://api.dicebear.com/5.x/initials/svg?seed=${userData.firstName || ''} ${userData.lastName || ''}`;
 
-    } catch (err) {
-      console.log('error occured while updating profile', err.message);
-      console.error(err.message);
-    }
-  }
-
-}
-
-//function for deleting the profile
-export const deleteProfile = (token, navigate) => {
-  return async (dispatch) => {
-    const toastId = toast.loading('Deleting Account');
-    try {
-
-      const response = await apiConnector('DELETE', profileEndpoints.DELETE_ACCOUNT,
-        //empty body
-        {},
-        //header having token
-        {
-          "Content-Type": "multipart/form-data",
-          "Authorization": `Bearer ${token}`
-        }
-      )
-
-      if (!response.data.success) {
-        throw new Error(response.data.message);
+      dispatch(setUser({ ...userData, image: userImage }));
+    } catch (error) {
+      console.error("GET_USER_DETAILS ERROR:", error);
+      
+      // Only logout if it's an authentication error
+      if ([401, 403].includes(error.response?.status)) {
+        dispatch(logout(navigate));
       }
-
-
-      dispatch(setUser(null));
-      dispatch(setToken(null));
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      navigate('/');
+      
+      toast.error(error.message || "Could not get user details");
+    } finally {
       toast.dismiss(toastId);
-      toast.success('Profile deleted successfully');
-
-
-    } catch (err) {
-      toast.dismiss(toastId);
-      toast.error('error deleting profile');
-      console.log('error occurred while deleting profile', err.message);
-      console.error(err.message);
-
+      dispatch(setLoading(false));
     }
-  }
-}
-
-const handleTokenExpiration = () => {
-  // Clear auth state
-  localStorage.removeItem('token')
-  localStorage.removeItem('user')
-  // Force reload to reset app state
-  window.location.href = '/login'
+  };
 }
 
 export async function getUserEnrolledCourses(token) {
-  const toastId = toast.loading("Loading...")
-  let result = []
+  const toastId = toast.loading("Fetching enrolled courses...");
   try {
     if (!token) {
-      throw new Error("No token provided")
+      throw new Error("Authentication token not found");
     }
 
     const response = await apiConnector(
       "GET",
-      profileEndpoints.GET_ENROLLED_COURSES,
+      GET_USER_ENROLLED_COURSES_API,
       null,
       {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       }
-    )
+    );
 
-    if (!response.data.success) {
-      throw new Error(response.data.message)
+    if (!response?.data?.success) {
+      throw new Error(response.data.message || "Failed to fetch enrolled courses");
     }
-    
-    result = response.data.data
+
+    return response.data.data || [];
   } catch (error) {
-    console.log("GET_USER_ENROLLED_COURSES_API ERROR:", error)
+    console.error("GET_USER_ENROLLED_COURSES_API ERROR:", error);
     
-    if (error.response?.status === 401 || 
-        error.message?.toLowerCase().includes('jwt expired') ||
-        error.response?.data?.message?.toLowerCase().includes('jwt expired')) {
-      toast.error("Session expired. Please login again")
-      handleTokenExpiration()
-      return null
+    // Only show toast if it's not a 401/403 (unauthorized) error
+    if (![401, 403].includes(error.response?.status)) {
+      toast.error(error.message || "Could not get enrolled courses");
     }
     
-    toast.error("Could Not Get Enrolled Courses")
+    return [];
   } finally {
-    toast.dismiss(toastId)
+    toast.dismiss(toastId);
   }
-  return result
 }
 
-export const getInstructorData = async (token) => {
+export async function getInstructorData(token) {
+  const toastId = toast.loading("Loading...");
+  let result = [];
   try{
+    const response = await apiConnector("GET", GET_INSTRUCTOR_DATA_API, null, 
+    {
+      Authorization: `Bearer ${token}`,
+    })
 
-    const response = await apiConnector('GET', profileEndpoints.INSTRUCTOR_DASHBOARD, null, {
-      'Authorization': `Bearer ${token}`
-    });
+    console.log("GET_INSTRUCTOR_API_RESPONSE", response);
+    result = response?.data?.courses
 
-    if(!response.data.success){
-      throw new Error(response.data.message);
-    }
-
-    console.log('data from instructor dashboard api:- ', response.data);
-    return response.data;
-
-  }catch(err){
-    console.log('GET_INSTRUCTOR_DATA ERROR:- ',err.message);
-    toast.error('Failed to fetch instructor data');
   }
-  
+  catch(error) {
+    console.log("GET_INSTRUCTOR_API ERROR", error);
+    toast.error("Could not Get Instructor Data")
+  }
+  toast.dismiss(toastId);
+  return result;
 }

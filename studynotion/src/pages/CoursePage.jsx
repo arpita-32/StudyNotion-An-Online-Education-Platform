@@ -5,6 +5,7 @@ import { BiInfoCircle } from "react-icons/bi";
 import { HiOutlineGlobeAlt } from "react-icons/hi";
 import { ReactMarkdown } from "react-markdown/lib/react-markdown";
 import { loadStripe } from '@stripe/stripe-js';
+import { toast } from 'react-toastify';
 import ConfirmationModal from "../components/common/ConfirmationModal";
 import Footer from "../components/common/Footer";
 import RatingStars from "../components/common/RatingStars";
@@ -69,37 +70,52 @@ function CoursePage() {
       console.error("Course details not available");
       return;
     }
-
+  
     if (token && user.accountType === 'Student') {
-      const stripe = await loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
-      const body = {
-        products: [{ ...response.data.courseDetails }],
-        userId: user._id,
-      };
-      const headers = {
-        "Content-Type": "application/json",
-      };
-      const paymentResponse = await fetch(`${process.env.REACT_APP_BASE_URL}/payment/create-checkout-session`, {
-        method: "POST",
-        headers: headers,
-        body: JSON.stringify(body),
-      });
-      if (!paymentResponse.ok) {
-        console.error("Payment request failed:", paymentResponse.statusText);
-        return;
-      }
-      const session = await paymentResponse.json();
-      const result = await stripe.redirectToCheckout({
-        sessionId: session.id,
-      });
-      if (result.error) {
-        console.error("Stripe redirect error:", result.error);
+      try {
+        const stripe = await loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
+        
+        const paymentResponse = await fetch(
+          `${process.env.REACT_APP_BASE_URL}/payment/create-checkout-session`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`  // Add authorization header
+            },
+            body: JSON.stringify({
+              products: [{ ...response.data.courseDetails }],
+              userId: user._id,
+            }),
+          }
+        );
+  
+        if (!paymentResponse.ok) {
+          const errorData = await paymentResponse.json();
+          console.error("Payment request failed:", errorData.message || paymentResponse.statusText);
+          toast.error(errorData.message || "Payment request failed");
+          return;
+        }
+  
+        const session = await paymentResponse.json();
+        
+        // Redirect to Stripe Checkout
+        const result = await stripe.redirectToCheckout({
+          sessionId: session.id,
+        });
+  
+        if (result.error) {
+          console.error("Stripe redirect error:", result.error);
+          toast.error(result.error.message);
+        }
+      } catch (error) {
+        console.error("Payment error:", error);
+        toast.error("An error occurred during payment processing");
       }
     } else {
       setConfirmationModal(true);
     }
   };
-
   if (loading || !response) {
     return (
       <div className="grid min-h-[calc(100vh-3.5rem)] place-items-center">
