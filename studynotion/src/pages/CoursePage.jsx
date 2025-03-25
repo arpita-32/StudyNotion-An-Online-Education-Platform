@@ -14,6 +14,7 @@ import CourseBuyCard from "../components/core/CoursePage/CourseBuyCard";
 import { formatDate } from "../services/formatDate";
 import { getCourseDetails } from "../services/operations/courseDetailsAPI";
 import GetAvgRating from "../utils/avgRating";
+import { getUserEnrolledCourses, getUserDetails } from "../services/operations/profileAPI";
 import Error from "./Error";
 
 function CoursePage() {
@@ -65,57 +66,76 @@ function CoursePage() {
     setTotalNoOfLectures(lectures);
   }, [response]);
 
-  const handleBuyCourse = async () => {
-    if (!response || !response.data) {
-      console.error("Course details not available");
-      return;
-    }
-  
-    if (token && user.accountType === 'Student') {
-      try {
-        const stripe = await loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
-        
-        const paymentResponse = await fetch(
-          `${process.env.REACT_APP_BASE_URL}/payment/create-checkout-session`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`  // Add authorization header
-            },
-            body: JSON.stringify({
-              products: [{ ...response.data.courseDetails }],
-              userId: user._id,
-            }),
-          }
-        );
-  
-        if (!paymentResponse.ok) {
-          const errorData = await paymentResponse.json();
-          console.error("Payment request failed:", errorData.message || paymentResponse.statusText);
-          toast.error(errorData.message || "Payment request failed");
-          return;
-        }
-  
-        const session = await paymentResponse.json();
-        
-        // Redirect to Stripe Checkout
-        const result = await stripe.redirectToCheckout({
-          sessionId: session.id,
-        });
-  
-        if (result.error) {
-          console.error("Stripe redirect error:", result.error);
-          toast.error(result.error.message);
-        }
-      } catch (error) {
-        console.error("Payment error:", error);
-        toast.error("An error occurred during payment processing");
+  // Update your handlePaymentSuccess function
+const handlePaymentSuccess = async () => {
+  try {
+    // Refresh user data and enrolled courses
+    await Promise.all([
+      dispatch(getUserDetails(token, navigate)),
+      dispatch(getUserEnrolledCourses(token)),
+    ]);
+    
+    // Show success message
+    toast.success("Course enrolled successfully!");
+    
+    // Redirect after a short delay
+    setTimeout(() => {
+      navigate("/dashboard/enrolled-courses");
+    }, 1500);
+  } catch (error) {
+    console.error("Refresh failed:", error);
+    toast.error("Enrollment successful, but failed to refresh data");
+  }
+};
+
+// Update your handleBuyCourse function
+const handleBuyCourse = async () => {
+  if (!response || !response.data) {
+    toast.error("Course details not available");
+    return;
+  }
+
+  if (!token || user.accountType !== 'Student') {
+    setConfirmationModal(true);
+    return;
+  }
+
+  try {
+    const stripe = await loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
+    
+    const paymentResponse = await fetch(
+      `${process.env.REACT_APP_BASE_URL}/payment/create-checkout-session`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          products: [{ ...response.data.courseDetails }],
+          userId: user._id,
+        }),
       }
-    } else {
-      setConfirmationModal(true);
+    );
+
+    if (!paymentResponse.ok) {
+      throw new Error("Payment request failed");
     }
-  };
+
+    const session = await paymentResponse.json();
+    const result = await stripe.redirectToCheckout({
+      sessionId: session.id,
+    });
+
+    if (result.error) {
+      throw result.error;
+    }
+  } catch (error) {
+    console.error("Payment error:", error);
+    toast.error(error.message || "Payment failed");
+  }
+};
+
   if (loading || !response) {
     return (
       <div className="grid min-h-[calc(100vh-3.5rem)] place-items-center">
