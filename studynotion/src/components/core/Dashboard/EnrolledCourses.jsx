@@ -12,7 +12,7 @@ export default function EnrolledCourses() {
 
   const [enrolledCourses, setEnrolledCourses] = useState(null)
   const getEnrolledCourses = async () => {
-    try {
+    try {  
       const res = await getUserEnrolledCourses(token);
 
       setEnrolledCourses(res);

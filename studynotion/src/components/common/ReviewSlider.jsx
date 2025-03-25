@@ -1,43 +1,51 @@
-import React, { useEffect, useState } from 'react'
-import {Swiper, SwiperSlide} from "swiper/react"
+import React, { useEffect, useState } from "react"
+import ReactStars from "react-rating-stars-component"
+import { Swiper, SwiperSlide } from "swiper/react"
 import "swiper/css"
 import "swiper/css/free-mode"
 import "swiper/css/pagination"
-import { Autoplay,FreeMode, Pagination}  from 'swiper/modules'
-import ReactStars from 'react-rating-stars-component';
-import { FaStar } from 'react-icons/fa'
-import { getAllReviews } from "../../services/operations/reviewAndrating";
+import "../../App.css"
+import { FaStar } from "react-icons/fa"
+import { Autoplay, FreeMode, Pagination } from "swiper/modules"
+import { apiConnector } from "../../services/apiconnector"
+import { ratingsEndpoints } from "../../services/api"
 
+function ReviewSlider() {
+  const [reviews, setReviews] = useState([])
+  const truncateWords = 15
 
-const truncateWords = 15;
-
-const ReviewSlider = () => {
-
- const [reviewArray, setreviewArray] = useState([]);
-
- useEffect(() => {
-    ;(async() => {
-       //fetch data from api
-       const result = await getAllReviews();
-
-       if(!result){
-        console.log('No review is fetched');
-       }
-
-       console.log('printing the array of all reviews:- ', result);
-
-       setreviewArray(result);
-
+  useEffect(() => {
+    ;(async () => {
+      const { data } = await apiConnector(
+        "GET",
+        ratingsEndpoints.REVIEWS_DETAILS_API
+      )
+      if (data?.success) {
+        setReviews(data?.data)
+      }
     })()
- },[])
+  }, [])
 
   return (
-    <div className='text-white w-full'>
-         <div className='h-[190px] max-w-maxContent'>
-
-         <Swiper
-          slidesPerView={4}
-          spaceBetween={25}
+    <div className="text-white">
+      <div className="my-[50px] max-w-[100vw] px-4 lg:max-w-maxContent">
+        <Swiper
+          slidesPerView={1}
+          spaceBetween={20}
+          breakpoints={{
+            640: {
+              slidesPerView: 2,
+              spaceBetween: 20
+            },
+            768: {
+              slidesPerView: 3,
+              spaceBetween: 25
+            },
+            1024: {
+              slidesPerView: 4,
+              spaceBetween: 25
+            }
+          }}
           loop={true}
           freeMode={true}
           autoplay={{
@@ -45,12 +53,12 @@ const ReviewSlider = () => {
             disableOnInteraction: false,
           }}
           modules={[FreeMode, Pagination, Autoplay]}
-          className="w-full "
+          className="w-full"
         >
-          {reviewArray?.map((review, i) => {
+          {reviews.map((review, i) => {
             return (
               <SwiperSlide key={i}>
-                <div className="flex flex-col gap-3 bg-richblack-800 p-3 text-[14px] text-richblack-25">
+                <div className="flex flex-col gap-3 bg-richblack-800 p-3 text-[14px] text-richblack-25 h-[180px] rounded-lg">
                   <div className="flex items-center gap-4">
                     <img
                       src={
@@ -58,7 +66,7 @@ const ReviewSlider = () => {
                           ? review?.user?.image
                           : `https://api.dicebear.com/5.x/initials/svg?seed=${review?.user?.firstName} ${review?.user?.lastName}`
                       }
-                      alt="userprofile"
+                      alt=""
                       className="h-9 w-9 rounded-full object-cover"
                     />
                     <div className="flex flex-col">
@@ -68,7 +76,7 @@ const ReviewSlider = () => {
                       </h2>
                     </div>
                   </div>
-                  <p className="font-medium text-richblack-25">
+                  <p className="font-medium text-richblack-25 flex-grow">
                     {review?.review.split(" ").length > truncateWords
                       ? `${review?.review
                           .split(" ")
@@ -76,7 +84,7 @@ const ReviewSlider = () => {
                           .join(" ")} ...`
                       : `${review?.review}`}
                   </p>
-                  <div className="flex items-center gap-2 ">
+                  <div className="flex items-center gap-2">
                     <h3 className="font-semibold text-yellow-100">
                       {review.rating.toFixed(1)}
                     </h3>
@@ -94,11 +102,8 @@ const ReviewSlider = () => {
               </SwiperSlide>
             )
           })}
-          {/* <SwiperSlide>Slide 1</SwiperSlide> */}
         </Swiper>
-
-
-         </div>
+      </div>
     </div>
   )
 }

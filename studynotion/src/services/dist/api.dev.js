@@ -4,7 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.settingsEndpoints = exports.contactusEndpoint = exports.catalogData = exports.categories = exports.ratingsEndpoints = exports.courseEndpoints = exports.studentEndpoints = exports.profileEndpoints = exports.endpoints = void 0;
-var BASE_URL = "http://localhost:4000/api/v1"; // AUTH ENDPOINTS
+var BASE_URL = process.env.REACT_APP_BASE_URL; // AUTH ENDPOINTS
 
 var endpoints = {
   SENDOTP_API: BASE_URL + "/auth/sendotp",
@@ -12,7 +12,7 @@ var endpoints = {
   LOGIN_API: BASE_URL + "/auth/login",
   RESETPASSTOKEN_API: BASE_URL + "/auth/reset-password-token",
   RESETPASSWORD_API: BASE_URL + "/auth/reset-password"
-}; // Make sure your endpoints are correctly defined
+}; // PROFILE ENDPOINTS
 
 exports.endpoints = endpoints;
 var profileEndpoints = {
@@ -23,11 +23,9 @@ var profileEndpoints = {
 
 exports.profileEndpoints = profileEndpoints;
 var studentEndpoints = {
-  CREATE_STRIPE_CHECKOUT_SESSION: BASE_URL + "/payment/create-checkout-session",
-  VERIFY_STRIPE_PAYMENT: BASE_URL + "/payment/verify-stripe-payment",
-  SEND_PAYMENT_SUCCESS_EMAIL_API: BASE_URL + "/payment/send-payment-success-email",
-  STRIPE_WEBHOOK: BASE_URL + "/payment/stripe-webhook" // For backend use
-
+  COURSE_PAYMENT_API: BASE_URL + "/payment/capturePayment",
+  COURSE_VERIFY_API: BASE_URL + "/payment/verifyPayment",
+  SEND_PAYMENT_SUCCESS_EMAIL_API: BASE_URL + "/payment/sendPaymentSuccessEmail"
 }; // COURSE ENDPOINTS
 
 exports.studentEndpoints = studentEndpoints;
@@ -62,7 +60,7 @@ var categories = {
 
 exports.categories = categories;
 var catalogData = {
-  CATALOGPAGEDATA_API: BASE_URL + "/course/CategoryPageDetails"
+  CATALOGPAGEDATA_API: BASE_URL + "/course/getCategoryPageDetails"
 }; // CONTACT-US API
 
 exports.catalogData = catalogData;

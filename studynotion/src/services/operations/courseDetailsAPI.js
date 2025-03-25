@@ -1,7 +1,7 @@
 import { toast } from "react-hot-toast"
 
 import { updateCompletedLectures } from "../../slices/viewCourseSlice"
-// import { setLoading } from "../../slices/profileSlice";
+import { setLoading } from "../../slices/profileSlice";
 import { apiConnector } from "../apiconnector"
 import { courseEndpoints } from "../api"
 
@@ -41,42 +41,30 @@ export const getAllCourses = async () => {
   return result
 }
 
-export const getCourseDetails = async (courseId) => {
+export const fetchCourseDetails = async (courseId) => {
   const toastId = toast.loading("Loading...")
+  //   dispatch(setLoading(true));
   let result = null
   try {
-    if (!courseId) {
-      throw new Error("Course ID is required")
-    }
-    
-    console.log("Requesting course details for courseId:", courseId)
-    
     const response = await apiConnector("POST", COURSE_DETAILS_API, {
       courseId,
     })
-    
-    console.log("COURSE_DETAILS_API API RESPONSE:", response)
+    console.log("COURSE_DETAILS_API API RESPONSE............", response)
 
     if (!response.data.success) {
       throw new Error(response.data.message)
     }
     result = response.data
   } catch (error) {
-    console.error("COURSE_DETAILS_API API ERROR:", error)
-    // Check if error response exists before accessing data
-    if (error.response && error.response.data) {
-      result = error.response.data
-      toast.error(error.response.data.message)
-    } else {
-      // Handle case where error doesn't have response data
-      result = { success: false, message: error.message }
-      toast.error(error.message)
-    }
-  } finally {
-    toast.dismiss(toastId)
+    console.log("COURSE_DETAILS_API API ERROR............", error)
+    result = error.response.data
+    // toast.error(error.response.data.message);
   }
+  toast.dismiss(toastId)
+  //   dispatch(setLoading(false));
   return result
 }
+
 // fetching the available course categories
 export const fetchCourseCategories = async () => {
   let result = []
@@ -297,6 +285,7 @@ export const fetchInstructorCourses = async (token) => {
   return result
 }
 
+// delete a course
 export const deleteCourse = async (data, token) => {
   const toastId = toast.loading("Loading...")
   try {
@@ -311,10 +300,8 @@ export const deleteCourse = async (data, token) => {
   } catch (error) {
     console.log("DELETE COURSE API ERROR............", error)
     toast.error(error.message)
-    throw error
-  } finally {
-    toast.dismiss(toastId)
   }
+  toast.dismiss(toastId)
 }
 
 // get full details of a course

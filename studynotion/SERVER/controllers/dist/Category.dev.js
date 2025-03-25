@@ -1,13 +1,5 @@
 "use strict";
 
-function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
-
-function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance"); }
-
-function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter); }
-
-function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
-
 var _require = require("mongoose"),
     Mongoose = _require.Mongoose;
 
@@ -49,15 +41,14 @@ exports.createCategory = function _callee(req, res) {
           console.log(CategorysDetails);
           return _context.abrupt("return", res.status(200).json({
             success: true,
-            message: "Category Created Successfully"
+            message: "Categorys Created Successfully"
           }));
 
         case 11:
           _context.prev = 11;
           _context.t0 = _context["catch"](0);
           return _context.abrupt("return", res.status(500).json({
-            success: false,
-            // Changed to false (this was true in original code)
+            success: true,
             message: _context.t0.message
           }));
 
@@ -103,45 +94,33 @@ exports.showAllCategories = function _callee2(req, res) {
       }
     }
   }, null, null, [[0, 8]]);
-};
+}; //categoryPageDetails 
+
 
 exports.categoryPageDetails = function _callee3(req, res) {
-  var categoryId, selectedCategory, categoriesExceptSelected, differentCategory, randomIndex, randomCategoryId, allCategories, allCourses, mostSellingCourses;
+  var categoryId, selectedCategory, categoriesExceptSelected, differentCategory, allCategories, allCourses, mostSellingCourses;
   return regeneratorRuntime.async(function _callee3$(_context3) {
     while (1) {
       switch (_context3.prev = _context3.next) {
         case 0:
           _context3.prev = 0;
           categoryId = req.body.categoryId;
+          console.log("PRINTING CATEGORY ID: ", categoryId); // Get courses for the specified category
 
-          if (categoryId) {
-            _context3.next = 4;
-            break;
-          }
-
-          return _context3.abrupt("return", res.status(400).json({
-            success: false,
-            message: "Category ID is required"
-          }));
-
-        case 4:
-          console.log("PRINTING CATEGORY ID: ", categoryId); // Step 1: Get the selected category with populated courses
-          // Remove the ratingAndReviews population that's causing the error
-
-          _context3.next = 7;
+          _context3.next = 5;
           return regeneratorRuntime.awrap(Category.findById(categoryId).populate({
             path: "courses",
             match: {
               status: "Published"
-            } // Removed the ratingAndReviews population
-
+            },
+            populate: "ratingAndReviews"
           }).exec());
 
-        case 7:
+        case 5:
           selectedCategory = _context3.sent;
 
           if (selectedCategory) {
-            _context3.next = 11;
+            _context3.next = 9;
             break;
           }
 
@@ -151,9 +130,9 @@ exports.categoryPageDetails = function _callee3(req, res) {
             message: "Category not found"
           }));
 
-        case 11:
-          if (!(!selectedCategory.courses || selectedCategory.courses.length === 0)) {
-            _context3.next = 14;
+        case 9:
+          if (!(selectedCategory.courses.length === 0)) {
+            _context3.next = 12;
             break;
           }
 
@@ -163,93 +142,71 @@ exports.categoryPageDetails = function _callee3(req, res) {
             message: "No courses found for the selected category."
           }));
 
-        case 14:
-          _context3.next = 16;
+        case 12:
+          _context3.next = 14;
           return regeneratorRuntime.awrap(Category.find({
             _id: {
               $ne: categoryId
             }
           }));
 
-        case 16:
+        case 14:
           categoriesExceptSelected = _context3.sent;
-          differentCategory = null;
-
-          if (!(categoriesExceptSelected && categoriesExceptSelected.length > 0)) {
-            _context3.next = 26;
-            break;
-          }
-
-          randomIndex = Math.floor(Math.random() * categoriesExceptSelected.length);
-          randomCategoryId = categoriesExceptSelected[randomIndex]._id;
-          _context3.next = 23;
-          return regeneratorRuntime.awrap(Category.findById(randomCategoryId).populate({
+          _context3.next = 17;
+          return regeneratorRuntime.awrap(Category.findOne(categoriesExceptSelected[getRandomInt(categoriesExceptSelected.length)]._id).populate({
             path: "courses",
             match: {
               status: "Published"
             }
           }).exec());
 
-        case 23:
+        case 17:
           differentCategory = _context3.sent;
-          _context3.next = 27;
-          break;
-
-        case 26:
-          // If no other categories exist, use the selected category
-          differentCategory = selectedCategory;
-
-        case 27:
-          _context3.next = 29;
+          _context3.next = 20;
           return regeneratorRuntime.awrap(Category.find().populate({
             path: "courses",
             match: {
               status: "Published"
             },
             populate: {
-              path: "instructor" // Keep this population as it should be valid
-
+              path: "instructor"
             }
           }).exec());
 
-        case 29:
+        case 20:
           allCategories = _context3.sent;
-          allCourses = [];
-          allCategories.forEach(function (category) {
-            if (category.courses && Array.isArray(category.courses)) {
-              allCourses.push.apply(allCourses, _toConsumableArray(category.courses));
-            }
+          allCourses = allCategories.flatMap(function (category) {
+            return category.courses;
           });
-          mostSellingCourses = allCourses.filter(function (course) {
-            return course !== null && course !== undefined;
-          }).sort(function (a, b) {
-            return (b.sold || 0) - (a.sold || 0);
-          }).slice(0, 10); // Step 4: Return the successful response
+          mostSellingCourses = allCourses.sort(function (a, b) {
+            return b.sold - a.sold;
+          }).slice(0, 10); // console.log("mostSellingCourses COURSE", mostSellingCourses)
 
-          return _context3.abrupt("return", res.status(200).json({
+          res.status(200).json({
             success: true,
             data: {
               selectedCategory: selectedCategory,
               differentCategory: differentCategory,
               mostSellingCourses: mostSellingCourses
             }
-          }));
+          });
+          _context3.next = 29;
+          break;
 
-        case 36:
-          _context3.prev = 36;
+        case 26:
+          _context3.prev = 26;
           _context3.t0 = _context3["catch"](0);
-          console.error("Error in categoryPageDetails:", _context3.t0);
           return _context3.abrupt("return", res.status(500).json({
             success: false,
             message: "Internal server error",
             error: _context3.t0.message
           }));
 
-        case 40:
+        case 29:
         case "end":
           return _context3.stop();
       }
     }
-  }, null, null, [[0, 36]]);
+  }, null, null, [[0, 26]]);
 };
 //# sourceMappingURL=Category.dev.js.map

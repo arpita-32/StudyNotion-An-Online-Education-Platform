@@ -1,20 +1,22 @@
-import React from 'react';
+import React from 'react'
 
-import 'swiper/css';
-import 'swiper/css/free-mode';
-import 'swiper/css/pagination';
-import { FreeMode, Pagination } from 'swiper/modules';
-import { Swiper, SwiperSlide } from 'swiper/react';
 
-import Course_Card from './Course_Card';
+import {Swiper, SwiperSlide} from "swiper/react"
+import "swiper/css"
+import "swiper/css/free-mode"
+import "swiper/css/pagination"
+import { Autoplay,FreeMode,Navigation, Pagination}  from 'swiper/modules'
 
-const CourseSlider = ({ Courses }) => {
+import Course_Card from './Course_Card'
+
+const CourseSlider = ({Courses}) => {
   return (
     <>
-      {Courses?.length ? (
+      {
+      Courses?.length ? (
         <Swiper
           slidesPerView={1}
-          spaceBetween={25}
+          spaceBetween={20}
           loop={true}
           modules={[FreeMode, Pagination]}
           breakpoints={{
@@ -34,7 +36,7 @@ const CourseSlider = ({ Courses }) => {
         <p className="text-xl text-richblack-5">No Course Found</p>
       )}
     </>
-  );
-};
+  )
+}
 
-export default CourseSlider;
+export default CourseSlider

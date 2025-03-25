@@ -1,4 +1,4 @@
-const BASE_URL = "http://localhost:4000/api/v1"
+const BASE_URL = process.env.REACT_APP_BASE_URL
 
 // AUTH ENDPOINTS
 export const endpoints = {
@@ -9,7 +9,7 @@ export const endpoints = {
   RESETPASSWORD_API: BASE_URL + "/auth/reset-password",
 }
 
-// Make sure your endpoints are correctly defined
+// PROFILE ENDPOINTS
 export const profileEndpoints = {
   GET_USER_DETAILS_API: BASE_URL + "/profile/getUserDetails",
   GET_USER_ENROLLED_COURSES_API: BASE_URL + "/profile/getEnrolledCourses",
@@ -18,11 +18,11 @@ export const profileEndpoints = {
 
 // STUDENTS ENDPOINTS
 export const studentEndpoints = {
-  CREATE_STRIPE_CHECKOUT_SESSION: BASE_URL + "/payment/create-checkout-session",
-  VERIFY_STRIPE_PAYMENT: BASE_URL + "/payment/verify-stripe-payment",
-  SEND_PAYMENT_SUCCESS_EMAIL_API: BASE_URL + "/payment/send-payment-success-email",
-  STRIPE_WEBHOOK: BASE_URL + "/payment/stripe-webhook", // For backend use
+  COURSE_PAYMENT_API: BASE_URL + "/payment/capturePayment",
+  COURSE_VERIFY_API: BASE_URL + "/payment/verifyPayment",
+  SEND_PAYMENT_SUCCESS_EMAIL_API: BASE_URL + "/payment/sendPaymentSuccessEmail",
 }
+
 // COURSE ENDPOINTS
 export const courseEndpoints = {
   GET_ALL_COURSE_API: BASE_URL + "/course/getAllCourses",
@@ -37,8 +37,9 @@ export const courseEndpoints = {
   GET_ALL_INSTRUCTOR_COURSES_API: BASE_URL + "/course/getInstructorCourses",
   DELETE_SECTION_API: BASE_URL + "/course/deleteSection",
   DELETE_SUBSECTION_API: BASE_URL + "/course/deleteSubSection",
-  DELETE_COURSE_API: BASE_URL + "/course/deleteCourse", 
-  GET_FULL_COURSE_DETAILS_AUTHENTICATED:BASE_URL + "/course/getFullCourseDetails",
+  DELETE_COURSE_API: BASE_URL + "/course/deleteCourse",
+  GET_FULL_COURSE_DETAILS_AUTHENTICATED:
+    BASE_URL + "/course/getFullCourseDetails",
   LECTURE_COMPLETION_API: BASE_URL + "/course/updateCourseProgress",
   CREATE_RATING_API: BASE_URL + "/course/createRating",
 }
@@ -55,7 +56,7 @@ export const categories = {
 
 // CATALOG PAGE DATA
 export const catalogData = {
-  CATALOGPAGEDATA_API: BASE_URL + "/course/CategoryPageDetails",
+  CATALOGPAGEDATA_API: BASE_URL + "/course/getCategoryPageDetails",
 }
 // CONTACT-US API
 export const contactusEndpoint = {

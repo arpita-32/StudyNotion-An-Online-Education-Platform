@@ -34,10 +34,7 @@ database.connect(); //middlewares
 
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors({
-  origin: "http://localhost:3000",
-  credentials: true
-}));
+app.use(cors());
 app.use(fileUpload({
   useTempFiles: true,
   tempFileDir: "/tmp"
@@ -60,5 +57,4 @@ app.get("/", function (req, res) {
 app.listen(PORT, function () {
   console.log("App is running at ".concat(PORT));
 });
-module.exports = app;
 //# sourceMappingURL=index.dev.js.map
