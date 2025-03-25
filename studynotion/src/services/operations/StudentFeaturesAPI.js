@@ -5,15 +5,35 @@ import { setPaymentLoading } from "../../slices/courseSlice";
 import { resetCart } from "../../slices/cartSlice";
 import { loadStripe } from '@stripe/stripe-js';
 
-const { COURSE_PAYMENT_API, SEND_PAYMENT_SUCCESS_EMAIL_API } = studentEndpoints;
+const { COURSE_PAYMENT_API, SEND_PAYMENT_SUCCESS_EMAIL_API, VERIFY_PAYMENT_API } = studentEndpoints;
+
+// Stripe initialization outside the function to avoid multiple initializations
+let stripePromise;
+const getStripe = () => {
+  if (!stripePromise) {
+    stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
+  }
+  return stripePromise;
+};
 
 export async function buyCourse(token, courses, userDetails, navigate, dispatch) {
-  const toastId = toast.loading("Loading...");
+  const toastId = toast.loading("Processing payment...");
   try {
-    // Load Stripe
-    const stripe = await loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
+    // Validate input
+    if (!courses || !Array.isArray(courses) || courses.length === 0) {
+      throw new Error("No courses selected for purchase");
+    }
+
+    if (!userDetails?._id) {
+      throw new Error("User information missing");
+    }
+
+    dispatch(setPaymentLoading(true));
+
+    // Initialize Stripe
+    const stripe = await getStripe();
     
-    // Initiate the payment session
+    // Create checkout session
     const sessionResponse = await apiConnector(
       "POST", 
       COURSE_PAYMENT_API, 
@@ -26,28 +46,73 @@ export async function buyCourse(token, courses, userDetails, navigate, dispatch)
       }
     );
 
-    if (!sessionResponse.data.success) {
-      throw new Error(sessionResponse.data.message);
+    if (!sessionResponse?.data?.success) {
+      throw new Error(sessionResponse?.data?.message || "Payment session creation failed");
     }
 
     // Redirect to Stripe checkout
-    const result = await stripe.redirectToCheckout({
+    const { error } = await stripe.redirectToCheckout({
       sessionId: sessionResponse.data.id,
     });
 
-    if (result.error) {
-      throw new Error(result.error.message);
+    if (error) {
+      throw new Error(error.message || "Redirect to payment failed");
     }
 
-    // If we get here, the redirect was successful
-    // The actual verification will happen via webhook
-    toast.success("Redirecting to payment...");
+  } catch (error) {
+    console.error("PAYMENT ERROR:", error);
+    toast.error(error.message || "Payment processing failed");
+    // Don't dismiss toast here - let the finally block handle it
+  } finally {
+    toast.dismiss(toastId);
+    dispatch(setPaymentLoading(false));
+  }
+}
+
+export async function handleStripePaymentSuccess(paymentData, token, navigate, dispatch) {
+  const toastId = toast.loading("Verifying payment...");
+  try {
+    dispatch(setPaymentLoading(true));
+
+    // Verify payment with backend
+    const verificationResponse = await apiConnector(
+      "POST", 
+      VERIFY_PAYMENT_API, 
+      paymentData,
+      {
+        Authorization: `Bearer ${token}`,
+      }
+    );
+
+    if (!verificationResponse?.data?.success) {
+      throw new Error(verificationResponse?.data?.message || "Payment verification failed");
+    }
+
+    // Send confirmation email
+    try {
+      await sendPaymentSuccessEmail(
+        verificationResponse.data,
+        paymentData.amount,
+        token
+      );
+    } catch (emailError) {
+      console.error("Email sending failed:", emailError);
+      // Don't throw - payment succeeded even if email fails
+    }
+
+    // Update UI state
+    toast.success("Payment verified successfully!");
+    dispatch(resetCart());
+    navigate("/dashboard/enrolled-courses");
 
   } catch (error) {
-    console.log("PAYMENT API ERROR.....", error);
-    toast.error(error.message || "Could not initiate payment");
+    console.error("PAYMENT VERIFICATION ERROR:", error);
+    toast.error(error.message || "Payment verification failed");
+    // Consider redirecting to a failure page or showing retry options
+  } finally {
+    toast.dismiss(toastId);
+    dispatch(setPaymentLoading(false));
   }
-  toast.dismiss(toastId);
 }
 
 async function sendPaymentSuccessEmail(response, amount, token) {
@@ -65,36 +130,7 @@ async function sendPaymentSuccessEmail(response, amount, token) {
       }
     );
   } catch (error) {
-    console.log("PAYMENT SUCCESS EMAIL ERROR....", error);
+    console.error("PAYMENT SUCCESS EMAIL ERROR:", error);
+    throw error; // Let the caller handle this
   }
-}
-
-// This function will be called from the webhook handler in your backend
-export async function handleStripePaymentSuccess(paymentData, token, navigate, dispatch) {
-  const toastId = toast.loading("Processing payment...");
-  dispatch(setPaymentLoading(true));
-  try {
-    // Verify payment with backend
-    const response = await apiConnector(
-      "POST", 
-      "/payment/verify-stripe", 
-      paymentData,
-      {
-        Authorization: `Bearer ${token}`,
-      }
-    );
-
-    if (!response.data.success) {
-      throw new Error(response.data.message);
-    }
-
-    toast.success("Payment Successful, you are added to the course");
-    navigate("/dashboard/enrolled-courses");
-    dispatch(resetCart());
-  } catch (error) {
-    console.log("PAYMENT VERIFY ERROR....", error);
-    toast.error("Could not verify Payment");
-  }
-  toast.dismiss(toastId);
-  dispatch(setPaymentLoading(false));
 }

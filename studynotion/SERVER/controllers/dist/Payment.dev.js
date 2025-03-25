@@ -94,6 +94,7 @@ exports.createCheckoutSession = function _callee(req, res) {
     }
   }, null, null, [[0, 11]]);
 }; // Handle Stripe webhook
+// In your handleStripeWebhook controller
 
 
 exports.handleStripeWebhook = function _callee2(req, res) {
@@ -105,96 +106,108 @@ exports.handleStripeWebhook = function _callee2(req, res) {
           sig = req.headers['stripe-signature'];
           _context2.prev = 1;
           event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
-          _context2.next = 9;
-          break;
 
-        case 5:
-          _context2.prev = 5;
-          _context2.t0 = _context2["catch"](1);
-          console.error('Webhook signature verification failed:', _context2.t0);
-          return _context2.abrupt("return", res.status(400).send("Webhook Error: ".concat(_context2.t0.message)));
-
-        case 9:
           if (!(event.type === 'checkout.session.completed')) {
-            _context2.next = 29;
+            _context2.next = 16;
             break;
           }
 
-          session = event.data.object;
-          _context2.prev = 11;
-          userId = session.client_reference_id;
-          courseIds = JSON.parse(session.metadata.courseIds);
-          _context2.next = 16;
-          return regeneratorRuntime.awrap(enrollStudents(courseIds, userId, res));
+          session = event.data.object; // Verify the payment was successful
 
-        case 16:
-          _context2.next = 18;
+          if (!(session.payment_status === 'paid')) {
+            _context2.next = 16;
+            break;
+          }
+
+          userId = session.client_reference_id;
+          courseIds = JSON.parse(session.metadata.courseIds); // Enroll the user
+
+          _context2.next = 10;
+          return regeneratorRuntime.awrap(enrollStudents(courseIds, userId));
+
+        case 10:
+          _context2.next = 12;
           return regeneratorRuntime.awrap(User.findById(userId));
 
-        case 18:
+        case 12:
           user = _context2.sent;
 
           if (!user) {
-            _context2.next = 22;
+            _context2.next = 16;
             break;
           }
 
-          _context2.next = 22;
-          return regeneratorRuntime.awrap(mailSender(user.email, "Payment Received", paymentSuccessEmail("".concat(user.firstName, " ").concat(user.lastName), session.amount_total / 100, session.id, session.payment_intent)));
+          _context2.next = 16;
+          return regeneratorRuntime.awrap(mailSender(user.email, "Payment Received", paymentSuccessEmail("".concat(user.firstName, " ").concat(user.lastName), session.amount_total / 100, session.id)));
 
-        case 22:
-          return _context2.abrupt("return", res.json({
+        case 16:
+          res.status(200).json({
             received: true
-          }));
+          });
+          _context2.next = 23;
+          break;
 
-        case 25:
-          _context2.prev = 25;
-          _context2.t1 = _context2["catch"](11);
-          console.error('Error processing webhook:', _context2.t1);
-          return _context2.abrupt("return", res.status(500).json({
-            success: false,
-            message: 'Error processing enrollment'
-          }));
+        case 19:
+          _context2.prev = 19;
+          _context2.t0 = _context2["catch"](1);
+          console.error('Webhook Error:', _context2.t0);
+          return _context2.abrupt("return", res.status(400).send("Webhook Error: ".concat(_context2.t0.message)));
 
-        case 29:
-          return _context2.abrupt("return", res.json({
-            received: true
-          }));
-
-        case 30:
+        case 23:
         case "end":
           return _context2.stop();
       }
     }
-  }, null, null, [[1, 5], [11, 25]]);
+  }, null, null, [[1, 19]]);
 }; // Enrollment function
 
 
-var enrollStudents = function enrollStudents(courseIds, userId, res) {
-  var _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, courseId, enrolledCourse, courseProgress, user;
+var enrollStudents = function enrollStudents(courseIds, userId) {
+  var user, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, courseId, updatedCourse, courseProgress;
 
   return regeneratorRuntime.async(function enrollStudents$(_context3) {
     while (1) {
       switch (_context3.prev = _context3.next) {
         case 0:
           _context3.prev = 0;
+          _context3.next = 3;
+          return regeneratorRuntime.awrap(User.findById(userId));
+
+        case 3:
+          user = _context3.sent;
+
+          if (user) {
+            _context3.next = 6;
+            break;
+          }
+
+          throw new Error("User not found");
+
+        case 6:
           _iteratorNormalCompletion = true;
           _didIteratorError = false;
           _iteratorError = undefined;
-          _context3.prev = 4;
+          _context3.prev = 9;
           _iterator = courseIds[Symbol.iterator]();
 
-        case 6:
+        case 11:
           if (_iteratorNormalCompletion = (_step = _iterator.next()).done) {
-            _context3.next = 28;
+            _context3.next = 31;
             break;
           }
 
           courseId = _step.value;
-          _context3.next = 10;
-          return regeneratorRuntime.awrap(Course.findOneAndUpdate({
-            _id: courseId
-          }, {
+
+          if (!user.courses.includes(courseId)) {
+            _context3.next = 15;
+            break;
+          }
+
+          return _context3.abrupt("continue", 28);
+
+        case 15:
+          _context3.next = 17;
+          return regeneratorRuntime.awrap(Course.findByIdAndUpdate(courseId, {
             $addToSet: {
               studentsEnrolled: userId
             }
@@ -202,105 +215,96 @@ var enrollStudents = function enrollStudents(courseIds, userId, res) {
             "new": true
           }));
 
-        case 10:
-          enrolledCourse = _context3.sent;
+        case 17:
+          updatedCourse = _context3.sent;
 
-          if (enrolledCourse) {
-            _context3.next = 14;
+          if (updatedCourse) {
+            _context3.next = 21;
             break;
           }
 
           console.error("Course not found: ".concat(courseId));
-          return _context3.abrupt("continue", 25);
+          return _context3.abrupt("continue", 28);
 
-        case 14:
-          _context3.next = 16;
+        case 21:
+          _context3.next = 23;
           return regeneratorRuntime.awrap(CourseProgress.create({
             courseID: courseId,
             userId: userId,
             completedVideos: []
           }));
 
-        case 16:
+        case 23:
           courseProgress = _context3.sent;
-          _context3.next = 19;
+          _context3.next = 26;
           return regeneratorRuntime.awrap(User.findByIdAndUpdate(userId, {
             $addToSet: {
               courses: courseId,
               courseProgress: courseProgress._id
             }
+          }, {
+            "new": true
           }));
 
-        case 19:
-          _context3.next = 21;
-          return regeneratorRuntime.awrap(User.findById(userId));
-
-        case 21:
-          user = _context3.sent;
-
-          if (!user) {
-            _context3.next = 25;
-            break;
-          }
-
-          _context3.next = 25;
-          return regeneratorRuntime.awrap(mailSender(user.email, "Successfully Enrolled into ".concat(enrolledCourse.courseName), courseEnrollmentEmail(enrolledCourse.courseName, "".concat(user.firstName, " ").concat(user.lastName))));
-
-        case 25:
-          _iteratorNormalCompletion = true;
-          _context3.next = 6;
-          break;
+        case 26:
+          _context3.next = 28;
+          return regeneratorRuntime.awrap(mailSender(user.email, "Successfully Enrolled into ".concat(updatedCourse.courseName), courseEnrollmentEmail(updatedCourse.courseName, "".concat(user.firstName, " ").concat(user.lastName))));
 
         case 28:
-          _context3.next = 34;
+          _iteratorNormalCompletion = true;
+          _context3.next = 11;
           break;
 
-        case 30:
-          _context3.prev = 30;
-          _context3.t0 = _context3["catch"](4);
+        case 31:
+          _context3.next = 37;
+          break;
+
+        case 33:
+          _context3.prev = 33;
+          _context3.t0 = _context3["catch"](9);
           _didIteratorError = true;
           _iteratorError = _context3.t0;
 
-        case 34:
-          _context3.prev = 34;
-          _context3.prev = 35;
+        case 37:
+          _context3.prev = 37;
+          _context3.prev = 38;
 
           if (!_iteratorNormalCompletion && _iterator["return"] != null) {
             _iterator["return"]();
           }
 
-        case 37:
-          _context3.prev = 37;
+        case 40:
+          _context3.prev = 40;
 
           if (!_didIteratorError) {
-            _context3.next = 40;
+            _context3.next = 43;
             break;
           }
 
           throw _iteratorError;
 
-        case 40:
-          return _context3.finish(37);
-
-        case 41:
-          return _context3.finish(34);
-
-        case 42:
-          _context3.next = 48;
-          break;
+        case 43:
+          return _context3.finish(40);
 
         case 44:
-          _context3.prev = 44;
+          return _context3.finish(37);
+
+        case 45:
+          _context3.next = 51;
+          break;
+
+        case 47:
+          _context3.prev = 47;
           _context3.t1 = _context3["catch"](0);
-          console.error('Error in enrollment:', _context3.t1);
+          console.error("Error in enrollment:", _context3.t1);
           throw _context3.t1;
 
-        case 48:
+        case 51:
         case "end":
           return _context3.stop();
       }
     }
-  }, null, null, [[0, 44], [4, 30, 34, 42], [35,, 37, 41]]);
+  }, null, null, [[0, 47], [9, 33, 37, 45], [38,, 40, 44]]);
 }; // Send payment success email (for direct API calls)
 
 

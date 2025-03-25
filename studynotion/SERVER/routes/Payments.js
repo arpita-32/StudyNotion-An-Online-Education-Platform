@@ -17,7 +17,7 @@ router.post(
 // Protected routes (require authentication)
 router.post(
   "/create-checkout-session",
-  auth,
+  auth, // Ensure this middleware properly verifies the token
   isStudent,
   createCheckoutSession
 );

@@ -65,71 +65,73 @@ exports.createCheckoutSession = async (req, res) => {
 };
 
 // Handle Stripe webhook
+// In your handleStripeWebhook controller
 exports.handleStripeWebhook = async (req, res) => {
     const sig = req.headers['stripe-signature'];
-    let event;
-
+    
     try {
-        event = stripe.webhooks.constructEvent(
+        const event = stripe.webhooks.constructEvent(
             req.body,
             sig,
             process.env.STRIPE_WEBHOOK_SECRET
         );
+
+        if (event.type === 'checkout.session.completed') {
+            const session = event.data.object;
+            
+            // Verify the payment was successful
+            if (session.payment_status === 'paid') {
+                const userId = session.client_reference_id;
+                const courseIds = JSON.parse(session.metadata.courseIds);
+                
+                // Enroll the user
+                await enrollStudents(courseIds, userId);
+                
+                // Update user data
+                const user = await User.findById(userId);
+                if (user) {
+                    await mailSender(
+                        user.email,
+                        `Payment Received`,
+                        paymentSuccessEmail(
+                            `${user.firstName} ${user.lastName}`,
+                            session.amount_total / 100,
+                            session.id
+                        )
+                    );
+                }
+            }
+        }
+        
+        res.status(200).json({ received: true });
     } catch (err) {
-        console.error('Webhook signature verification failed:', err);
+        console.error('Webhook Error:', err);
         return res.status(400).send(`Webhook Error: ${err.message}`);
     }
-
-    // Handle the checkout.session.completed event
-    if (event.type === 'checkout.session.completed') {
-        const session = event.data.object;
-        
-        try {
-            const userId = session.client_reference_id;
-            const courseIds = JSON.parse(session.metadata.courseIds);
-            
-            await enrollStudents(courseIds, userId, res);
-            
-            // Send payment success email
-            const user = await User.findById(userId);
-            if (user) {
-                await mailSender(
-                    user.email,
-                    `Payment Received`,
-                    paymentSuccessEmail(
-                        `${user.firstName} ${user.lastName}`,
-                        session.amount_total / 100,
-                        session.id,
-                        session.payment_intent
-                    )
-                );
-            }
-            
-            return res.json({ received: true });
-        } catch (err) {
-            console.error('Error processing webhook:', err);
-            return res.status(500).json({ 
-                success: false,
-                message: 'Error processing enrollment'
-            });
-        }
-    }
-
-    return res.json({ received: true });
 };
 
 // Enrollment function
-const enrollStudents = async (courseIds, userId, res) => {
+const enrollStudents = async (courseIds, userId) => {
     try {
+        const user = await User.findById(userId);
+        if (!user) {
+            throw new Error("User not found");
+        }
+
         for (const courseId of courseIds) {
-            // Enroll student in course
-            const enrolledCourse = await Course.findOneAndUpdate(
-                { _id: courseId },
+            // Check if already enrolled
+            if (user.courses.includes(courseId)) {
+                continue;
+            }
+
+            // Update course
+            const updatedCourse = await Course.findByIdAndUpdate(
+                courseId,
                 { $addToSet: { studentsEnrolled: userId } },
                 { new: true }
             );
 
-            if (!enrolledCourse) {
+            if (!updatedCourse) {
                 console.error(`Course not found: ${courseId}`);
                 continue;
             }
@@ -141,7 +143,7 @@ const enrollStudents = async (courseIds, userId, res) => {
                 completedVideos: [],
             });
 
-            // Add course to user's profile
+            // Update user
             await User.findByIdAndUpdate(
                 userId,
                 {
@@ -149,25 +151,23 @@ const enrollStudents = async (courseIds, userId, res) => {
                         courses: courseId,
                         courseProgress: courseProgress._id,
                     },
-                }
+                },
+                { new: true }
             );
 
-            // Send enrollment email
-            const user = await User.findById(userId);
-            if (user) {
-                await mailSender(
-                    user.email,
-                    `Successfully Enrolled into ${enrolledCourse.courseName}`,
-                    courseEnrollmentEmail(
-                        enrolledCourse.courseName,
-                        `${user.firstName} ${user.lastName}`
-                    )
-                );
-            }
+            // Send email
+            await mailSender(
+                user.email,
+                `Successfully Enrolled into ${updatedCourse.courseName}`,
+                courseEnrollmentEmail(
+                    updatedCourse.courseName,
+                    `${user.firstName} ${user.lastName}`
+                )
+            );
         }
-    } catch (err) {
-        console.error('Error in enrollment:', err);
-        throw err;
+    } catch (error) {
+        console.error("Error in enrollment:", error);
+        throw error;
     }
 };
 

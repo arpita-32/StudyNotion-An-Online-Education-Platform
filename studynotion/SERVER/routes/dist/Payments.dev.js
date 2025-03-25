@@ -19,7 +19,8 @@ router.post("/stripe-webhook", express.raw({
 }), // Needed for signature verification
 handleStripeWebhook); // Protected routes (require authentication)
 
-router.post("/create-checkout-session", auth, isStudent, createCheckoutSession);
+router.post("/create-checkout-session", auth, // Ensure this middleware properly verifies the token
+isStudent, createCheckoutSession);
 router.post("/send-payment-success-email", auth, isStudent, sendPaymentSuccessEmail);
 module.exports = router;
 //# sourceMappingURL=Payments.dev.js.map
