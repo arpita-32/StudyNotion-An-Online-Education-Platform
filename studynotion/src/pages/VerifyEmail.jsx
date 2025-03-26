@@ -14,12 +14,10 @@ function VerifyEmail() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Only allow access of this route when user has filled the signup form
     if (!signupData) {
       navigate("/signup");
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [navigate, signupData]);
 
   const handleVerifyAndSignup = (e) => {
     e.preventDefault();
@@ -47,17 +45,15 @@ function VerifyEmail() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-3.5rem)] grid place-items-center">
+    <div className="min-h-[calc(100vh-3.5rem)] grid place-items-center px-4">
       {loading ? (
-        <div>
-          <div className="spinner"></div>
-        </div>
+        <div className="spinner"></div>
       ) : (
-        <div className="max-w-[500px] p-4 lg:p-8">
-          <h1 className="text-richblack-5 font-semibold text-[1.875rem] leading-[2.375rem]">
+        <div className="w-full max-w-[500px] p-4 sm:p-6 lg:p-8">
+          <h1 className="text-richblack-5 font-semibold text-xl sm:text-2xl md:text-[1.875rem] leading-[1.5] sm:leading-[2.375rem]">
             Verify Email
           </h1>
-          <p className="text-[1.125rem] leading-[1.625rem] my-4 text-richblack-100">
+          <p className="text-sm sm:text-base md:text-[1.125rem] my-3 sm:my-4 leading-[1.5] sm:leading-[1.625rem] text-richblack-100">
             A verification code has been sent to you. Enter the code below
           </p>
           <form onSubmit={handleVerifyAndSignup}>
@@ -72,29 +68,29 @@ function VerifyEmail() {
                   style={{
                     boxShadow: "inset 0px -1px 0px rgba(255, 255, 255, 0.18)",
                   }}
-                  className="w-[48px] lg:w-[60px] border-0 bg-richblack-800 rounded-[0.5rem] text-richblack-5 aspect-square text-center focus:border-0 focus:outline-2 focus:outline-yellow-50"
+                  className="w-[40px] sm:w-[48px] lg:w-[60px] border-0 bg-richblack-800 rounded-[0.5rem] text-richblack-5 aspect-square text-center focus:border-0 focus:outline-2 focus:outline-yellow-50 text-sm sm:text-base"
                 />
               )}
               containerStyle={{
                 justifyContent: "space-between",
-                gap: "0 6px",
+                gap: "0 4px",
               }}
             />
             <button
               type="submit"
-              className="w-full bg-yellow-50 py-[12px] px-[12px] rounded-[8px] mt-6 font-medium text-richblack-900"
+              className="w-full bg-yellow-50 py-2 sm:py-[12px] px-[12px] rounded-[8px] mt-4 sm:mt-6 font-medium text-richblack-900 text-sm sm:text-base"
             >
               Verify Email
             </button>
           </form>
-          <div className="mt-6 flex items-center justify-between">
+          <div className="mt-4 sm:mt-6 flex items-center justify-between">
             <Link to="/signup">
-              <p className="text-richblack-5 flex items-center gap-x-2">
+              <p className="text-richblack-5 flex items-center gap-x-2 text-sm sm:text-base">
                 <BiArrowBack /> Back To Signup
               </p>
             </Link>
             <button
-              className="flex items-center text-blue-100 gap-x-2"
+              className="flex items-center text-blue-100 gap-x-2 text-sm sm:text-base"
               onClick={() => dispatch(sendOtp(signupData.email, navigate))}
             >
               <RxCountdownTimer />

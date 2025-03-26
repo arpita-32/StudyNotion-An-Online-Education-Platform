@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { Outlet, useParams } from "react-router-dom"
-
 import CourseReviewModal from "../components/core/ViewCourse/CourseReviewModal"
 import VideoDetailsSidebar from "../components/core/ViewCourse/VideoDetailsSidebar"
 import { getFullDetailsOfCourse } from "../services/operations/courseDetailsAPI"
@@ -19,9 +18,8 @@ export default function ViewCourse() {
   const [reviewModal, setReviewModal] = useState(false)
 
   useEffect(() => {
-    ;(async () => {
+    const fetchCourseData = async () => {
       const courseData = await getFullDetailsOfCourse(courseId, token)
-      // console.log("Course Data here... ", courseData.courseDetails)
       dispatch(setCourseSectionData(courseData.courseDetails.courseContent))
       dispatch(setEntireCourseData(courseData.courseDetails))
       dispatch(setCompletedLectures(courseData.completedVideos))
@@ -30,16 +28,16 @@ export default function ViewCourse() {
         lectures += sec.subSection.length
       })
       dispatch(setTotalNoOfLectures(lectures))
-    })()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+    }
+    fetchCourseData()
+  }, [courseId, dispatch, token])
 
   return (
     <>
-      <div className="relative flex min-h-[calc(100vh-3.5rem)]">
+      <div className="relative flex flex-col md:flex-row min-h-[calc(100vh-3.5rem)]">
         <VideoDetailsSidebar setReviewModal={setReviewModal} />
         <div className="h-[calc(100vh-3.5rem)] flex-1 overflow-auto">
-          <div className="mx-6">
+          <div className="mx-2 sm:mx-4 md:mx-6">
             <Outlet />
           </div>
         </div>
