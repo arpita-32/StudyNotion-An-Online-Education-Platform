@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from "react-redux"
 import { Link, useLocation, useNavigate } from "react-router-dom"
 
 import { resetPassword } from "../services/operations/authAPI"
+import {toast} from "react-hot-toast"
 
 function UpdatePassword() {
   const navigate = useNavigate()
@@ -32,7 +33,10 @@ function UpdatePassword() {
     e.preventDefault()
     const token = location.pathname.split("/").at(-1)
     dispatch(resetPassword(password, confirmPassword, token, navigate))
+    
   }
+
+
 
   return (
     <div className="grid min-h-[calc(100vh-3.5rem)] place-items-center">
@@ -96,6 +100,8 @@ function UpdatePassword() {
               </span>
             </label>
 
+        
+
             <button
               type="submit"
               className="mt-6 w-full rounded-[8px] bg-yellow-50 py-[12px] px-[12px] font-medium text-richblack-900"
@@ -116,4 +122,6 @@ function UpdatePassword() {
   )
 }
 
-export default UpdatePassword
+export default UpdatePassword 
+
+

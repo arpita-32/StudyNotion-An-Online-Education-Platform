@@ -1,21 +1,19 @@
-import { useEffect, useState } from "react"
-import { useForm } from "react-hook-form"
-import { toast } from "react-hot-toast"
-import { HiOutlineCurrencyRupee } from "react-icons/hi"
-import { MdNavigateNext } from "react-icons/md"
-import { useDispatch, useSelector } from "react-redux"
-
-import {
-  addCourseDetails,
-  editCourseDetails,
-  fetchCourseCategories,
-} from "../../../../../services/operations/courseDetailsAPI"
+import React, { useState } from 'react'
+import {useForm} from "react-hook-form"
+import { useDispatch } from 'react-redux';
+import { addCourseDetails, editCourseDetails, fetchCourseCategories } from '../../../../../services/operations/courseDetailsAPI';
+import {HiOutlineCurrencyRupee, HiUpload} from "react-icons/hi"
+import {useSelector} from "react-redux"
+import toast from 'react-hot-toast';
+import { useEffect } from 'react';
+import RequirementField from "./RequirementField"
+import IconBtn from "../../../../common/IconBtn"
 import { setCourse, setStep } from "../../../../../slices/courseSlice"
 import { COURSE_STATUS } from "../../../../../utils/constants"
-import IconBtn from "../../../../common/IconBtn"
-import Upload from "../Upload"
 import ChipInput from "./ChipInput"
-import RequirementsField from "./RequirementField"
+import Upload from "../Upload"
+import {MdNavigateNext} from "react-icons/md"
+
 
 export default function CourseInformationForm() {
   const {
@@ -68,7 +66,7 @@ export default function CourseInformationForm() {
       currentValues.coursePrice !== course.price ||
       currentValues.courseTags.toString() !== course.tag.toString() ||
       currentValues.courseBenefits !== course.whatYouWillLearn ||
-      currentValues.courseCategory !== course.category._id ||
+      currentValues.courseCategory._id !== course.category._id ||
       currentValues.courseRequirements.toString() !==
         course.instructions.toString() ||
       currentValues.courseImage !== course.thumbnail
@@ -284,7 +282,7 @@ export default function CourseInformationForm() {
         )}
       </div>
       {/* Requirements/Instructions */}
-      <RequirementsField
+      <RequirementField
         name="courseRequirements"
         label="Requirements/Instructions"
         register={register}

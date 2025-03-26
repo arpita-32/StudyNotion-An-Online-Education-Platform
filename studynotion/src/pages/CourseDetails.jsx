@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import RatingStars from "../components/common/RatingStars";
+import RatingStars from "../../src/components/common/RatingStars";
 import { formatDate } from "../services/formatDate";
 import { AiTwotoneClockCircle } from "react-icons/ai";
 import { MdLanguage } from "react-icons/md";
@@ -9,7 +9,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import GetAvgRating from "../utils/avgRating";
 import Footer from "../components/common/Footer";
 import { buyCourse } from "../services/operations/StudentFeaturesAPI";
-import Error from "./Error";
+import Error from "../pages/Error";
 import ConfirmationModal from "../components/common/ConfirmationModal";
 import CourseDetailsCard from "../components/core/Course/CourseDetailsCard";
 import CourseAccordionBar from "../components/core/Course/CourseAccordionBar";

@@ -25,3 +25,5 @@ export const getCatalogPageData = async(categoryId) => {
   return result;
 
 }
+
+

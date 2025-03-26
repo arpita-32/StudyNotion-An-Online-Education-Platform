@@ -199,3 +199,4 @@ export function resetPassword(password, confirmPassword, token, navigate) {
         dispatch(setLoading(false));
     }
 }
+

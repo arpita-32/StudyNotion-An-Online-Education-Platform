@@ -1,34 +1,42 @@
-import React from "react";
+import React from 'react'
 
-const Stats = [
-  { count: "5K", label: "Active Students" },
-  { count: "10+", label: "Mentors" },
-  { count: "200+", label: "Courses" },
-  { count: "50+", label: "Awards" },
-];
+const StatsData = [
+    { 
+    count: "5K", 
+    label: "Active Students" 
+   },
+   { 
+    count: "10+", 
+    label: "Mentors"
+   },
+   { 
+    count: "200+", 
+    label: "Courses" 
+   },
+   { 
+    count: "50+", 
+    label: "Awards" 
+},
+]
 
-const StatsComponenet = () => {
+const Stats = () => {
   return (
-    <div className="bg-richblack-700">
-      {/* Stats */}
-      <div className="flex flex-col gap-10 justify-between w-11/12 max-w-maxContent text-white mx-auto ">
-        <div className="grid grid-cols-2 md:grid-cols-4 text-center">
-          {Stats.map((data, index) => {
-            return (
-              <div className="flex flex-col py-10" key={index}>
-                <h1 className="text-[30px] font-bold text-richblack-5">
-                  {data.count}
-                </h1>
-                <h2 className="font-semibold text-[16px] text-richblack-500">
-                  {data.label}
-                </h2>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </div>
-  );
-};
+    <div className='bg-richblack-700 w-[100vw] mt-[100px]'>
 
-export default StatsComponenet;
+       <div className='relative w-11/12 justify-between mx-auto text-white max-w-maxContent gap-10 mt-[20px] items-center'>
+         <div className='grid lg:grid-cols-4  sm:grid-cols-2 text-center'>
+                 {
+                    StatsData.map((data, index) =>(
+                        <div className='flex flex-col' key = {index}>
+                           <h1 className='text-richblack-25 pt-6 font-bold text-3xl'>{data.count}</h1>
+                           <p className='text-richblack-400 opacity-80 pb-6 text-md'>{data.label}</p>
+                        </div>
+                    ))
+                 }
+         </div>
+       </div>
+    </div>
+  )
+}
+
+export default Stats

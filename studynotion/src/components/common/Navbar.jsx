@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react"
-import { AiOutlineClose, AiOutlineMenu, AiOutlineShoppingCart } from "react-icons/ai"
+import { AiOutlineMenu, AiOutlineClose, AiOutlineShoppingCart } from "react-icons/ai"
 import { BsChevronDown } from "react-icons/bs"
 import { useSelector } from "react-redux"
 import { Link, matchPath, useLocation } from "react-router-dom"
 import logo from "../../assets/Logo/Logo-Full-Light.png"
-import { NavbarLinks } from "../../data/navbar-links.js"
-import { categories } from "../../services/api.js"
-import { apiConnector } from "../../services/apiconnector.js"
-import { ACCOUNT_TYPE } from "../../utils/constants.js"
+import { NavbarLinks } from "../../data/navbar-links"
+import { apiConnector } from "../../services/apiconnector"
+import { categories } from "../../services/api"
+import { ACCOUNT_TYPE } from "../../utils/constants"
 import ProfileDropdown from "../core/Auth/ProfileDropDown.jsx"
 
 function NavBar() {

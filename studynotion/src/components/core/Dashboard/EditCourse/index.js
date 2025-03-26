@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import React, { useEffect, useState } from 'react'
+import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
+import RenderSteps from '../AddCourse/RenderSteps';
 import { getFullDetailsOfCourse } from '../../../../services/operations/courseDetailsAPI';
 import { setCourse, setEditCourse } from '../../../../slices/courseSlice';
-import RenderSteps from '../AddCourse/RenderSteps';
+import { useDispatch } from 'react-redux';
 
 const EditCourse = () => {
 

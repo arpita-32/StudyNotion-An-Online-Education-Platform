@@ -1,60 +1,57 @@
-import React, { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import OTPInput from "react-otp-input";
-import { useNavigate } from "react-router-dom";
-import { BiArrowBack } from "react-icons/bi";
+import { useEffect, useState } from "react";
+import OtpInput from "react-otp-input";
 import { Link } from "react-router-dom";
-import { sendOtp } from "../services/operations/authAPI";
-import { signUp } from "../services/operations/authAPI";
-import { RxCounterClockwiseClock } from "react-icons/rx";
+import { BiArrowBack } from "react-icons/bi";
+import { RxCountdownTimer } from "react-icons/rx";
+import { useDispatch, useSelector } from "react-redux";
+import { sendOtp, signUp } from "../services/operations/authAPI";
+import { useNavigate } from "react-router-dom";
 
-const VerifyEmail = () => {
-  const { signupData } = useSelector((state) => state.auth);
-
-  console.log('signup data from the redux store:- ', signupData);
-
-  const [otp, setotp] = useState("");
-
-  const { loading } = useSelector((state) => state.auth);
-
+function VerifyEmail() {
+  const [otp, setOtp] = useState("");
+  const { signupData, loading } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
+  useEffect(() => {
+    // Only allow access of this route when user has filled the signup form
+    if (!signupData) {
+      navigate("/signup");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  const submithandler = (e) => {
+  const handleVerifyAndSignup = (e) => {
     e.preventDefault();
-
-    const { firstName, lastName, email, password, confirmPassword, accountType } =
-    signupData;
-
-    console.log('printing after extracting from signup data:', firstName, lastName, email, password, confirmPassword, accountType);
+    const {
+      accountType,
+      firstName,
+      lastName,
+      email,
+      password,
+      confirmPassword,
+    } = signupData;
 
     dispatch(
       signUp(
+        accountType,
         firstName,
         lastName,
         email,
         password,
         confirmPassword,
-        accountType,
         otp,
         navigate
       )
     );
   };
 
-  //case ye bhi ho sakta hai ki sign up ka data nehi pada hai tab ham use sign up pe  redirect kar denge
-  useEffect(() => {
-    if (!signupData) {
-      navigate("/signup");
-    }
-       // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   return (
     <div className="min-h-[calc(100vh-3.5rem)] grid place-items-center">
       {loading ? (
-        <div className="loader"></div>
+        <div>
+          <div className="spinner"></div>
+        </div>
       ) : (
         <div className="max-w-[500px] p-4 lg:p-8">
           <h1 className="text-richblack-5 font-semibold text-[1.875rem] leading-[2.375rem]">
@@ -63,10 +60,10 @@ const VerifyEmail = () => {
           <p className="text-[1.125rem] leading-[1.625rem] my-4 text-richblack-100">
             A verification code has been sent to you. Enter the code below
           </p>
-          <form onSubmit={submithandler}>
-            <OTPInput
+          <form onSubmit={handleVerifyAndSignup}>
+            <OtpInput
               value={otp}
-              onChange={setotp}//return otp that is typed into the otp field but it will not do anything if we paste otp in the field
+              onChange={setOtp}
               numInputs={6}
               renderInput={(props) => (
                 <input
@@ -100,7 +97,7 @@ const VerifyEmail = () => {
               className="flex items-center text-blue-100 gap-x-2"
               onClick={() => dispatch(sendOtp(signupData.email, navigate))}
             >
-              <RxCounterClockwiseClock />
+              <RxCountdownTimer />
               Resend it
             </button>
           </div>
@@ -108,6 +105,6 @@ const VerifyEmail = () => {
       )}
     </div>
   );
-};
+}
 
 export default VerifyEmail;

@@ -1,4 +1,4 @@
-import { useState } from "react"
+ import { useState } from "react"
 import { BiArrowBack } from "react-icons/bi"
 import { useDispatch, useSelector } from "react-redux"
 import { Link } from "react-router-dom"
@@ -67,4 +67,6 @@ function ForgotPassword() {
   )
 }
 
-export default ForgotPassword
+export default ForgotPassword 
+
+

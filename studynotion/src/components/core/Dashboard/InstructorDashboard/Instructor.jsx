@@ -1,61 +1,41 @@
 import React, { useEffect, useState } from 'react'
-import { fetchInstructorCourses} from '../../../../services/operations/courseDetailsAPI';
-import { getInstructorData } from '../../../../services/operations/profileAPI';
 import { useSelector } from 'react-redux';
+import { fetchInstructorCourses } from '../../../../services/operations/courseDetailsAPI';
+import { getInstructorData } from '../../../../services/operations/profileAPI';
 import InstructorChart from './InstructorChart';
 import { Link } from 'react-router-dom';
 
-const Instructor = () => {
-
-    const [loading, setloading] = useState(false);
-    const [instructorData, setinstructorData] = useState(null);
-    const [courses, setcourse] = useState([]);
-
-    const {token} = useSelector((state) => state.auth) 
-    const {user} = useSelector((state) => state.profile)
-
-    useEffect(()=> {
-        const getCourseDataWithStats = async () => {
-            setloading(true);
-            try{
-                const instructorApiData = await getInstructorData(token);
-
-                const instructorAllCourses = await fetchInstructorCourses(token);
-
-                console.log('instructorApiData:- ', instructorApiData);
-
-                if(instructorApiData?.courses?.length){
-                    setinstructorData(instructorApiData.courses);
-                }
-
-                if(instructorAllCourses){
-                  setcourse(instructorAllCourses);
-                }
-
-
-            }catch(err){
-              console.log('error occured during getting data for instructor dashboard:- ',err.message);
-              console.error(err.message);
-
-            }finally{
-                setloading(false);
-            }
+export default function Instructor() {
+    const { token } = useSelector((state) => state.auth)
+    const { user } = useSelector((state) => state.profile)
+    const [loading, setLoading] = useState(false)
+    const [instructorData, setInstructorData] = useState(null)
+    const [courses, setCourses] = useState([])
+  
+    useEffect(() => {
+      ;(async () => {
+        setLoading(true)
+        const instructorApiData = await getInstructorData(token)
+        const result = await fetchInstructorCourses(token)
+        console.log(instructorApiData)
+        if (instructorApiData.length) setInstructorData(instructorApiData)
+        if (result) {
+          setCourses(result)
         }
-
-        getCourseDataWithStats();
-
-           // eslint-disable-next-line react-hooks/exhaustive-deps
-    },[])
-
-    const totalAmount = instructorData?.reduce ((acc, curr) =>  acc+curr.totalAmountGenerated, 0 );
-
-    console.log('amount generated:- ', totalAmount)
-
-    const totalStudents = instructorData?.reduce ((acc,curr) =>  acc+curr.totalStudentsEnrolled, 0)
-
-    console.log('student generated:- ', totalStudents)
-
-
+        setLoading(false)
+      })()
+    }, [])
+  
+    const totalAmount = instructorData?.reduce(
+      (acc, curr) => acc + curr.totalAmountGenerated,
+      0
+    )
+  
+    const totalStudents = instructorData?.reduce(
+      (acc, curr) => acc + curr.totalStudentsEnrolled,
+      0
+    )
+  
     return (
       <div>
         <div className="space-y-2">
@@ -67,7 +47,7 @@ const Instructor = () => {
           </p>
         </div>
         {loading ? (
-          <div className="loader"></div>
+          <div className="spinner"></div>
         ) : courses.length > 0 ? (
           <div>
             <div className="my-4 flex h-[450px] space-x-4">
@@ -158,6 +138,4 @@ const Instructor = () => {
         )}
       </div>
     )
-}
-
-export default Instructor
+  }

@@ -88,7 +88,7 @@ export default function CourseReviewModal({ setReviewModal }) {
                 id="courseExperience"
                 placeholder="Add Your Experience"
                 {...register("courseExperience", { required: true })}
-                className="form-style resize-x-none min-h-[130px] w-full"
+                className="form-style resize-x-none min-h-[130px] w-full space-x-2"
               />
               {errors.courseExperience && (
                 <span className="ml-2 text-xs tracking-wide text-pink-200">
