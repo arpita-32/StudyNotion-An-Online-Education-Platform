@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react"
 import { useDropzone } from "react-dropzone"
 import { FiUploadCloud } from "react-icons/fi"
 import { useSelector } from "react-redux"
-
 import "video-react/dist/video-react.css"
 import { Player } from "video-react"
 
@@ -36,10 +35,14 @@ export default function Upload({
       ? { "image/*": [".jpeg", ".jpg", ".png"] }
       : { "video/*": [".mp4"] },
     onDrop,
+    noClick: true, // This prevents the dropzone from handling click events
   })
 
+  const handleClick = () => {
+    inputRef.current.click()
+  }
+
   const previewFile = (file) => {
-    // console.log(file)
     const reader = new FileReader()
     reader.readAsDataURL(file)
     reader.onloadend = () => {
@@ -66,6 +69,7 @@ export default function Upload({
         className={`${
           isDragActive ? "bg-richblack-600" : "bg-richblack-700"
         } flex min-h-[250px] cursor-pointer items-center justify-center rounded-md border-2 border-dotted border-richblack-500`}
+        {...getRootProps()}
       >
         {previewSource ? (
           <div className="flex w-full flex-col p-6">
@@ -93,20 +97,28 @@ export default function Upload({
             )}
           </div>
         ) : (
-          <div
-            className="flex w-full flex-col items-center p-6"
-            {...getRootProps()}
-          >
-            <input {...getInputProps()} ref={inputRef} />
-            <div className="grid aspect-square w-14 place-items-center rounded-full bg-pure-greys-800">
+          <div className="flex w-full flex-col items-center p-6">
+            <input 
+              {...getInputProps()} 
+              ref={inputRef} 
+              className="hidden"
+            />
+            <div 
+              className="grid aspect-square w-14 place-items-center rounded-full bg-pure-greys-800"
+              onClick={handleClick}
+            >
               <FiUploadCloud className="text-2xl text-yellow-50" />
             </div>
             <p className="mt-2 max-w-[200px] text-center text-sm text-richblack-200">
               Drag and drop an {!video ? "image" : "video"}, or click to{" "}
-              <span className="font-semibold text-yellow-50">Browse</span> a
-              file
+              <span 
+                className="font-semibold text-yellow-50"
+                onClick={handleClick}
+              >
+                Browse
+              </span> a file
             </p>
-            <ul className="mt-10 flex list-disc justify-between space-x-12 text-center  text-xs text-richblack-200">
+            <ul className="mt-10 flex list-disc justify-between space-x-12 text-center text-xs text-richblack-200">
               <li>Aspect ratio 16:9</li>
               <li>Recommended size 1024x576</li>
             </ul>

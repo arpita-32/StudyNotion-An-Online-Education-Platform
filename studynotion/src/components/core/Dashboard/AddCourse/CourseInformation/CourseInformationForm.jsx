@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import {useForm} from "react-hook-form"
 import { useDispatch } from 'react-redux';
 import { addCourseDetails, editCourseDetails, fetchCourseCategories } from '../../../../../services/operations/courseDetailsAPI';
-import {HiOutlineCurrencyRupee, HiUpload} from "react-icons/hi"
+import {HiOutlineCurrencyRupee} from "react-icons/hi"
 import {useSelector} from "react-redux"
 import toast from 'react-hot-toast';
 import { useEffect } from 'react';
