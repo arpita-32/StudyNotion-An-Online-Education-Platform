@@ -1,2 +1,4 @@
-.env"node_modules/" 
-"studynotion/node_modules/.cache/" 
+.env
+# Dependency directories
+node_modules/
+.cache/
