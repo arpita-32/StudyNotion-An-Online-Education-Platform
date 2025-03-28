@@ -29,4 +29,6 @@ The back-end of StudyNotion uses several data models and database schemas to man
 Student Schema: Includes fields such as name, email, password, and course details for each student.
 Instructor Schema: Includes fields such as name, email, password, and course details for each instructor.
 Course Schema: Includes fields such as course name, description, instructor details, and media content.
+<img width="960" alt="image" src="https://github.com/user-attachments/assets/10f887ea-c219-4d72-90a5-0c3efeb18300" />
+<img width="960" alt="image" src="https://github.com/user-attachments/assets/969d25af-9eb4-42e3-b719-e218d464cbfc" />
 
