@@ -3,8 +3,11 @@
 Student Schema: Includes fields such as name, email, password, and course details for each student.
 Instructor Schema: Includes fields such as name, email, password, and course details for each instructor.
 Course Schema: Includes fields such as course name, description, instructor details, and media content.
-<img width="960" alt="image" src="https://github.com/user-attachments/assets/10f887ea-c219-4d72-90a5-0c3efeb18300" />
-<img width="960" alt="image" src="https://github.com/user-attachments/assets/969d25af-9eb4-42e3-b719-e218d464cbfc" />
+<img width="347" alt="image" src="https://github.com/user-attachments/assets/5c50320e-4b33-4fa5-a706-43a4f2970908" />
+<img width="455" alt="image" src="https://github.com/user-attachments/assets/87061630-ac99-4ea9-9256-922e2c5de8d6" />
+<img width="427" alt="image" src="https://github.com/user-attachments/assets/0a7e991f-3f48-45df-88e1-402078c2e2b6" />
+<img width="447" alt="image" src="https://github.com/user-attachments/assets/c70dfe5e-082a-412e-927c-1b322976c4f2" />
+<img width="465" alt="image" src="https://github.com/user-attachments/assets/7f1ce4e4-6c24-412f-acae-f4998ffefded" />
 
 StudyNotion is a fully functional ed-tech platform that enables users to create, consume, and rate educational content. The platform is built using the MERN stack, which includes ReactJS, NodeJS, MongoDB, and ExpressJS.
 StudyNotion aims to provide:
