@@ -23,12 +23,13 @@ function NavBar() {
   useEffect(() => {
     ;(async () => {
       setLoading(true)
-      try {
-        const res = await apiConnector("GET", categories.CATEGORIES_API)
-        setSubLinks(res.data.data)
-      } catch (error) {
-        console.log("Could not fetch Categories.", error)
-      }
+      // Inside your useEffect in NavBar.jsx
+    try {
+    const res = await apiConnector("GET", categories.CATEGORIES_API, null, null, null, { withCredentials: true });
+    setSubLinks(res.data.data);
+    } catch (error) {
+    console.log("Could not fetch Categories.", error);
+  }
       setLoading(false)
     })()
   }, [])
