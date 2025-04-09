@@ -12,9 +12,12 @@ import InstructerSection from "../components/core/HomePage/InstructerSection"
 import Footer from "../components/common/Footer"
 import ExploreMore from "../components/core/HomePage/ExploreMore"
 import ReviewSlider from '../components/common/ReviewSlider'
+import Chatbot from '../components/common/Chatbot'
+
 
 const Home = () => {
   return (
+    
     <div className="overflow-x-hidden">
       {/* Section 1 */}
       <div className='relative mx-auto flex flex-col w-11/12 items-center text-white justify-between max-w-maxContent'>
@@ -113,6 +116,8 @@ const Home = () => {
             backgroundGradient={<div className="codeblock2 absolute"></div>}
           />
         </div>
+        <Chatbot/>
+
         <ExploreMore />
       </div>
 
