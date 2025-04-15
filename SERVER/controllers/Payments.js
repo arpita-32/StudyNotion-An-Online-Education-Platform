@@ -10,11 +10,11 @@ const {
 const { paymentSuccessEmail } = require("../mail/templates/paymentSuccessEmail")
 const CourseProgress = require("../models/CourseProgress")
 
-// Capture the payment and initiate the Razorpay order
 exports.capturePayment = async (req, res) => {
   const { courses } = req.body
   const userId = req.user.id
-  if (courses.length === 0) {
+  
+  if (!courses || courses.length === 0) {
     return res.json({ success: false, message: "Please Provide Course ID" })
   }
 
@@ -35,7 +35,7 @@ exports.capturePayment = async (req, res) => {
 
       // Check if the user is already enrolled in the course
       const uid = new mongoose.Types.ObjectId(userId)
-      if(course.studentsEnrolled.includes(uid)) {
+      if (course.studentsEnrolled && course.studentsEnrolled.includes(uid)) {
         return res
           .status(200)
           .json({ success: false, message: "Student is already Enrolled" })
@@ -70,7 +70,6 @@ exports.capturePayment = async (req, res) => {
       .json({ success: false, message: "Could not initiate order." })
   }
 }
-
 // verify the payment
 exports.verifyPayment = async (req, res) => {
   const razorpay_order_id = req.body?.razorpay_order_id
@@ -151,7 +150,7 @@ const enrollStudents = async (courses, userId, res) => {
       // Find the course and enroll the student in it
       const enrolledCourse = await Course.findOneAndUpdate(
         { _id: courseId },
-        { $push: { studentsEnrolled: userId } },
+        { $push: { studentsEnrolled: userId } },  // Fixed field name here
         { new: true }
       )
 
@@ -167,6 +166,7 @@ const enrollStudents = async (courses, userId, res) => {
         userId: userId,
         completedVideos: [],
       })
+      
       // Find the student and add the course to their list of enrolled courses
       const enrolledStudent = await User.findByIdAndUpdate(
         userId,

@@ -5,75 +5,60 @@ const User = require("../models/User");
 // Configuring dotenv to load environment variables from .env file
 dotenv.config();
 
+// This function is used as middleware to authenticate user requests
 exports.auth = async (req, res, next) => {
 	try {
-	  // Extract token only from Authorization header
-	  const authHeader = req.header("Authorization");
-	  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-		return res.status(401).json({ 
-		  success: false, 
-		  message: "Authorization header missing or invalid" 
-		});
-	  }
-	  
-	  const token = authHeader.replace("Bearer ", "");
-  
-	  try {
-		const decode = jwt.verify(token, process.env.JWT_SECRET);
-		req.user = decode; // Attach decoded user to request
-		console.log("Decoded token:", decode); // Debug log
-	  } catch (error) {
-		console.error("Token verification failed:", error);
-		return res.status(401).json({ 
-		  success: false, 
-		  message: "Invalid or expired token" 
-		});
-	  }
-  
-	  next();
+		// Extracting JWT from request cookies, body or header
+		const token =
+			req.cookies.token ||
+			req.body.token ||
+			req.header("Authorization").replace("Bearer ", "");
+
+		// If JWT is missing, return 401 Unauthorized response
+		if (!token) {
+			return res.status(401).json({ success: false, message: `Token Missing` });
+		}
+
+		try {
+			// Verifying the JWT using the secret key stored in environment variables
+			const decode = await jwt.verify(token, process.env.JWT_SECRET);
+			console.log(decode);
+			// Storing the decoded JWT payload in the request object for further use
+			req.user = decode;
+		} catch (error) {
+			// If JWT verification fails, return 401 Unauthorized response
+			return res
+				.status(401)
+				.json({ success: false, message: "token is invalid" });
+		}
+
+		// If JWT is valid, move on to the next middleware or request handler
+		next();
 	} catch (error) {
-	  console.error("Authentication error:", error);
-	  return res.status(401).json({
-		success: false,
-		message: "Authentication failed"
-	  });
-	}
-  };
-  exports.isStudent = async (req, res, next) => {
-	try {
-	  // First check if user object exists from auth middleware
-	  if (!req.user || !req.user.email) {
+		// If there is an error during the authentication process, return 401 Unauthorized response
 		return res.status(401).json({
-		  success: false,
-		  message: "User authentication required"
+			success: false,
+			message: `Something Went Wrong While Validating the Token`,
 		});
-	  }
-  
-	  const userDetails = await User.findOne({ email: req.user.email }).select("accountType");
-	  
-	  if (!userDetails) {
-		return res.status(404).json({
-		  success: false,
-		  message: "User not found"
-		});
-	  }
-  
-	  if (userDetails.accountType !== "Student") {
-		return res.status(403).json({
-		  success: false,
-		  message: "This route is restricted to students only"
-		});
-	  }
-  
-	  next();
-	} catch (error) {
-	  console.error("Role verification error:", error);
-	  return res.status(500).json({ 
-		success: false, 
-		message: "Unable to verify user role" 
-	  });
 	}
-  };
+};
+exports.isStudent = async (req, res, next) => {
+	try {
+		const userDetails = await User.findOne({ email: req.user.email });
+
+		if (userDetails.accountType !== "Student") {
+			return res.status(401).json({
+				success: false,
+				message: "This is a Protected Route for Students",
+			});
+		}
+		next();
+	} catch (error) {
+		return res
+			.status(500)
+			.json({ success: false, message: `User Role Can't be Verified` });
+	}
+};
 exports.isAdmin = async (req, res, next) => {
 	try {
 		const userDetails = await User.findOne({ email: req.user.email });
