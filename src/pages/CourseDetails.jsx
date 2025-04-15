@@ -1,102 +1,144 @@
-import React, { useEffect, useState } from "react"
-import { useDispatch, useSelector } from "react-redux"
-import RatingStars from "../../src/components/common/RatingStars"
-import { formatDate } from "../services/formatDate"
-import { AiTwotoneClockCircle } from "react-icons/ai"
-import { MdLanguage } from "react-icons/md"
-import { fetchCourseDetails } from "../services/operations/courseDetailsAPI"
-import { useNavigate, useParams } from "react-router-dom"
-import GetAvgRating from "../utils/avgRating"
-import Footer from "../components/common/Footer"
-import { buyCourse } from "../services/operations/StudentFeaturesAPI"
-import Error from "../pages/Error"
-import ConfirmationModal from "../components/common/ConfirmationModal"
-import CourseDetailsCard from "../components/core/Course/CourseDetailsCard"
-import CourseAccordionBar from "../components/core/Course/CourseAccordionBar"
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import RatingStars from "../../src/components/common/RatingStars";
+import { formatDate } from "../services/formatDate";
+import { AiTwotoneClockCircle } from "react-icons/ai";
+import { MdLanguage } from "react-icons/md";
+import { fetchCourseDetails } from "../services/operations/courseDetailsAPI";
+import { useNavigate, useParams } from "react-router-dom";
+import GetAvgRating from "../utils/avgRating";
+import Footer from "../components/common/Footer";
+import { buyCourse } from "../services/operations/StudentFeaturesAPI";
+import { toast } from "react-hot-toast";
+import ConfirmationModal from "../components/common/ConfirmationModal";
+import CourseDetailsCard from "../components/core/Course/CourseDetailsCard";
+import CourseAccordionBar from "../components/core/Course/CourseAccordionBar";
 
 const CourseDetails = () => {
-  const { course } = useSelector((state) => state.course)
-  const { token } = useSelector((state) => state.auth)
-  const { courseId } = useParams()
-  const { user } = useSelector((state) => state.profile)
+  const { token } = useSelector((state) => state.auth);
+  const { courseId } = useParams();
+  const { user } = useSelector((state) => state.profile);
 
-  const dispatch = useDispatch()
-  const navigate = useNavigate()
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
-  const [courses, setCourses] = useState(null)
-  const [avgReviewCount, setAvgReviewCount] = useState(0)
-  const [totalNoOfLectures, setTotalNoOfLectures] = useState("")
-  const [loading, setLoading] = useState(true)
-  const [confirmationModal, setConfirmationModal] = useState(null)
-  const [isActive, setIsActive] = useState([])
+  const [courses, setCourses] = useState(null);
+  const [avgReviewCount, setAvgReviewCount] = useState(0);
+  const [totalNoOfLectures, setTotalNoOfLectures] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [confirmationModal, setConfirmationModal] = useState(null);
+  const [isActive, setIsActive] = useState([]);
 
   const handleActive = (id) => {
     setIsActive((prevState) =>
       prevState.includes(id) ? prevState.filter((e) => e !== id) : [...prevState, id]
-    )
-  }
+    );
+  };
 
   useEffect(() => {
     const getCourseDetails = async () => {
       try {
-        const result = await fetchCourseDetails(courseId)
-        if (result) {
-          setCourses(result)
+        setLoading(true);
+        setError(null);
+        const result = await fetchCourseDetails(courseId);
+        
+        if (!result || !result.success) {
+          throw new Error(result?.message || "Failed to fetch course details");
         }
+        
+        setCourses(result);
       } catch (error) {
-        console.error(error)
+        console.error(error);
+        setError(error.message || "Error loading course");
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
     if (courseId) {
-      getCourseDetails()
+      getCourseDetails();
     }
-  }, [courseId])
+  }, [courseId]);
 
   useEffect(() => {
     if (courses?.data?.courseDetails?.courseContent) {
       const lectures = courses.data.courseDetails.courseContent.reduce(
         (acc, sec) => acc + (sec.subSection?.length || 0),
         0
-      )
-      setTotalNoOfLectures(lectures)
+      );
+      setTotalNoOfLectures(lectures);
     }
-  }, [courses])
+  }, [courses]);
 
   useEffect(() => {
     if (courses?.data?.courseDetails?.ratingAndReviews) {
-      const count = GetAvgRating(courses.data.courseDetails.ratingAndReviews)
-      setAvgReviewCount(count)
+      const count = GetAvgRating(courses.data.courseDetails.ratingAndReviews);
+      setAvgReviewCount(count);
     }
-  }, [courses])
+  }, [courses]);
 
   const handleBuyCourse = async () => {
-    if (token) {
-      await buyCourse(token, [courseId], user, navigate, dispatch)
-      return
+    if (!token) {
+      setConfirmationModal({
+        text1: "Login Required",
+        text2: "Please login to purchase this course",
+        btn1Text: "Login",
+        btn2Text: "Cancel",
+        btn1Handler: () => navigate("/login"),
+        btn2Handler: () => setConfirmationModal(null),
+      });
+      return;
     }
-    setConfirmationModal({
-      text1: "You are not Logged in",
-      text2: "Please login to purchase the course.",
-      btn1Text: "Login",
-      btn2Text: "Cancel",
-      btn1Handler: () => navigate("/login"),
-      btn2Handler: () => setConfirmationModal(null),
-    })
-  }
+
+    try {
+      // Check if already enrolled
+      if (courses?.data?.courseDetails?.studentsEnrolled?.includes(user._id)) {
+        toast.error("You are already enrolled in this course");
+        return;
+      }
+
+      await buyCourse(token, [courseId], user, navigate, dispatch);
+    } catch (error) {
+      console.error("Purchase error:", error);
+      toast.error(error.message || "Failed to initiate purchase");
+    }
+  };
 
   if (loading) {
-    return <div className="spinner"></div>
+    return (
+      <div className="grid min-h-[calc(100vh-3.5rem)] place-items-center">
+        <div className="spinner"></div>
+      </div>
+    );
   }
 
-  if (!courses?.success) {
-    return <Error />
+  if (error) {
+    return (
+      <div className="grid min-h-[calc(100vh-3.5rem)] place-items-center">
+        <div className="text-center">
+          <p className="text-2xl font-bold text-richblack-100">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-4 bg-yellow-50 text-richblack-900 px-4 py-2 rounded-md"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
   }
 
-  const courseDetails = courses.data.courseDetails
-  const instructor = courseDetails.instructor || {}
+  if (!courses?.data?.courseDetails) {
+    return (
+      <div className="grid min-h-[calc(100vh-3.5rem)] place-items-center">
+        <p className="text-2xl font-bold text-richblack-100">Course not found</p>
+      </div>
+    );
+  }
+
+  const courseDetails = courses.data.courseDetails;
+  const instructor = courseDetails.instructor || {};
 
   return (
     <div className="relative">
@@ -116,8 +158,8 @@ const CourseDetails = () => {
               <span>
                 <RatingStars Review_Count={avgReviewCount} Star_Size={20} />
               </span>
-              <p>({courseDetails.ratingAndReviews.length} reviews)</p>
-              <p>{courseDetails.studentsEnrolled.length} students enrolled</p>
+              <p>({courseDetails.ratingAndReviews?.length || 0} reviews)</p>
+              <p>{courseDetails.studentsEnrolled?.length || 0} students enrolled</p>
             </div>
 
             <p className="text-sm sm:text-base md:text-lg lg:text-[1.15rem]">
@@ -175,7 +217,7 @@ const CourseDetails = () => {
         <div>
           <div className="text-xs sm:text-sm md:text-base lg:text-[1rem] flex flex-col sm:flex-row sm:justify-between gap-2 sm:gap-0">
             <div className="flex flex-wrap gap-1 sm:gap-2">
-              <p>{courseDetails.courseContent.length} Sections(s)</p>
+              <p>{courseDetails.courseContent?.length || 0} Sections(s)</p>
               <p>{totalNoOfLectures} Lecture(s)</p>
               <p>{courses.data.totalDuration} total length</p>
             </div>
@@ -186,7 +228,7 @@ const CourseDetails = () => {
           </div>
 
           <div className="py-4">
-            {courseDetails.courseContent.map((section, index) => (
+            {courseDetails.courseContent?.map((section, index) => (
               <CourseAccordionBar
                 course={section}
                 key={index}
@@ -229,7 +271,7 @@ const CourseDetails = () => {
 
       {confirmationModal && <ConfirmationModal modalData={confirmationModal} />}
     </div>
-  )
-}
+  );
+};
 
-export default CourseDetails
+export default CourseDetails;
