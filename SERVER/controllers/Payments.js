@@ -1,4 +1,3 @@
-const { instance } = require("../config/razorpay")
 const Course = require("../models/Course")
 const crypto = require("crypto")
 const User = require("../models/User")
@@ -9,100 +8,81 @@ const {
 } = require("../mail/templates/courseEnrollmentEmail")
 const { paymentSuccessEmail } = require("../mail/templates/paymentSuccessEmail")
 const CourseProgress = require("../models/CourseProgress")
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
-exports.capturePayment = async (req, res) => {
-  const { courses } = req.body
-  const userId = req.user.id
-  
+exports.createPaymentIntent = async (req, res) => {
+  const { courses } = req.body;
+  const userId = req.user.id;
+
   if (!courses || courses.length === 0) {
-    return res.json({ success: false, message: "Please Provide Course ID" })
+    return res.json({ success: false, message: "Please Provide Course ID" });
   }
 
-  let total_amount = 0
+  let total_amount = 0;
 
   for (const course_id of courses) {
-    let course
     try {
-      // Find the course by its ID
-      course = await Course.findById(course_id)
-
-      // If the course is not found, return an error
+      const course = await Course.findById(course_id);
       if (!course) {
-        return res
-          .status(200)
-          .json({ success: false, message: "Could not find the Course" })
+        return res.status(200).json({ success: false, message: "Could not find the Course" });
       }
 
-      // Check if the user is already enrolled in the course
-      const uid = new mongoose.Types.ObjectId(userId)
+      const uid = new mongoose.Types.ObjectId(userId);
       if (course.studentsEnrolled && course.studentsEnrolled.includes(uid)) {
-        return res
-          .status(200)
-          .json({ success: false, message: "Student is already Enrolled" })
+        return res.status(200).json({ success: false, message: "Student is already Enrolled" });
       }
 
-      // Add the price of the course to the total amount
-      total_amount += course.price
+      total_amount += course.price;
     } catch (error) {
-      console.log(error)
-      return res.status(500).json({ success: false, message: error.message })
+      console.log(error);
+      return res.status(500).json({ success: false, message: error.message });
     }
   }
 
-  const options = {
-    amount: total_amount * 100,
-    currency: "INR",
-    receipt: Math.random(Date.now()).toString(),
+  try {
+    // Create a PaymentIntent with the order amount and currency
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: total_amount * 100, // Stripe uses cents
+      currency: "inr",
+      metadata: {
+        userId: userId,
+        courses: JSON.stringify(courses)
+      }
+    });
+
+    res.json({
+      success: true,
+      clientSecret: paymentIntent.client_secret
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ success: false, message: "Could not create payment intent." });
+  }
+}
+
+exports.verifyPayment = async (req, res) => {
+  const { paymentIntentId, courses } = req.body;
+  const userId = req.user.id;
+
+  if (!paymentIntentId || !courses || !userId) {
+    return res.status(200).json({ success: false, message: "Payment Failed" });
   }
 
   try {
-    // Initiate the payment using Razorpay
-    const paymentResponse = await instance.orders.create(options)
-    console.log(paymentResponse)
-    res.json({
-      success: true,
-      data: paymentResponse,
-    })
+    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+    
+    if (paymentIntent.status === 'succeeded') {
+      await enrollStudents(courses, userId, res);
+      return res.status(200).json({ success: true, message: "Payment Verified" });
+    }
+    
+    return res.status(200).json({ success: false, message: "Payment Not Completed" });
   } catch (error) {
-    console.log(error)
-    res
-      .status(500)
-      .json({ success: false, message: "Could not initiate order." })
+    console.log(error);
+    return res.status(200).json({ success: false, message: "Payment Verification Failed" });
   }
 }
-// verify the payment
-exports.verifyPayment = async (req, res) => {
-  const razorpay_order_id = req.body?.razorpay_order_id
-  const razorpay_payment_id = req.body?.razorpay_payment_id
-  const razorpay_signature = req.body?.razorpay_signature
-  const courses = req.body?.courses
 
-  const userId = req.user.id
-
-  if (
-    !razorpay_order_id ||
-    !razorpay_payment_id ||
-    !razorpay_signature ||
-    !courses ||
-    !userId
-  ) {
-    return res.status(200).json({ success: false, message: "Payment Failed" })
-  }
-
-  let body = razorpay_order_id + "|" + razorpay_payment_id
-
-  const expectedSignature = crypto
-    .createHmac("sha256", process.env.RAZORPAY_SECRET)
-    .update(body.toString())
-    .digest("hex")
-
-  if (expectedSignature === razorpay_signature) {
-    await enrollStudents(courses, userId, res)
-    return res.status(200).json({ success: true, message: "Payment Verified" })
-  }
-
-  return res.status(200).json({ success: false, message: "Payment Failed" })
-}
 
 // Send Payment Success Email
 exports.sendPaymentSuccessEmail = async (req, res) => {
