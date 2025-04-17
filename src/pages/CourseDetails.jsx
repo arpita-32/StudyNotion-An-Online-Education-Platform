@@ -188,18 +188,19 @@ const CourseDetails = () => {
             </div>
           </div>
 
-          {/* Course Details Card - Mobile */}
+          {/* Course Details Card - Mobile (with CardElement) */}
           <div className="lg:hidden w-full mt-6 sm:mt-8">
             <CourseDetailsCard
               setConfirmationModal={setConfirmationModal}
               course={courseDetails}
               handleBuyCourse={handleBuyCourse}
               paymentProcessing={paymentProcessing}
+              showCardElement={true}
             />
           </div>
         </div>
 
-        {/* Course Details Card - Desktop */}
+        {/* Course Details Card - Desktop (without CardElement) */}
         <div className="hidden lg:block bg-richblack-700 min-h-[500px] lg:min-h-[600px] rounded-md px-6 py-4 w-[90%] sm:w-[80%] md:w-[70%] lg:w-[430px]
           -mt-[300px] lg:-mt-[380px] right-[1rem] mx-auto absolute mr-[40px]">
           <CourseDetailsCard
@@ -207,6 +208,7 @@ const CourseDetails = () => {
             course={courseDetails}
             handleBuyCourse={handleBuyCourse}
             paymentProcessing={paymentProcessing}
+            showCardElement={false}
           />
         </div>
 

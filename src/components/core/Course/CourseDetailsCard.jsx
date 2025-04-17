@@ -7,20 +7,19 @@ import { ACCOUNT_TYPE } from "../../../utils/constants";
 import { addToCart } from "../../../slices/cartSlice";
 import { GoTriangleRight } from "react-icons/go";
 import { FaShareSquare } from "react-icons/fa";
-import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import { CardElement } from '@stripe/react-stripe-js';
 
 const CourseDetailsCard = ({
   course,
   setConfirmationModal,
   handleBuyCourse,
   paymentProcessing,
+  showCardElement,
 }) => {
   const { user } = useSelector((state) => state.profile);
   const { token } = useSelector((state) => state.auth);
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const stripe = useStripe();
-  const elements = useElements();
 
   const handleAddToCart = () => {
     if (user && user?.accountType === ACCOUNT_TYPE.INSTRUCTOR) {
@@ -47,15 +46,6 @@ const CourseDetailsCard = ({
     toast.success("Link Copied to Clipboard");
   };
 
-  const handlePayment = async () => {
-    if (!stripe || !elements) {
-      toast.error("Payment system not ready. Please try again.");
-      return;
-    }
-
-    await handleBuyCourse();
-  };
-
   return (
     <div className="space-y-3">
       <img src={course?.thumbnail} alt="Thumbnail Image" className="w-full" />
@@ -64,8 +54,8 @@ const CourseDetailsCard = ({
       </div>
 
       <div className="flex flex-col gap-3">
-        {/* Show payment form only if user is not enrolled */}
-        {!(user && course?.studentsEnrolled.includes(user?._id)) && (
+        {/* Only show CardElement if showCardElement is true */}
+        {showCardElement && (
           <div className="p-3 border border-richblack-300 rounded-md">
             <CardElement 
               options={{
@@ -91,9 +81,9 @@ const CourseDetailsCard = ({
           onClick={
             user && course?.studentsEnrolled.includes(user?._id)
               ? () => navigate("/dashboard/enrolled-courses")
-              : handlePayment
+              : handleBuyCourse
           }
-          disabled={paymentProcessing || (user && !course?.studentsEnrolled.includes(user?._id) && !stripe)}
+          disabled={paymentProcessing}
           className={`flex bg-yellow-50 h-[40px] rounded-md items-center justify-center font-semibold ${
             paymentProcessing ? "opacity-50 cursor-not-allowed" : ""
           }`}
