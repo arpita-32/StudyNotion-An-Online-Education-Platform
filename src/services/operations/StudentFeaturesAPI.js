@@ -15,111 +15,71 @@ const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
 const isTokenValid = (token) => {
   return token && typeof token === 'string' && token.length > 0;
 };
-
 export async function buyCourse(token, courses, userDetails, navigate, dispatch, elements) {
   const toastId = toast.loading("Processing payment...");
   
   try {
-    // Validate token before proceeding
-    if (!isTokenValid(token)) {
-      throw new Error("Invalid authentication token. Please login again.");
+    // 1. Validate inputs
+    if (!token || !courses || !userDetails || !elements) {
+      throw new Error("Missing required payment information");
     }
 
-    // 1. Get Stripe instance
+    // 2. Initialize Stripe
     const stripe = await stripePromise;
-    if (!stripe) {
-      throw new Error("Stripe failed to initialize");
-    }
+    if (!stripe) throw new Error("Stripe failed to initialize");
 
-    // 2. Create payment intent with proper authentication
+    // 3. Get CardElement
+    const cardElement = elements.getElement(CardElement);
+    if (!cardElement) throw new Error("Card details not found");
+
+    // 4. Create payment intent
     const orderResponse = await apiConnector(
       "POST", 
       COURSE_PAYMENT_API,
       { courses },
       {
         Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
       }
     );
 
-    // 3. Validate response
-    if (!orderResponse?.data?.success || !orderResponse.data?.clientSecret) {
-      const errorMsg = orderResponse?.data?.message || 
-                     "Invalid payment intent response from server";
-      throw new Error(errorMsg);
+    if (!orderResponse?.data?.success) {
+      throw new Error(orderResponse?.data?.message || "Payment failed");
     }
 
-    const { clientSecret } = orderResponse.data;
-    
-    // 4. Confirm payment with Stripe
-    if (!elements) {
-      throw new Error("Stripe elements not found");
-    }
-    
-    const { paymentIntent, error } = await stripe.confirmCardPayment(clientSecret, {
-      payment_method: {
-        card: elements.getElement(CardElement),
-        billing_details: {
-          name: `${userDetails.firstName} ${userDetails.lastName}`.trim(),
-          email: userDetails.email,
+    // 5. Confirm payment
+    const { error, paymentIntent } = await stripe.confirmCardPayment(
+      orderResponse.data.clientSecret, 
+      {
+        payment_method: {
+          card: cardElement,
+          billing_details: {
+            name: `${userDetails.firstName} ${userDetails.lastName}`.trim(),
+            email: userDetails.email,
+          },
         },
-      },
-      receipt_email: userDetails.email,
-    });
+      }
+    );
 
-    if (error) {
-      throw error;
+    if (error) throw error;
+    if (paymentIntent.status !== 'succeeded') {
+      throw new Error("Payment not completed");
     }
 
-    if (paymentIntent.status === 'succeeded') {
-      // 5. Send payment success email
-      await sendPaymentSuccessEmail(
-        {
-          razorpay_order_id: paymentIntent.id,
-          razorpay_payment_id: paymentIntent.id,
-        }, 
-        paymentIntent.amount / 100, // Convert back to currency units from cents
-        token
-      );
-
-      // 6. Verify payment with backend
-      await verifyPayment(
-        {
-          razorpay_order_id: paymentIntent.id,
-          razorpay_payment_id: paymentIntent.id,
-          razorpay_signature: '', // Not needed for Stripe
-          courses
-        }, 
-        token, 
-        navigate, 
-        dispatch
-      );
-    }
+    // 6. Verify payment
+    await verifyPayment(
+      {
+        paymentIntentId: paymentIntent.id,
+        courses
+      }, 
+      token, 
+      navigate, 
+      dispatch
+    );
 
   } catch (error) {
-    console.error("Payment error details:", {
-      error: error.toString(),
-      stack: error.stack,
-      response: error.response?.data
-    });
-
-    let errorMessage = "Payment processing failed";
-    
-    // Handle specific error cases
-    if (error.response?.status === 401) {
-      errorMessage = "Authentication failed. Please login again.";
-      // Clear auth state and redirect to login
-      localStorage.removeItem("token"); // If using localStorage
-      setTimeout(() => navigate("/login"), 2000);
-    } else if (error.code === 'card_declined') {
-      errorMessage = `Your card was declined: ${error.message}`;
-    } else if (error.message.includes("Network Error")) {
-      errorMessage = "Network connection failed. Please check your internet.";
-    } else {
-      errorMessage = error.message || "Payment failed";
-    }
-
-    toast.error(errorMessage);
+    console.error("Payment error:", error);
+    toast.error(error.message || "Payment failed");
+    throw error;
   } finally {
     toast.dismiss(toastId);
   }

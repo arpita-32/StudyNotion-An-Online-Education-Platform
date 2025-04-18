@@ -23,7 +23,7 @@ const CourseDetailsCard = ({
 
   const handleAddToCart = () => {
     if (user && user?.accountType === ACCOUNT_TYPE.INSTRUCTOR) {
-      toast.error("You are an instructor, you can't buy a course");
+      toast.error("Instructors cannot purchase courses");
       return;
     }
     if (token) {
@@ -48,13 +48,12 @@ const CourseDetailsCard = ({
 
   return (
     <div className="space-y-3">
-      <img src={course?.thumbnail} alt="Thumbnail Image" className="w-full" />
+      <img src={course?.thumbnail} alt="Thumbnail" className="w-full" />
       <div className="space-x-3 pb-4 text-3xl font-semibold text-white">
         Rs. {course?.price}
       </div>
 
       <div className="flex flex-col gap-3">
-        {/* Only show CardElement if showCardElement is true */}
         {showCardElement && (
           <div className="p-3 border border-richblack-300 rounded-md">
             <CardElement 
@@ -78,11 +77,7 @@ const CourseDetailsCard = ({
         )}
 
         <button
-          onClick={
-            user && course?.studentsEnrolled.includes(user?._id)
-              ? () => navigate("/dashboard/enrolled-courses")
-              : handleBuyCourse
-          }
+          onClick={handleBuyCourse}
           disabled={paymentProcessing}
           className={`flex bg-yellow-50 h-[40px] rounded-md items-center justify-center font-semibold ${
             paymentProcessing ? "opacity-50 cursor-not-allowed" : ""

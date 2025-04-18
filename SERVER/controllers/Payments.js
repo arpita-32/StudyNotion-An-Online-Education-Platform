@@ -10,55 +10,67 @@ const { paymentSuccessEmail } = require("../mail/templates/paymentSuccessEmail")
 const CourseProgress = require("../models/CourseProgress")
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
+// In your payment controller
 exports.createPaymentIntent = async (req, res) => {
-  const { courses } = req.body;
-  const userId = req.user.id;
-
-  if (!courses || courses.length === 0) {
-    return res.json({ success: false, message: "Please Provide Course ID" });
-  }
-
-  let total_amount = 0;
-
-  for (const course_id of courses) {
-    try {
-      const course = await Course.findById(course_id);
-      if (!course) {
-        return res.status(200).json({ success: false, message: "Could not find the Course" });
-      }
-
-      const uid = new mongoose.Types.ObjectId(userId);
-      if (course.studentsEnrolled && course.studentsEnrolled.includes(uid)) {
-        return res.status(200).json({ success: false, message: "Student is already Enrolled" });
-      }
-
-      total_amount += course.price;
-    } catch (error) {
-      console.log(error);
-      return res.status(500).json({ success: false, message: error.message });
-    }
-  }
-
   try {
-    // Create a PaymentIntent with the order amount and currency
+    const { courses } = req.body;
+    const userId = req.user.id;
+
+    // Validate input
+    if (!courses || !Array.isArray(courses) || courses.length === 0) {
+      return res.status(400).json({ success: false, message: "Invalid course IDs" });
+    }
+
+    // Calculate total amount and validate courses
+    let totalAmount = 0;
+    const validCourses = [];
+    
+    for (const courseId of courses) {
+      const course = await Course.findById(courseId);
+      if (!course) {
+        return res.status(404).json({ 
+          success: false, 
+          message: `Course not found: ${courseId}` 
+        });
+      }
+
+      if (course.studentsEnrolled.includes(userId)) {
+        return res.status(400).json({ 
+          success: false, 
+          message: `Already enrolled in course: ${course.courseName}` 
+        });
+      }
+
+      totalAmount += course.price;
+      validCourses.push(courseId);
+    }
+
+    // Create PaymentIntent
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: total_amount * 100, // Stripe uses cents
+      amount: Math.round(totalAmount * 100), // Convert to cents
       currency: "inr",
       metadata: {
-        userId: userId,
-        courses: JSON.stringify(courses)
-      }
+        userId: userId.toString(),
+        courses: JSON.stringify(validCourses)
+      },
+      description: `Payment for ${validCourses.length} course(s)`
     });
 
-    res.json({
+    return res.json({
       success: true,
-      clientSecret: paymentIntent.client_secret
+      clientSecret: paymentIntent.client_secret,
+      amount: totalAmount,
+      currency: paymentIntent.currency
     });
+
   } catch (error) {
-    console.log(error);
-    res.status(500).json({ success: false, message: "Could not create payment intent." });
+    console.error("Payment intent error:", error);
+    return res.status(500).json({ 
+      success: false, 
+      message: error.message || "Payment processing failed" 
+    });
   }
-}
+};
 
 exports.verifyPayment = async (req, res) => {
   const { paymentIntentId, courses } = req.body;
