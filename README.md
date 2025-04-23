@@ -1,13 +1,14 @@
-# Getting Started with Create React App
-ED-TECH ONLINE PLATFORM
-Student Schema: Includes fields such as name, email, password, and course details for each student.
-Instructor Schema: Includes fields such as name, email, password, and course details for each instructor.
-Course Schema: Includes fields such as course name, description, instructor details, and media content.
+#ED-TECH ONLINE PLATFORM
+
 <img width="347" alt="image" src="https://github.com/user-attachments/assets/5c50320e-4b33-4fa5-a706-43a4f2970908" />
 <img width="455" alt="image" src="https://github.com/user-attachments/assets/87061630-ac99-4ea9-9256-922e2c5de8d6" />
 <img width="427" alt="image" src="https://github.com/user-attachments/assets/0a7e991f-3f48-45df-88e1-402078c2e2b6" />
 <img width="447" alt="image" src="https://github.com/user-attachments/assets/c70dfe5e-082a-412e-927c-1b322976c4f2" />
 <img width="465" alt="image" src="https://github.com/user-attachments/assets/7f1ce4e4-6c24-412f-acae-f4998ffefded" />
+
+Student Schema: Includes fields such as name, email, password, and course details for each student.
+Instructor Schema: Includes fields such as name, email, password, and course details for each instructor.
+Course Schema: Includes fields such as course name, description, instructor details, and media content.
 
 Project Description
 StudyNotion is a fully functional ed-tech platform that enables users to create, consume, and rate educational content. The platform is built using the MERN stack, which includes ReactJS, NodeJS, MongoDB, and ExpressJS.
@@ -44,35 +45,55 @@ Architecture Diagram
 Here is a high-level diagram that illustrates the architecture of the StudyNotion ed-tech platform:
 
 Front-end
-The front end is part of the platform that the user interacts with. It's like the "face" of the platform that the user sees and interacts with. The front end of StudyNotion is designed using a tool called Figma, which is a popular design tool that allows for the creation of clean and minimal user interfaces.
+The front end is part of the platform that the user interacts with. It's like the "face" of the platform that the user sees and interacts with.
+The front end of StudyNotion is designed using a tool called Figma, which is a popular design tool that allows for the creation of clean and minimal user interfaces.
 You can take a look at the Figma design for the StudyNotion front-end by following this link: https://www.figma.com/file/Mikd0FjHKAofUlWQSi70nf/StudyNotion_shared.
 The front end of StudyNotion has all the necessary pages that an ed-tech platform should have. Some of these pages are:
+
 For Students:
 −Homepage: This page will have a brief introduction to the platform, as well as links to the course list and user details.
+
 −Course List: This page will have a list of all the courses available on the platform, along with their descriptions and ratings.
+
 −Wishlist: This page will display all the courses that a student has added to their wishlist.
+
 −Cart Checkout: This page will allow the user to complete the course purchase.
+
 −Course Content: This page will have the course content for a particular course, including videos, and other related material.
+
 −User Details: This page will have details about the student's account, including their name, email, and other relevant information.
+
 −User Edit Details: This page will allow the student to edit their account details.
+
 For Instructors:
 −Dashboard: This page will have an overview of the instructor's courses, as well as the ratings and feedback for each course.
+
 −Insights: This page will have detailed insights into the instructor's courses, including the number of views, clicks, and other relevant metrics.
+
 −Course Management Pages: These pages will allow the instructor to create, update, and delete courses, as well as manage the course content and pricing.
 −View and Edit Profile Details: These pages will allow the instructor to view and edit their account details.
+
 For Admin (this is for future scope):
 −Dashboard: This page will have an overview of the platform's courses, instructors, and students.
+
 −Insights: This page will have detailed insights into the platform's metrics, including the number of registered users, courses, and revenue.
+
 −Instructor Management: This page will allow the admin to manage the platform's instructors, including their account details, courses, and ratings.
+
 −Other Relevant Pages: The admin will also have access to other relevant pages, such as user management and course management pages.
+
 To build the front end, we use frameworks and libraries such as ReactJS, which is a popular JavaScript library for building user interfaces. We also use CSS and Tailwind, which are styling frameworks that help make the user interface look good and responsive. Additionally, we use some npm packages to add extra functionality to the front end. To manage the state of the application, we use Redux, which is a popular state management library for React. Finally, we use a development environment called VSCode, which is a popular code editor, to develop the front end.
 
-
 Back-end
+
 Description of the Back-end Architecture:
+
 StudyNotion uses a monolithic architecture, with the backend built using Node.js and Express.js, and MongoDB as the primary database. Monolithic architecture refers to a design approach where all the modules of the application are combined into a single large program, with a single codebase, to enable better control, security, and performance.
+
 Node.js is a popular JavaScript runtime that allows us to run JavaScript code outside of the browser. Express.js is a web application framework that simplifies the process of building web applications in Node.js. MongoDB is a popular NoSQL database that allows for flexible data storage and retrieval, making it a suitable choice for complex applications like StudyNotion.
+
 Features and Functionalities of the Back-end:
+
 The back end of StudyNotion provides a range of features and functionalities, including:
 1.User authentication and authorization: Students and instructors can sign up and log in to the platform using their email addresses and password. The platform also supports OTP (One-Time Password) verification and forgot password functionality for added security.
 2.Course management: Instructors can create, read, update, and delete courses, as well as manage course content and media. Students can view and rate courses.
