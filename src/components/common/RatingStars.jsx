@@ -20,7 +20,7 @@ function RatingStars({ Review_Count, Star_Size }) {
       empty: Number.isInteger(Review_Count) ? 5 - wholeStars : 4 - wholeStars,
     })
   }, [Review_Count])
-  
+
   return (
     <div className="flex gap-1 text-yellow-100">
       {[...new Array(starCount.full)].map((_, i) => {
