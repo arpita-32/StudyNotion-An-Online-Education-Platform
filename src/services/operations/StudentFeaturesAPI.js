@@ -26,26 +26,17 @@ function loadScript(src) {
   });
 }
 
-export async function buyCourse(
-  token,
-  courses,
-  userDetails,
-  navigate,
-  dispatch
-) {
+export async function buyCourse(token, courses, userDetails, navigate, dispatch) {
   const toastId = toast.loading("Loading...");
   try {
-    //load the script
-    const res = await loadScript(
-      "https://checkout.razorpay.com/v1/checkout.js"
-    );
+    const res = await loadScript("https://checkout.razorpay.com/v1/checkout.js");
 
     if (!res) {
       toast.error("RazorPay SDK failed to load");
       return;
     }
 
-    //initiate the order
+    // Add error handling for the API call
     const orderResponse = await apiConnector(
       "POST",
       COURSE_PAYMENT_API,
@@ -53,14 +44,14 @@ export async function buyCourse(
       {
         Authorization: `Bearer ${token}`,
       }
-    );
+    ).catch(error => {
+      throw new Error(error.response?.data?.message || "Payment initiation failed");
+    });
 
     if (!orderResponse.data.success) {
       throw new Error(orderResponse.data.message);
     }
-    console.log("PRINTING orderResponse", orderResponse);
-    console.log(process.env.REACT_APP_RAZORPAY_KEY);
-    //options
+
     const options = {
       key: process.env.REACT_APP_RAZORPAY_KEY,
       currency: orderResponse.data.data.currency,
@@ -74,28 +65,22 @@ export async function buyCourse(
         email: userDetails.email,
       },
       handler: function (response) {
-        //send successful wala mail
-        sendPaymentSuccessEmail(
-          response,
-          orderResponse.data.data.amount,
-          token
-        );
-        //verifyPayment
+        sendPaymentSuccessEmail(response, orderResponse.data.data.amount, token);
         verifyPayment({ ...response, courses }, token, navigate, dispatch);
       },
     };
-    //miss hogya tha
+
     const paymentObject = new window.Razorpay(options);
     paymentObject.open();
     paymentObject.on("payment.failed", function (response) {
-      toast.error("oops, payment failed");
-      console.log(response.error);
+      toast.error("Payment failed: " + response.error.description);
     });
   } catch (error) {
-    console.log("PAYMENT API ERROR.....", error);
-    toast.error("Could not make Payment");
+    console.error("PAYMENT ERROR:", error);
+    toast.error(error.message || "Could not make Payment");
+  } finally {
+    toast.dismiss(toastId);
   }
-  toast.dismiss(toastId);
 }
 
 async function sendPaymentSuccessEmail(response, amount, token) {
