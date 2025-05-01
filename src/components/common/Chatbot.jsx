@@ -78,7 +78,7 @@ const Chatbot = () => {
     return (
         <div className="fixed bottom-8 right-8 z-50">
             {isOpen ? (
-                <div className="w-80 h-96 bg-white rounded-lg shadow-xl flex flex-col">
+                <div className="w-80 h-96 bg-white dark:bg-gray-800 rounded-lg shadow-xl flex flex-col border border-gray-200 dark:border-gray-700">
                     <div className="bg-blue-600 text-white p-3 rounded-t-lg flex justify-between items-center">
                         <h3 className="font-semibold">Study Assistant</h3>
                         <div className="flex items-center">
@@ -101,13 +101,19 @@ const Chatbot = () => {
                         </div>
                     </div>
 
-                    <div className="flex-1 p-4 overflow-y-auto">
+                    <div className="flex-1 p-4 overflow-y-auto bg-gray-50 dark:bg-gray-700">
                         {messages.length === 0 ? (
-                            <div className="text-center text-gray-500 mt-20">Ask me anything about your courses!</div>
+                            <div className="text-center text-gray-500 dark:text-gray-300 mt-20">
+                                Ask me anything about your courses!
+                            </div>
                         ) : (
                             messages.map((msg, i) => (
                                 <div key={i} className={`mb-3 ${msg.sender === 'user' ? 'text-right' : 'text-left'}`}>
-                                    <div className={`inline-block p-2 rounded-lg ${msg.sender === 'user' ? 'bg-blue-100 text-blue-900' : 'bg-gray-100 text-gray-800'}`}>
+                                    <div className={`inline-block p-2 rounded-lg max-w-xs break-words ${
+                                        msg.sender === 'user' 
+                                            ? 'bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100' 
+                                            : 'bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-100'
+                                    }`}>
                                         {msg.text}
                                     </div>
                                 </div>
@@ -115,31 +121,37 @@ const Chatbot = () => {
                         )}
                         {isLoading && (
                             <div className="text-left mb-3">
-                                <div className="inline-block p-2 rounded-lg bg-gray-100 text-gray-800">Thinking...</div>
+                                <div className="inline-block p-2 rounded-lg bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-100">
+                                    <div className="flex items-center">
+                                        <div className="animate-pulse mr-2">•</div>
+                                        <div className="animate-pulse mr-2" style={{ animationDelay: '0.2s' }}>•</div>
+                                        <div className="animate-pulse" style={{ animationDelay: '0.4s' }}>•</div>
+                                    </div>
+                                </div>
                             </div>
                         )}
                         {isError && (
-                            <div className="text-center text-red-500 my-2">
+                            <div className="text-center text-red-500 dark:text-red-400 my-2 text-sm">
                                 {errorMessage || "Something went wrong"}
                             </div>
                         )}
                         <div ref={messagesEndRef} />
                     </div>
 
-                    <form onSubmit={handleSubmit} className="p-3 border-t">
+                    <form onSubmit={handleSubmit} className="p-3 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
                         <div className="flex">
                             <input
                                 type="text"
                                 value={input}
                                 onChange={(e) => setInput(e.target.value)}
                                 placeholder="Type your question..."
-                                className="flex-1 border rounded-l-lg p-2 focus:outline-none"
+                                className="flex-1 border rounded-l-lg p-2 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
                                 disabled={isLoading}
                             />
                             <button 
                                 type="submit" 
                                 disabled={isLoading || !input.trim()} 
-                                className="bg-blue-600 text-white p-2 rounded-r-lg hover:bg-blue-700 disabled:opacity-50"
+                                className="bg-blue-600 text-white p-2 rounded-r-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
                             >
                                 <FiSend size={20} />
                             </button>
@@ -149,7 +161,7 @@ const Chatbot = () => {
             ) : (
                 <button 
                     onClick={() => setIsOpen(true)} 
-                    className="bg-blue-600 text-white p-4 rounded-full shadow-lg hover:bg-blue-700 transition-all"
+                    className="bg-blue-600 text-white p-4 rounded-full shadow-lg hover:bg-blue-700 transition-all hover:scale-105"
                     title="Open chat assistant"
                 >
                     <FiMessageSquare size={24} />
@@ -157,6 +169,7 @@ const Chatbot = () => {
             )}
         </div>
     );
+
 };
 
 export default Chatbot;

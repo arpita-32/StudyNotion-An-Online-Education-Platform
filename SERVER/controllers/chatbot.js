@@ -2,97 +2,159 @@ const axios = require("axios");
 
 exports.chatbotPrompt = async (req, res) => {
   try {
-    const { prompt, history } = req.body;
-
-    if (!prompt) {
+    // Validate request
+    if (!req.body) {
       return res.status(400).json({
         success: false,
-        message: "Prompt is required",
+        message: "Request body is required",
+      });
+    }
+
+    const { prompt, history = [] } = req.body;
+
+    // Validate prompt
+    if (!prompt || typeof prompt !== 'string' || prompt.trim() === '') {
+      return res.status(400).json({
+        success: false,
+        message: "Valid text prompt is required",
+      });
+    }
+
+    // Validate history structure
+    if (!Array.isArray(history)) {
+      return res.status(400).json({
+        success: false,
+        message: "History must be an array",
       });
     }
 
     const API_KEY = process.env.GEMINI_API_KEY;
     if (!API_KEY) {
+      console.error("Missing Gemini API key");
       return res.status(500).json({
         success: false,
-        message: "API key configuration error",
+        message: "Server configuration error - API key missing",
       });
     }
 
-    const API_URL =
-      "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent";
-
-    let requestData = {
-      contents: [],
-    };
-
-    // Add chat history if provided
-    if (history && history.length > 0) {
-      requestData.contents = history.filter((msg) => msg.role !== "system");
-    }
-
-    // Add system message at the beginning of conversation if history is empty
-    if (!history || history.length === 0) {
-      requestData.contents.push({
-        role: "model",
-        parts: [{ text: "I'm a helpful assistant providing clear, concise responses." }],
-      });
-    }
-
-    // Add the user's prompt without additional instructions
-    requestData.contents.push({
-      role: "user",
-      parts: [{ text: prompt }],
-    });
-
-    // Configure for concise responses through API parameters instead of prompt instructions
-    const generationConfig = {
-      maxOutputTokens: 70, // Reduced to enforce brevity
-      temperature: 0.5,    // Slightly lower for more focused responses
-      topP: 0.8,
-      topK: 40,
-      stopSequences: [],
-    };
-
-    console.log("Sending request to Gemini API:", {
-      url: API_URL,
-      data: requestData,
-    });
-
-    // Make the API request using axios
-    const response = await axios.post(
-      `${API_URL}?key=${API_KEY}`,
-      {
-        ...requestData,
-        generationConfig,
-      },
-      {
-        headers: {
-          "Content-Type": "application/json",
+    // API Configuration
+    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${API_KEY}`;
+    
+    // Build conversation history
+    const contents = [];
+    
+    // Add system message if no history exists
+    if (history.length === 0) {
+      contents.push(
+        {
+          role: "user",
+          parts: [{ text: "You are a helpful AI assistant. Keep responses concise (1-2 sentences maximum)."}]
         },
+        {
+          role: "model",
+          parts: [{ text: "Understood. I will provide clear and concise responses."}]
+        }
+      );
+    }
+
+    // Add validated conversation history
+    for (const msg of history) {
+      try {
+        if (msg.role && msg.parts && Array.isArray(msg.parts)) {
+          const validParts = msg.parts
+            .filter(part => part.text && typeof part.text === 'string')
+            .map(part => ({ text: part.text }));
+          
+          if (validParts.length > 0) {
+            contents.push({
+              role: msg.role === 'user' ? 'user' : 'model',
+              parts: validParts
+            });
+          }
+        }
+      } catch (err) {
+        console.warn("Invalid history message skipped:", err);
       }
-    );
+    }
 
-    // Extract the generated text
-    const generatedText =
-      response.data?.candidates?.[0]?.content?.parts?.[0]?.text ||
-      "No response generated.";
-
-    console.log("Received response from Gemini API");
-
-    // Send successful response
-    res.status(200).json({
-      success: true,
-      data: { answer: generatedText },
-      response: generatedText,
+    // Add current prompt
+    contents.push({
+      role: "user",
+      parts: [{ text: prompt }]
     });
-  } catch (error) {
-    console.error("Gemini API error:", error.response?.data || error.message);
 
-    return res.status(500).json({
+    // Request configuration
+    const requestData = {
+      contents,
+      generationConfig: {
+        maxOutputTokens: 200,  // Slightly higher for better responses
+        temperature: 0.7,
+        topP: 0.9,
+        topK: 40
+      },
+      safetySettings: [
+        {
+          category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+          threshold: "BLOCK_ONLY_HIGH"
+        },
+        {
+          category: "HARM_CATEGORY_HARASSMENT",
+          threshold: "BLOCK_ONLY_HIGH"
+        }
+      ]
+    };
+
+    console.debug("Sending to Gemini API:", {
+      url: API_URL,
+      data: requestData
+    });
+
+    // Make API call with timeout
+    const response = await axios.post(API_URL, requestData, {
+      headers: { 
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+      },
+      timeout: 15000  // 15 seconds timeout
+    });
+
+    // Validate and extract response
+    if (!response.data?.candidates?.[0]?.content?.parts?.[0]?.text) {
+      console.error("Unexpected API response format:", response.data);
+      throw new Error("Received unexpected response format from Gemini API");
+    }
+
+    const generatedText = response.data.candidates[0].content.parts[0].text;
+
+    return res.json({ 
+      success: true, 
+      data: { 
+        answer: generatedText,
+        fullResponse: response.data  // Optional: for debugging
+      } 
+    });
+
+  } catch (error) {
+    console.error("API Error:", {
+      error: error.message,
+      stack: error.stack,
+      response: error.response?.data
+    });
+
+    // Determine appropriate status code
+    const statusCode = error.response?.status || 
+                      error.code === 'ECONNABORTED' ? 504 : 
+                      500;
+
+    return res.status(statusCode).json({
       success: false,
-      message: error.message || "Error processing your request",
-      error: error.response?.data?.error?.message || error.toString(),
+      message: "Error processing your AI request",
+      error: process.env.NODE_ENV === 'development' ? 
+        {
+          message: error.message,
+          details: error.response?.data?.error || null
+        } : 
+        null
     });
   }
 };

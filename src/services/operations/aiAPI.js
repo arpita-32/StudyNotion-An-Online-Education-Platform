@@ -87,24 +87,26 @@ export async function getAIResponse(
  */
 export async function getAIResponseWithHistory(prompt, history = []) {
     try {
-        // Don't use any special role for system information
-        const apiHistory = [...history];
-        
-        // Add platform knowledge to the user prompt instead
-        const enhancedPrompt = `${prompt}\n\nContext: I'm a study assistant for the learning platform. Please keep answers concise (under 100 words).`;
-        
+        // Format history correctly
+        const apiHistory = history.map(msg => ({
+            role: msg.sender === 'user' ? 'user' : 'model',
+            parts: [{ text: msg.text }]
+        }));
+
         const response = await apiConnector("POST", AI_CHAT_API, {
-            prompt: enhancedPrompt,
-            history: apiHistory.filter(msg => msg.role !== "system" && msg.role !== "model")
+            prompt: prompt,
+            history: apiHistory
         });
-        
+
         if (!response.data.success) {
-            throw new Error(response.data.message || "Failed to get AI response");
+            throw new Error(response.data.message || "AI service error");
         }
-        
+
         return response.data.data.answer;
     } catch (error) {
-        console.error("AI API error:", error);
-        throw error;
+        console.error("Full API error:", error);
+        throw new Error(error.response?.data?.message || 
+                      error.message || 
+                      "Failed to get AI response");
     }
 }
