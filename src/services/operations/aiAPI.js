@@ -87,26 +87,30 @@ export async function getAIResponse(
  */
 export async function getAIResponseWithHistory(prompt, history = []) {
     try {
-        // Format history correctly
-        const apiHistory = history.map(msg => ({
-            role: msg.sender === 'user' ? 'user' : 'model',
-            parts: [{ text: msg.text }]
-        }));
-
-        const response = await apiConnector("POST", AI_CHAT_API, {
-            prompt: prompt,
-            history: apiHistory
-        });
-
-        if (!response.data.success) {
-            throw new Error(response.data.message || "AI service error");
-        }
-
-        return response.data.data.answer;
+      // Format history for API
+      const apiHistory = history.map(msg => ({
+        role: msg.sender === 'user' ? 'user' : 'model',
+        parts: [{ text: msg.text }]
+      }));
+  
+      const response = await apiConnector("POST", AI_CHAT_API, {
+        prompt: prompt,
+        history: apiHistory
+      });
+  
+      if (!response.data.success) {
+        throw new Error(response.data.message || "Failed to get AI response");
+      }
+  
+      // Make sure we're accessing the response data correctly
+      return response.data.data?.answer || 
+             response.data.response || 
+             "I couldn't generate a response. Please try again.";
     } catch (error) {
-        console.error("Full API error:", error);
-        throw new Error(error.response?.data?.message || 
-                      error.message || 
-                      "Failed to get AI response");
+      console.error("AI API error:", error);
+      throw new Error(error.response?.data?.error?.message || 
+                     error.response?.data?.message || 
+                     error.message || 
+                     "Failed to get AI response");
     }
-}
+  }
