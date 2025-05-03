@@ -12,7 +12,6 @@ import InstructerSection from "../components/core/HomePage/InstructerSection"
 import Footer from "../components/common/Footer"
 import ExploreMore from "../components/core/HomePage/ExploreMore"
 import ReviewSlider from '../components/common/ReviewSlider'
-import Chatbot from '../components/common/Chatbot'
 
 
 const Home = () => {
@@ -116,7 +115,6 @@ const Home = () => {
             backgroundGradient={<div className="codeblock2 absolute"></div>}
           />
         </div>
-        <Chatbot/>
 
         <ExploreMore />
       </div>

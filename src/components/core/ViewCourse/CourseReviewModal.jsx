@@ -1,7 +1,7 @@
 import { useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { RxCross2 } from "react-icons/rx"
-import ReactStars from "react-rating-stars-component"
+import ReactStars from "react-rating-stars-component";
 import { useSelector } from "react-redux"
 
 import { createRating } from "../../../services/operations/courseDetailsAPI"

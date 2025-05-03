@@ -3,7 +3,6 @@ const app = express();
 
 const userRoutes = require("./routes/User");
 const profileRoutes = require("./routes/Profile");
-const aiRoutes = require("./routes/ai");
 const paymentRoutes = require("./routes/Payments");
 const courseRoutes = require("./routes/Course");
 const contactUsRoute = require("./routes/Contact");
@@ -41,7 +40,6 @@ app.use("/api/v1/auth", userRoutes);
 app.use("/api/v1/profile", profileRoutes);
 app.use("/api/v1/course", courseRoutes);
 app.use("/api/v1/payment", paymentRoutes);
-app.use("/api/v1/chatbot", aiRoutes);
 app.use("/api/v1/reach", contactUsRoute);
 
 //def route
