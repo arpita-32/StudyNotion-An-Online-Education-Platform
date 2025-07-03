@@ -22,7 +22,7 @@ database.connect();
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({
-	origin: ["http://localhost:3000"],
+	origin: ["http://localhost:3000","https://study-notion-an-online-education-platform-azure.vercel.app"],
 	credentials: true
   }));
 
