@@ -12,6 +12,8 @@ const cors = require("cors");
 const {cloudinaryConnect } = require("./config/cloudinary");
 const fileUpload = require("express-fileupload");
 const dotenv = require("dotenv");
+const chatbotRoutes = require('./routes/chatbot');
+
 
 dotenv.config();
 const PORT = process.env.PORT || 4000;
@@ -41,6 +43,7 @@ app.use("/api/v1/profile", profileRoutes);
 app.use("/api/v1/course", courseRoutes);
 app.use("/api/v1/payment", paymentRoutes);
 app.use("/api/v1/reach", contactUsRoute);
+app.use("/api/v1chatbot", chatbotRoutes);
 
 //def route
 
@@ -51,7 +54,20 @@ app.get("/", (req, res) => {
 	});
 });
 
-app.listen(PORT, () => {
-	console.log(`App is running at ${PORT}`)
-})
+const server = app.listen(PORT, () => {
+  const actualPort = server.address().port;
+  console.log(`✅ Server running at: http://localhost:${actualPort}`);
+});
+
+server.on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.log(`⚠️ Port ${PORT} is already in use. Trying another port...`);
+    const newServer = app.listen(0, () => {
+      const newPort = newServer.address().port;
+      console.log(`✅ Server started successfully at: http://localhost:${newPort}`);
+    });
+  } else {
+    console.error('❌ Server failed to start:', err);
+  }
+});
 
